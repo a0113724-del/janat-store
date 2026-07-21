@@ -1,0 +1,309 @@
+[
+  {
+    "id": "tomato",
+    "name": "طماطة",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🍅",
+    "image": null
+  },
+  {
+    "id": "cucumber",
+    "name": "خيار",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🥒",
+    "image": null
+  },
+  {
+    "id": "potato",
+    "name": "بطاطا",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🥔",
+    "image": null
+  },
+  {
+    "id": "eggplant",
+    "name": "باذنجان",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🍆",
+    "image": null
+  },
+  {
+    "id": "zucchini",
+    "name": "شجر (كوسة)",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥒",
+    "image": null
+  },
+  {
+    "id": "cabbagew",
+    "name": "الهانة بيضاء",
+    "price": 750,
+    "cat": "veg",
+    "emoji": "🥬",
+    "image": null
+  },
+  {
+    "id": "cabbager",
+    "name": "الهانة حمراء",
+    "price": 750,
+    "cat": "veg",
+    "emoji": "🥬",
+    "image": null
+  },
+  {
+    "id": "caulif",
+    "name": "قرنابيط",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥦",
+    "image": null
+  },
+  {
+    "id": "pepperc",
+    "name": "فلفل بارد",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🫑",
+    "image": null
+  },
+  {
+    "id": "pepperh",
+    "name": "فلفل حار",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🌶️",
+    "image": null
+  },
+  {
+    "id": "onionw",
+    "name": "بصل ابيض",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🧅",
+    "image": null
+  },
+  {
+    "id": "oniony",
+    "name": "بصل اصفر",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🧅",
+    "image": null
+  },
+  {
+    "id": "onionh",
+    "name": "بصل حار",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🧅",
+    "image": null
+  },
+  {
+    "id": "cucaroma",
+    "name": "اخيار عطر روزي",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥒",
+    "image": null
+  },
+  {
+    "id": "lobia",
+    "name": "لوبيه",
+    "price": 2000,
+    "cat": "veg",
+    "emoji": "🫘",
+    "image": null
+  },
+  {
+    "id": "bamia",
+    "name": "بانيه (بامية)",
+    "price": 2000,
+    "cat": "veg",
+    "emoji": "🌿",
+    "image": null
+  },
+  {
+    "id": "bakela",
+    "name": "باقلاء",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🫛",
+    "image": null
+  },
+  {
+    "id": "carrot",
+    "name": "جزر",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥕",
+    "image": null
+  },
+  {
+    "id": "garlic",
+    "name": "ثوم",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🧄",
+    "image": null
+  },
+  {
+    "id": "ginger",
+    "name": "زنجبيل",
+    "price": 8000,
+    "cat": "veg",
+    "emoji": "🫚",
+    "image": null
+  },
+  {
+    "id": "melon",
+    "name": "شمام",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🍈",
+    "image": null
+  },
+  {
+    "id": "banana",
+    "name": "موز",
+    "price": 1500,
+    "cat": "fruit",
+    "emoji": "🍌",
+    "image": null,
+    "featured": true
+  },
+  {
+    "id": "figw",
+    "name": "تين ابيض",
+    "price": 3000,
+    "cat": "fruit",
+    "emoji": "⚪",
+    "image": null
+  },
+  {
+    "id": "figb",
+    "name": "تين اسود",
+    "price": 3000,
+    "cat": "fruit",
+    "emoji": "⚫",
+    "image": null
+  },
+  {
+    "id": "orange",
+    "name": "برتقال",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍊",
+    "image": null
+  },
+  {
+    "id": "grape",
+    "name": "عنب",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍇",
+    "image": null,
+    "featured": true
+  },
+  {
+    "id": "kojar",
+    "name": "كوجه حمراء",
+    "price": 1500,
+    "cat": "fruit",
+    "emoji": "🔴",
+    "image": null
+  },
+  {
+    "id": "kojay",
+    "name": "كوجه صفراء",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🟡",
+    "image": null
+  },
+  {
+    "id": "cherry",
+    "name": "كرز",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍒",
+    "image": null
+  },
+  {
+    "id": "apple_iraq",
+    "name": "تفاح عراقي",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍎",
+    "image": null
+  },
+  {
+    "id": "peach_tini",
+    "name": "خوخ تيني",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍑",
+    "image": null
+  },
+  {
+    "id": "peach_musk",
+    "name": "خوخ مسكي",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍑",
+    "image": null
+  },
+  {
+    "id": "peach_sofi",
+    "name": "خوخ صوفي",
+    "price": 1500,
+    "cat": "fruit",
+    "emoji": "🍑",
+    "image": null
+  },
+  {
+    "id": "lemon",
+    "name": "ليمون",
+    "price": 2500,
+    "cat": "fruit",
+    "emoji": "🍋",
+    "image": null
+  },
+  {
+    "id": "apricot",
+    "name": "مشمش",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🟠",
+    "image": null
+  },
+  {
+    "id": "pear",
+    "name": "عرموط",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍐",
+    "image": null
+  },
+  {
+    "id": "reky",
+    "name": "ركي",
+    "price": 500,
+    "cat": "fruit",
+    "emoji": "🍈",
+    "image": null
+  },
+  {
+    "id": "watermelon",
+    "name": "بطيخ",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍉",
+    "image": null,
+    "featured": true
+  }
+]
