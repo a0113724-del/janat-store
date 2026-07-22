@@ -436,5 +436,16 @@
     "unit": "كغم",
     "visible": true,
     "order": 38
+  },
+  {
+    "id": "p1784760931307",
+    "name": "شونذر ",
+    "price": 1500,
+    "cat": "veg",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": "images/p1784760931307-1784760957102.jpg",
+    "visible": true,
+    "order": 39
   }
 ]
