@@ -5,7 +5,8 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🍅",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "cucumber",
@@ -13,7 +14,10 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🥒",
-    "image": null
+    "image": null,
+    "unit": "كغم",
+    "onSale": true,
+    "oldPrice": 700
   },
   {
     "id": "potato",
@@ -21,7 +25,8 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🥔",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "eggplant",
@@ -29,7 +34,8 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🍆",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "zucchini",
@@ -37,7 +43,8 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🥒",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "cabbagew",
@@ -45,7 +52,8 @@
     "price": 750,
     "cat": "veg",
     "emoji": "🥬",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "cabbager",
@@ -53,7 +61,8 @@
     "price": 750,
     "cat": "veg",
     "emoji": "🥬",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "caulif",
@@ -61,7 +70,8 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🥦",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "pepperc",
@@ -69,7 +79,8 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🫑",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "pepperh",
@@ -77,7 +88,8 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🌶️",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "onionw",
@@ -85,7 +97,8 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🧅",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "oniony",
@@ -93,7 +106,8 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🧅",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "onionh",
@@ -101,7 +115,8 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🧅",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "cucaroma",
@@ -109,7 +124,8 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🥒",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "lobia",
@@ -117,7 +133,8 @@
     "price": 2000,
     "cat": "veg",
     "emoji": "🫘",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "bamia",
@@ -125,7 +142,8 @@
     "price": 2000,
     "cat": "veg",
     "emoji": "🌿",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "bakela",
@@ -133,7 +151,8 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🫛",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "carrot",
@@ -141,7 +160,8 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🥕",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "garlic",
@@ -149,7 +169,8 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🧄",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "ginger",
@@ -157,7 +178,8 @@
     "price": 8000,
     "cat": "veg",
     "emoji": "🫚",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "melon",
@@ -165,16 +187,20 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🍈",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "banana",
     "name": "موز",
-    "price": 1500,
+    "price": 1000,
     "cat": "fruit",
     "emoji": "🍌",
     "image": null,
-    "featured": true
+    "featured": true,
+    "unit": "كغم",
+    "onSale": true,
+    "oldPrice": 1500
   },
   {
     "id": "figw",
@@ -182,7 +208,8 @@
     "price": 3000,
     "cat": "fruit",
     "emoji": "⚪",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "figb",
@@ -190,7 +217,8 @@
     "price": 3000,
     "cat": "fruit",
     "emoji": "⚫",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "orange",
@@ -198,7 +226,8 @@
     "price": 1000,
     "cat": "fruit",
     "emoji": "🍊",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "grape",
@@ -207,7 +236,8 @@
     "cat": "fruit",
     "emoji": "🍇",
     "image": null,
-    "featured": true
+    "featured": true,
+    "unit": "كغم"
   },
   {
     "id": "kojar",
@@ -215,7 +245,8 @@
     "price": 1500,
     "cat": "fruit",
     "emoji": "🔴",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "kojay",
@@ -223,7 +254,8 @@
     "price": 1000,
     "cat": "fruit",
     "emoji": "🟡",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "cherry",
@@ -231,7 +263,8 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🍒",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "apple_iraq",
@@ -239,7 +272,8 @@
     "price": 1000,
     "cat": "fruit",
     "emoji": "🍎",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "peach_tini",
@@ -247,7 +281,8 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🍑",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "peach_musk",
@@ -255,7 +290,8 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🍑",
-    "image": "images/1784589827735.png"
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "peach_sofi",
@@ -263,7 +299,8 @@
     "price": 1500,
     "cat": "fruit",
     "emoji": "🍑",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "lemon",
@@ -271,7 +308,8 @@
     "price": 2500,
     "cat": "fruit",
     "emoji": "🍋",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "apricot",
@@ -279,7 +317,8 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🟠",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "pear",
@@ -287,7 +326,8 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🍐",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "reky",
@@ -295,7 +335,8 @@
     "price": 500,
     "cat": "fruit",
     "emoji": "🍈",
-    "image": null
+    "image": null,
+    "unit": "كغم"
   },
   {
     "id": "watermelon",
@@ -304,6 +345,18 @@
     "cat": "fruit",
     "emoji": "🍉",
     "image": null,
-    "featured": true
+    "featured": true,
+    "unit": "كغم",
+    "onSale": true,
+    "oldPrice": 1400
+  },
+  {
+    "id": "dates",
+    "name": "تمر",
+    "price": 10000,
+    "cat": "fruit",
+    "emoji": "🌴",
+    "image": null,
+    "unit": "كغم"
   }
 ]

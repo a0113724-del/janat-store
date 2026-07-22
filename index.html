@@ -18,10 +18,27 @@
     --gold-light:#E9CD86;
     --cream:#F6F1E1;
     --paper:#FBF8EF;
+    --card-bg:#FFFFFF;
+    --card-border:rgba(62,122,68,.14);
     --pomegranate:#A13A2E;
     --line: rgba(201,154,46,.35);
     --bar-h: 68px;
   }
+  html.dark{
+    --ink:#EDEBE0;
+    --paper:#12160F;
+    --cream:#171C13;
+    --card-bg:#1C221A;
+    --card-border:rgba(233,205,134,.16);
+  }
+  html.dark body{ background:var(--paper); }
+  html.dark .catnav{ background:rgba(18,22,15,.92); border-bottom-color:rgba(233,205,134,.14); }
+  html.dark .card{ background:var(--card-bg); border-color:var(--card-border); }
+  html.dark .card .img-wrap{ background:#232B1F; }
+  html.dark .fruit-section{ background:linear-gradient(180deg, #201a0e 0%, var(--paper) 65%); }
+  html.dark .search-wrap input{ background:var(--card-bg); color:var(--ink); border-color:var(--card-border); }
+  html.dark .sheet{ background:var(--paper); }
+  html.dark .field input, html.dark .field textarea{ background:var(--card-bg); color:var(--ink); border-color:var(--card-border); }
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
   body{
@@ -91,6 +108,48 @@
   }
   .catnav button.active{ background:var(--leaf); color:#fff; }
 
+  .toolbar{
+    display:flex; gap:10px; align-items:center; padding:0 16px 12px;
+    max-width:1080px; margin:0 auto;
+  }
+  .search-wrap{ flex:1; position:relative; }
+  .search-wrap input{
+    width:100%; border:1.5px solid var(--card-border); border-radius:100px;
+    padding:10px 40px 10px 14px; font-family:'Tajawal',sans-serif; font-size:.86rem;
+    background:var(--card-bg); color:var(--ink);
+  }
+  .search-wrap input:focus{ outline:none; border-color:var(--leaf); }
+  .search-wrap .icon{ position:absolute; inset-inline-end:14px; top:50%; transform:translateY(-50%); opacity:.5; }
+  .theme-toggle{
+    flex:0 0 auto; width:40px; height:40px; border-radius:50%;
+    border:1.5px solid var(--card-border); background:var(--card-bg); color:var(--ink);
+    font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- OFFERS SECTION ---------- */
+  .offer-section{
+    background:
+      radial-gradient(ellipse at 85% 0%, rgba(161,58,46,.14), transparent 55%),
+      linear-gradient(180deg, #FDEDEA 0%, var(--paper) 65%);
+    border-radius:28px; padding-top:34px; margin-top:6px;
+  }
+  html.dark .offer-section{ background:linear-gradient(180deg, #241512 0%, var(--paper) 65%); }
+  .offer-section .section-head h2{ color:var(--pomegranate); }
+  .offer-section .section-head .rule{ background:var(--pomegranate); }
+  .countdown-banner{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    background:linear-gradient(90deg, var(--pomegranate), #7a2c22);
+    color:#fff; font-weight:800; font-size:.86rem;
+    padding:10px 18px; border-radius:100px;
+    max-width:360px; margin:0 auto 22px;
+    box-shadow:0 6px 18px rgba(161,58,46,.3);
+  }
+  .card.offer-card{ border-color:rgba(161,58,46,.35); }
+  .card.offer-card::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:4px;
+    background:linear-gradient(90deg, var(--pomegranate), var(--gold));
+  }
+
   /* ---------- SECTIONS ---------- */
   .section{ padding:34px 16px 6px; max-width:1080px; margin:0 auto; }
   .section-head{ text-align:center; margin-bottom:22px; }
@@ -109,12 +168,13 @@
   @media(min-width:1040px){ .grid{ grid-template-columns:repeat(5,1fr); } }
 
   .card{
-    background:#fff;
-    border:1px solid rgba(62,122,68,.14);
+    background:var(--card-bg);
+    border:1px solid var(--card-border);
     border-radius:16px;
     overflow:hidden;
     display:flex; flex-direction:column;
     transition:.2s;
+    position:relative;
   }
   .card:hover{ box-shadow:0 10px 24px rgba(21,49,34,.1); }
   .card .img-wrap{
@@ -126,9 +186,17 @@
   .card .img-wrap img{ width:100%; height:100%; object-fit:cover; }
   .card .img-wrap .placeholder-emoji{ font-size:2.6rem; opacity:.85; }
   .card .body{ padding:10px 10px 12px; text-align:center; }
-  .card h3{ font-family:'Tajawal',sans-serif; font-weight:700; font-size:.92rem; margin-bottom:4px; }
+  .card h3{ font-family:'Tajawal',sans-serif; font-weight:700; font-size:.92rem; margin-bottom:4px; color:var(--ink); }
   .card .price{ color:var(--pomegranate); font-weight:900; font-size:.86rem; margin-bottom:10px; }
   .card .price small{ font-weight:500; font-size:.68rem; color:#8a8a7c; }
+  .card .price .old{
+    text-decoration:line-through; color:#9a9a90; font-weight:600; font-size:.76rem; margin-inline-end:6px;
+  }
+  .discount-badge{
+    position:absolute; top:8px; inset-inline-end:8px; z-index:2;
+    background:var(--pomegranate); color:#fff; font-size:.66rem; font-weight:800;
+    padding:3px 8px; border-radius:100px; box-shadow:0 3px 8px rgba(0,0,0,.2);
+  }
 
   .qty-row{ display:flex; align-items:center; justify-content:space-between; gap:6px; }
   .qty-row button{
@@ -296,6 +364,7 @@
     <div class="logo-badge">🌿</div>
     <h1 class="display">جنة الفواكه والخضار</h1>
     <p class="tag">فواكه وخضروات طازجة تصل لباب بيتك</p>
+    <p class="tag" style="margin-top:-12px; font-size:.8rem;">📍 أبو صخير - قرب مستشفى المناذرة العام</p>
     <div class="features">
       <span class="chip">🚴 توصيل سريع</span>
       <span class="chip">🌤️ اختيار يومي طازج</span>
@@ -307,7 +376,17 @@
   <nav class="catnav">
     <button class="active" data-target="veg">🥕 الخضروات</button>
     <button data-target="fruit">🍉 الفواكه</button>
+    <button data-target="offers">🔥 العروض</button>
   </nav>
+
+  <!-- ================= SEARCH + DARK MODE ================= -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="دوّر على منتج...">
+      <span class="icon">🔍</span>
+    </div>
+    <button class="theme-toggle" id="themeToggle" title="الوضع الليلي">🌙</button>
+  </div>
 
   <!-- ================= VEGETABLES ================= -->
   <section class="section" id="veg">
@@ -334,8 +413,25 @@
     <div class="grid" id="fruit-grid"></div>
   </section>
 
+  <div class="mini-arch">
+    <svg width="110" height="24" viewBox="0 0 120 26"><path d="M0,26 Q60,-16 120,26" fill="none" stroke="#A13A2E" stroke-width="2"/></svg>
+  </div>
+
+  <!-- ================= OFFERS ================= -->
+  <section class="section offer-section" id="offers">
+    <div class="section-head">
+      <div class="kicker">القسم الثالث</div>
+      <h2 class="display">قسم العروض</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="countdown-banner">⏰ عروض اليوم فقط — <span id="countdownVal">--:--:--</span></div>
+    <div class="grid" id="offers-grid"></div>
+    <p class="note" id="offersEmpty" style="display:none;">لا توجد عروض حالياً — تابعنا قريباً 🔥</p>
+  </section>
+
   <footer>
     <div class="display">جنة الفواكه والخضار</div>
+    <p>📍 أبو صخير - قرب مستشفى المناذرة العام</p>
     <p>اطلب الآن وسيصل طلبك مباشرة عبر واتساب</p>
   </footer>
 
@@ -393,12 +489,371 @@
 <script>
   const WHATSAPP_NUMBER = "9647778711942";
 
-  // Fallback data used only if products.json can't be loaded (e.g. opening the
-  // file directly by double-click instead of via a real web server/GitHub Pages)
+  // Fallback data used if products.json can't be loaded (e.g. previewing this
+  // file directly inside Claude, or opening it by double-click). Mirrors
+  // products.json so the site always shows the full catalog either way.
   const fallbackProducts = [
-    { id:"tomato", name:"طماطة", price:500, cat:"veg", emoji:"🍅", image:null },
-    { id:"cucumber", name:"خيار", price:500, cat:"veg", emoji:"🥒", image:null },
-  ];
+  {
+    "id": "tomato",
+    "name": "طماطة",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🍅",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "cucumber",
+    "name": "خيار",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🥒",
+    "image": null,
+    "unit": "كغم",
+    "onSale": true,
+    "oldPrice": 700
+  },
+  {
+    "id": "potato",
+    "name": "بطاطا",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🥔",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "eggplant",
+    "name": "باذنجان",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🍆",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "zucchini",
+    "name": "شجر (كوسة)",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥒",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "cabbagew",
+    "name": "الهانة بيضاء",
+    "price": 750,
+    "cat": "veg",
+    "emoji": "🥬",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "cabbager",
+    "name": "الهانة حمراء",
+    "price": 750,
+    "cat": "veg",
+    "emoji": "🥬",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "caulif",
+    "name": "قرنابيط",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥦",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "pepperc",
+    "name": "فلفل بارد",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🫑",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "pepperh",
+    "name": "فلفل حار",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🌶️",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "onionw",
+    "name": "بصل ابيض",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🧅",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "oniony",
+    "name": "بصل اصفر",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🧅",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "onionh",
+    "name": "بصل حار",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🧅",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "cucaroma",
+    "name": "اخيار عطر روزي",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥒",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "lobia",
+    "name": "لوبيه",
+    "price": 2000,
+    "cat": "veg",
+    "emoji": "🫘",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "bamia",
+    "name": "بانيه (بامية)",
+    "price": 2000,
+    "cat": "veg",
+    "emoji": "🌿",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "bakela",
+    "name": "باقلاء",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🫛",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "carrot",
+    "name": "جزر",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥕",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "garlic",
+    "name": "ثوم",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🧄",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "ginger",
+    "name": "زنجبيل",
+    "price": 8000,
+    "cat": "veg",
+    "emoji": "🫚",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "melon",
+    "name": "شمام",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🍈",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "banana",
+    "name": "موز",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍌",
+    "image": null,
+    "featured": true,
+    "unit": "كغم",
+    "onSale": true,
+    "oldPrice": 1500
+  },
+  {
+    "id": "figw",
+    "name": "تين ابيض",
+    "price": 3000,
+    "cat": "fruit",
+    "emoji": "⚪",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "figb",
+    "name": "تين اسود",
+    "price": 3000,
+    "cat": "fruit",
+    "emoji": "⚫",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "orange",
+    "name": "برتقال",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍊",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "grape",
+    "name": "عنب",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍇",
+    "image": null,
+    "featured": true,
+    "unit": "كغم"
+  },
+  {
+    "id": "kojar",
+    "name": "كوجه حمراء",
+    "price": 1500,
+    "cat": "fruit",
+    "emoji": "🔴",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "kojay",
+    "name": "كوجه صفراء",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🟡",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "cherry",
+    "name": "كرز",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍒",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "apple_iraq",
+    "name": "تفاح عراقي",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍎",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "peach_tini",
+    "name": "خوخ تيني",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍑",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "peach_musk",
+    "name": "خوخ مسكي",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍑",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "peach_sofi",
+    "name": "خوخ صوفي",
+    "price": 1500,
+    "cat": "fruit",
+    "emoji": "🍑",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "lemon",
+    "name": "ليمون",
+    "price": 2500,
+    "cat": "fruit",
+    "emoji": "🍋",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "apricot",
+    "name": "مشمش",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🟠",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "pear",
+    "name": "عرموط",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍐",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "reky",
+    "name": "ركي",
+    "price": 500,
+    "cat": "fruit",
+    "emoji": "🍈",
+    "image": null,
+    "unit": "كغم"
+  },
+  {
+    "id": "watermelon",
+    "name": "بطيخ",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍉",
+    "image": null,
+    "featured": true,
+    "unit": "كغم",
+    "onSale": true,
+    "oldPrice": 1400
+  },
+  {
+    "id": "dates",
+    "name": "تمر",
+    "price": 10000,
+    "cat": "fruit",
+    "emoji": "🌴",
+    "image": null,
+    "unit": "كغم"
+  }
+];
 
   let products = [];
   const cart = {}; // id -> qty (kg)
@@ -425,27 +880,50 @@
       ? `<img src="${p.image}" alt="${p.name}">`
       : `<span class="placeholder-emoji">${p.emoji||"🥬"}</span>`;
     const isFruit = p.cat === "fruit";
+    const isOffer = !!p.onSale;
+    const unit = p.unit || "كغم";
     const ribbon = p.featured ? `<span class="ribbon">⭐ الأكثر طلباً</span>` : "";
+    let discountBadge = "";
+    let priceHtml = `${money(p.price)} <small>/ ${unit}</small>`;
+    if(isOffer && p.oldPrice && p.oldPrice > p.price){
+      const pct = Math.round((1 - p.price/p.oldPrice) * 100);
+      discountBadge = `<span class="discount-badge">خصم ${pct}%</span>`;
+      priceHtml = `<span class="old">${money(p.oldPrice)}</span>${money(p.price)} <small>/ ${unit}</small>`;
+    }
+    const cardClass = isOffer ? "offer-card" : (isFruit ? "fruit-card" : "");
     return `
-    <div class="card ${isFruit?'fruit-card':''} ${qty>0?'has-qty':''}" data-id="${p.id}">
-      <div class="img-wrap">${ribbon}${imgHtml}</div>
+    <div class="card ${cardClass} ${qty>0?'has-qty':''}" data-id="${p.id}">
+      <div class="img-wrap">${ribbon}${discountBadge}${imgHtml}</div>
       <div class="body">
         <h3>${p.name}</h3>
-        <div class="price">${money(p.price)} <small>/ كغم</small></div>
+        <div class="price">${priceHtml}</div>
         <div class="qty-row">
           <button class="minus" data-id="${p.id}">−</button>
-          <span class="qty-val" id="qv-${p.id}">${qty}<small>كغم</small></span>
+          <span class="qty-val" id="qv-${p.id}">${qty}<small>${unit}</small></span>
           <button class="plus" data-id="${p.id}">+</button>
         </div>
       </div>
     </div>`;
   }
 
+  let searchTerm = "";
+
+  function matchesSearch(p){
+    if(!searchTerm) return true;
+    return p.name.toLowerCase().includes(searchTerm.toLowerCase());
+  }
+
   function renderGrids(){
+    const veg = products.filter(p=>p.cat==="veg" && matchesSearch(p));
+    const fruit = products.filter(p=>p.cat==="fruit" && matchesSearch(p));
+    const offers = products.filter(p=>p.onSale && matchesSearch(p));
+
     document.getElementById("veg-grid").innerHTML =
-      products.filter(p=>p.cat==="veg").map(productCard).join("") || `<p class="note">لا توجد منتجات بعد</p>`;
+      veg.map(productCard).join("") || `<p class="note">لا توجد نتائج</p>`;
     document.getElementById("fruit-grid").innerHTML =
-      products.filter(p=>p.cat==="fruit").map(productCard).join("") || `<p class="note">لا توجد منتجات بعد</p>`;
+      fruit.map(productCard).join("") || `<p class="note">لا توجد نتائج</p>`;
+    document.getElementById("offers-grid").innerHTML = offers.map(productCard).join("");
+    document.getElementById("offersEmpty").style.display = offers.length ? "none" : "block";
   }
 
   function findProduct(id){ return products.find(p=>p.id===id); }
@@ -460,8 +938,10 @@
   function changeQty(id, delta){
     const newQty = Math.max(0, (cart[id]||0) + delta);
     if(newQty===0) delete cart[id]; else cart[id] = newQty;
+    const p = findProduct(id);
+    const unit = (p && p.unit) || "كغم";
     const qv = document.getElementById("qv-"+id);
-    if(qv){ qv.innerHTML = `${cart[id]||0}<small>كغم</small>`; }
+    if(qv){ qv.innerHTML = `${cart[id]||0}<small>${unit}</small>`; }
     const card = qv ? qv.closest(".card") : null;
     if(card){ card.classList.toggle("has-qty",(cart[id]||0)>0); }
     updateCartUI();
@@ -497,13 +977,14 @@
     } else {
       cartLines.innerHTML = entries.map(([id,qty])=>{
         const p = findProduct(id);
+        const unit = p.unit || "كغم";
         const thumb = p.image ? `<img src="${p.image}" alt="">` : `<div class="ph">${p.emoji||"🥬"}</div>`;
         return `
         <div class="cart-line" data-id="${id}">
           ${thumb}
           <div class="info">
             <div class="n">${p.name}</div>
-            <div class="p">${money(p.price)} × ${qty} كغم = ${money(p.price*qty)}</div>
+            <div class="p">${money(p.price)} × ${qty} ${unit} = ${money(p.price*qty)}</div>
           </div>
           <div class="qty-row">
             <button class="d-minus" data-id="${id}">−</button>
@@ -585,7 +1066,8 @@
     msg += `\n🧺 المنتجات:\n`;
     entries.forEach(([id,qty])=>{
       const p = findProduct(id);
-      msg += `• ${p.name} × ${qty} كغم = ${money(p.price*qty)}\n`;
+      const unit = p.unit || "كغم";
+      msg += `• ${p.name} × ${qty} ${unit} = ${money(p.price*qty)}\n`;
     });
     msg += `\nالمجموع الكلي: ${money(cartTotal())}`;
     if(notes) msg += `\n\n📝 ملاحظات: ${notes}`;
@@ -603,11 +1085,49 @@
     });
   });
 
+  // ---------- SEARCH ----------
+  document.getElementById("searchInput").addEventListener("input",(e)=>{
+    searchTerm = e.target.value.trim();
+    renderGrids();
+  });
+
+  // ---------- DARK MODE ----------
+  const themeToggle = document.getElementById("themeToggle");
+  function applyTheme(dark){
+    document.documentElement.classList.toggle("dark", dark);
+    themeToggle.textContent = dark ? "☀️" : "🌙";
+    try{ localStorage.setItem("janat-theme", dark ? "dark" : "light"); }catch(e){}
+  }
+  themeToggle.addEventListener("click", ()=>{
+    applyTheme(!document.documentElement.classList.contains("dark"));
+  });
+  (function initTheme(){
+    let saved = null;
+    try{ saved = localStorage.getItem("janat-theme"); }catch(e){}
+    if(saved) applyTheme(saved === "dark");
+    else if(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) applyTheme(true);
+  })();
+
+  // ---------- OFFERS COUNTDOWN (resets nightly at midnight) ----------
+  function updateCountdown(){
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setHours(24,0,0,0);
+    let diff = Math.max(0, midnight - now);
+    const h = String(Math.floor(diff/3600000)).padStart(2,"0");
+    const m = String(Math.floor((diff%3600000)/60000)).padStart(2,"0");
+    const s = String(Math.floor((diff%60000)/1000)).padStart(2,"0");
+    const el = document.getElementById("countdownVal");
+    if(el) el.textContent = `${h}:${m}:${s}`;
+  }
+  setInterval(updateCountdown, 1000);
+
   // ---------- INIT ----------
   (async function init(){
     await loadProducts();
     renderGrids();
     updateCartUI();
+    updateCountdown();
   })();
 </script>
 </body>
