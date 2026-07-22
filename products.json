@@ -18,7 +18,7 @@
     "emoji": "🥒",
     "image": "images/cucumber-1784696035686.jpg",
     "unit": "كغم",
-    "onSale": true,
+    "onSale": false,
     "oldPrice": 700,
     "visible": true,
     "order": 1
@@ -421,7 +421,7 @@
     "image": "images/watermelon-1784696849707.jpg",
     "featured": true,
     "unit": "كغم",
-    "onSale": true,
+    "onSale": false,
     "oldPrice": 1400,
     "visible": true,
     "order": 37
