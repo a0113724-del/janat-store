@@ -128,7 +128,7 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🧅",
-    "image": null,
+    "image": "images/oniony-1784696412901.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 11
@@ -161,7 +161,7 @@
     "price": 2000,
     "cat": "veg",
     "emoji": "🫘",
-    "image": null,
+    "image": "images/lobia-1784696423938.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 14
