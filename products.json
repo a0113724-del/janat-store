@@ -150,7 +150,7 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🥒",
-    "image": null,
+    "image": "images/cucaroma-1784696137723.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 13
@@ -172,7 +172,7 @@
     "price": 2000,
     "cat": "veg",
     "emoji": "🌿",
-    "image": null,
+    "image": "images/bamia-1784696150243.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 15
