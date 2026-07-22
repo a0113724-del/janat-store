@@ -230,7 +230,7 @@
     "image": "images/melon-1784696613129.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 20
+    "order": 21
   },
   {
     "id": "banana",
@@ -244,7 +244,7 @@
     "onSale": true,
     "oldPrice": 1500,
     "visible": true,
-    "order": 21
+    "order": 22
   },
   {
     "id": "figw",
@@ -255,7 +255,7 @@
     "image": "images/figw-1784696625456.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 22
+    "order": 23
   },
   {
     "id": "figb",
@@ -266,7 +266,7 @@
     "image": "images/figb-1784696634645.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 23
+    "order": 24
   },
   {
     "id": "orange",
@@ -277,7 +277,7 @@
     "image": "images/orange-1784696712362.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 24
+    "order": 25
   },
   {
     "id": "grape",
@@ -289,7 +289,7 @@
     "featured": true,
     "unit": "كغم",
     "visible": true,
-    "order": 25
+    "order": 26
   },
   {
     "id": "kojar",
@@ -300,7 +300,7 @@
     "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 26
+    "order": 27
   },
   {
     "id": "kojay",
@@ -311,7 +311,7 @@
     "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 27
+    "order": 28
   },
   {
     "id": "cherry",
@@ -322,7 +322,7 @@
     "image": "images/cherry-1784696016258.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 28
+    "order": 29
   },
   {
     "id": "apple_iraq",
@@ -333,7 +333,7 @@
     "image": "images/apple_iraq-1784696729894.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 29
+    "order": 31
   },
   {
     "id": "peach_tini",
@@ -355,7 +355,7 @@
     "image": "images/peach_musk-1784696741847.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 31
+    "order": 33
   },
   {
     "id": "peach_sofi",
@@ -377,7 +377,7 @@
     "image": "images/lemon-1784696814127.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 33
+    "order": 34
   },
   {
     "id": "apricot",
@@ -388,7 +388,7 @@
     "image": "images/apricot-1784696822940.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 34
+    "order": 35
   },
   {
     "id": "pear",
@@ -399,7 +399,7 @@
     "image": "images/pear-1784696835030.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 35
+    "order": 36
   },
   {
     "id": "reky",
@@ -410,7 +410,7 @@
     "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 36
+    "order": 37
   },
   {
     "id": "watermelon",
@@ -424,7 +424,7 @@
     "onSale": false,
     "oldPrice": 1400,
     "visible": true,
-    "order": 37
+    "order": 38
   },
   {
     "id": "dates",
@@ -435,7 +435,7 @@
     "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 38
+    "order": 39
   },
   {
     "id": "p1784760931307",
@@ -446,6 +446,6 @@
     "emoji": "🥬",
     "image": "images/p1784760931307-1784760957102.jpg",
     "visible": true,
-    "order": 39
+    "order": 20
   }
 ]
