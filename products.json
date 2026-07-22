@@ -84,7 +84,7 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🥦",
-    "image": null,
+    "image": "images/caulif-1784696088858.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 7
@@ -95,7 +95,7 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🫑",
-    "image": null,
+    "image": "images/pepperc-1784696098612.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 8
@@ -117,7 +117,7 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🧅",
-    "image": null,
+    "image": "images/onionw-1784696105914.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 10
@@ -139,7 +139,7 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🧅",
-    "image": null,
+    "image": "images/onionh-1784696120393.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 12
