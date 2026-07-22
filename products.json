@@ -341,7 +341,7 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🍑",
-    "image": null,
+    "image": "images/peach_tini-1784696804169.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 30
@@ -374,7 +374,7 @@
     "price": 2500,
     "cat": "fruit",
     "emoji": "🍋",
-    "image": null,
+    "image": "images/lemon-1784696814127.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 33
@@ -385,7 +385,7 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🟠",
-    "image": null,
+    "image": "images/apricot-1784696822940.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 34
@@ -396,7 +396,7 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🍐",
-    "image": null,
+    "image": "images/pear-1784696835030.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 35
@@ -418,7 +418,7 @@
     "price": 1000,
     "cat": "fruit",
     "emoji": "🍉",
-    "image": null,
+    "image": "images/watermelon-1784696849707.jpg",
     "featured": true,
     "unit": "كغم",
     "onSale": true,
