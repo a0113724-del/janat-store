@@ -238,7 +238,7 @@
     "price": 1000,
     "cat": "fruit",
     "emoji": "🍌",
-    "image": null,
+    "image": "images/banana-1784696701398.jpg",
     "featured": true,
     "unit": "كغم",
     "onSale": true,
@@ -274,7 +274,7 @@
     "price": 1000,
     "cat": "fruit",
     "emoji": "🍊",
-    "image": null,
+    "image": "images/orange-1784696712362.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 24
@@ -330,7 +330,7 @@
     "price": 1000,
     "cat": "fruit",
     "emoji": "🍎",
-    "image": null,
+    "image": "images/apple_iraq-1784696729894.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 29
@@ -352,7 +352,7 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🍑",
-    "image": null,
+    "image": "images/peach_musk-1784696741847.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 31
