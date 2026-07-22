@@ -16,7 +16,7 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🥒",
-    "image": null,
+    "image": "images/cucumber-1784696035686.jpg",
     "unit": "كغم",
     "onSale": true,
     "oldPrice": 700,
@@ -29,7 +29,7 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🥔",
-    "image": null,
+    "image": "images/potato-1784696041577.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 2
