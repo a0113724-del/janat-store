@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم — جنة الفواكه والخضار</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest:#153122; --forest-2:#1E4530;
+    --leaf:#3E7A44; --leaf-light:#6BA36E;
+    --gold:#C99A2E; --gold-light:#E9CD86;
+    --paper:#F6F1E1; --card:#FFFFFF;
+    --pomegranate:#A13A2E; --ink:#1C2A1D;
+    --line: rgba(62,122,68,.18);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Tajawal', sans-serif; background:var(--paper); color:var(--ink);
+    line-height:1.5; padding-bottom:40px;
+  }
+  .display{ font-family:'Aref Ruqaa', serif; }
+
+  /* ---------- LOGIN GATE ---------- */
+  #loginGate{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+    background:linear-gradient(180deg, var(--forest), var(--forest-2));
+  }
+  .login-box{
+    background:#fff; border-radius:20px; padding:34px 26px; max-width:400px; width:100%;
+    box-shadow:0 20px 50px rgba(0,0,0,.3); text-align:center;
+  }
+  .login-box .badge{ font-size:2.4rem; margin-bottom:8px; }
+  .login-box h1{ font-size:1.4rem; color:var(--forest); margin-bottom:6px; }
+  .login-box p{ font-size:.82rem; color:#777; margin-bottom:20px; }
+  .login-box textarea{
+    width:100%; min-height:90px; border:1.5px solid var(--line); border-radius:12px;
+    padding:12px; font-family:monospace; font-size:.8rem; resize:vertical; margin-bottom:12px;
+  }
+  .login-box button{
+    width:100%; background:var(--leaf); color:#fff; border:none; padding:13px;
+    border-radius:12px; font-weight:800; font-size:.92rem; cursor:pointer;
+  }
+  .login-box .howto{
+    margin-top:18px; text-align:right; font-size:.76rem; color:#888; line-height:1.8;
+  }
+  .login-box .howto b{ color:var(--forest); }
+  .login-err{ color:var(--pomegranate); font-size:.8rem; margin-top:10px; display:none; }
+  .login-err.show{ display:block; }
+
+  /* ---------- ADMIN SHELL ---------- */
+  #adminApp{ display:none; }
+  .topbar{
+    background:linear-gradient(180deg, var(--forest), var(--forest-2)); color:var(--gold-light);
+    padding:18px 20px; display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:20;
+  }
+  .topbar h1{ font-size:1.1rem; }
+  .topbar .sub{ font-size:.7rem; color:#DCE7DA; opacity:.8; }
+  .logout-btn{
+    background:rgba(255,255,255,.1); border:1px solid rgba(233,205,134,.35); color:var(--gold-light);
+    padding:8px 14px; border-radius:100px; font-size:.76rem; cursor:pointer;
+  }
+
+  .status-bar{
+    padding:10px 20px; font-size:.8rem; text-align:center;
+  }
+  .status-bar.saving{ background:#FFF3D6; color:#8a6a10; }
+  .status-bar.saved{ background:#DFF2E1; color:#1e6b2b; }
+  .status-bar.error{ background:#FBE1DE; color:#8a2418; }
+  .status-bar.hidden{ display:none; }
+
+  .toolbar{
+    display:flex; gap:10px; padding:16px 20px 6px; flex-wrap:wrap; align-items:center;
+    max-width:900px; margin:0 auto;
+  }
+  .toolbar input[type=text]{
+    flex:1; min-width:160px; border:1.5px solid var(--line); border-radius:100px;
+    padding:9px 16px; font-size:.85rem;
+  }
+  .toolbar .cat-filter{ display:flex; gap:6px; }
+  .toolbar .cat-filter button{
+    border:1.5px solid var(--leaf); background:#fff; color:var(--leaf);
+    padding:8px 14px; border-radius:100px; font-size:.78rem; font-weight:700; cursor:pointer;
+  }
+  .toolbar .cat-filter button.active{ background:var(--leaf); color:#fff; }
+  .add-btn{
+    background:var(--gold); color:var(--forest); border:none; font-weight:800;
+    padding:9px 18px; border-radius:100px; font-size:.82rem; cursor:pointer; white-space:nowrap;
+  }
+
+  .save-bar{
+    max-width:900px; margin:0 auto; padding:0 20px 10px; display:flex; gap:10px; justify-content:flex-end;
+  }
+  .save-btn{
+    background:var(--forest); color:var(--gold-light); border:none; font-weight:800;
+    padding:11px 22px; border-radius:12px; font-size:.86rem; cursor:pointer;
+  }
+  .save-btn:disabled{ opacity:.5; cursor:not-allowed; }
+
+  .product-list{ max-width:900px; margin:0 auto; padding:0 20px; display:flex; flex-direction:column; gap:12px; }
+
+  .product-row{
+    background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px;
+    display:flex; gap:12px;
+  }
+  .product-row.hidden-item{ opacity:.5; }
+  .thumb-wrap{ flex:0 0 auto; }
+  .thumb{
+    width:72px; height:72px; border-radius:12px; object-fit:cover; background:#EFEBDD;
+    display:flex; align-items:center; justify-content:center; font-size:1.8rem;
+  }
+  .thumb-upload{
+    display:block; margin-top:6px; text-align:center; font-size:.62rem;
+    background:var(--leaf); color:#fff; padding:4px 0; border-radius:6px; cursor:pointer;
+  }
+  .thumb-upload input{ display:none; }
+
+  .fields{ flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; }
+  .fields .row1{ display:flex; gap:8px; }
+  .fields .row2{ display:flex; gap:8px; flex-wrap:wrap; }
+  .fields input[type=text], .fields input[type=number]{
+    border:1px solid var(--line); border-radius:8px; padding:7px 10px; font-size:.82rem; font-family:inherit;
+  }
+  .fields .f-name{ flex:2; min-width:100px; font-weight:700; }
+  .fields .f-price{ flex:1; min-width:70px; }
+  .fields .f-unit{ flex:1; min-width:70px; }
+  .fields select{ border:1px solid var(--line); border-radius:8px; padding:7px; font-size:.78rem; }
+  .fields .desc{ font-size:.8rem; }
+
+  .toggle-row{ display:flex; align-items:center; gap:14px; font-size:.76rem; flex-wrap:wrap; }
+  .toggle-row label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
+  .toggle-row .sale-fields{ display:flex; gap:6px; align-items:center; }
+  .toggle-row .sale-fields input{ width:70px; }
+
+  .row-actions{ display:flex; flex-direction:column; gap:6px; flex:0 0 auto; }
+  .row-actions button{
+    width:32px; height:32px; border-radius:8px; border:1px solid var(--line); background:#fff;
+    cursor:pointer; font-size:.9rem;
+  }
+  .row-actions .del{ color:var(--pomegranate); border-color:rgba(161,58,46,.3); }
+
+  .empty-note{ text-align:center; color:#888; padding:40px 20px; }
+</style>
+</head>
+<body>
+
+  <!-- ================= LOGIN GATE ================= -->
+  <div id="loginGate">
+    <div class="login-box">
+      <div class="badge">🔐</div>
+      <h1>لوحة تحكم المتجر</h1>
+      <p>الصق مفتاح الدخول الخاص فيك (GitHub Token)</p>
+      <textarea id="tokenInput" placeholder="github_pat_xxxxxxxxxxxxxxxx"></textarea>
+      <button id="loginBtn">دخول</button>
+      <div class="login-err" id="loginErr">المفتاح غير صحيح أو ما عنده صلاحية — تأكد إنك نسخته كامل</div>
+      <div class="howto">
+        <b>أول مرة؟ سوي مفتاح جديد:</b><br>
+        1. روح لـ github.com/settings/tokens?type=beta<br>
+        2. اضغط "Generate new token"<br>
+        3. باسم Token: اكتب أي اسم (مثلاً "لوحة المتجر")<br>
+        4. Repository access: اختر "Only select repositories" → janat-store<br>
+        5. Permissions → Contents → اختارها "Read and write"<br>
+        6. اضغط "Generate token" وانسخ المفتاح (يبدأ بـ github_pat_) والصقه فوق
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ADMIN APP ================= -->
+  <div id="adminApp">
+    <div class="topbar">
+      <div>
+        <h1 class="display">🌿 لوحة تحكم جنة الفواكه</h1>
+        <div class="sub">التعديلات تنحفظ مباشرة بموقعك الحي</div>
+      </div>
+      <button class="logout-btn" id="logoutBtn">تسجيل خروج</button>
+    </div>
+
+    <div class="status-bar hidden" id="statusBar"></div>
+
+    <div class="toolbar">
+      <input type="text" id="searchAdmin" placeholder="دوّر على منتج...">
+      <div class="cat-filter">
+        <button class="active" data-cat="all">الكل</button>
+        <button data-cat="veg">خضروات</button>
+        <button data-cat="fruit">فواكه</button>
+      </div>
+      <button class="add-btn" id="addProductBtn">+ إضافة منتج</button>
+    </div>
+
+    <div class="save-bar">
+      <button class="save-btn" id="saveAllBtn" disabled>💾 حفظ كل التغييرات</button>
+    </div>
+
+    <div class="product-list" id="productList"></div>
+  </div>
+
+<script>
+  // ================= CONFIG =================
+  const OWNER = "a0113724-del";
+  const REPO = "janat-store";
+  const BRANCH = "main";
+  const PRODUCTS_PATH = "products.json";
+  const API = "https://api.github.com";
+
+  let token = null;
+  let products = [];
+  let productsSha = null;
+  let dirty = false;
+  let catFilter = "all";
+  let searchTerm = "";
+
+  // ================= AUTH =================
+  function getStoredToken(){
+    try{ return localStorage.getItem("janat-admin-token"); }catch(e){ return null; }
+  }
+  function storeToken(t){
+    try{ localStorage.setItem("janat-admin-token", t); }catch(e){}
+  }
+  function clearToken(){
+    try{ localStorage.removeItem("janat-admin-token"); }catch(e){}
+  }
+
+  async function ghFetch(path, options={}){
+    const res = await fetch(`${API}${path}`, {
+      ...options,
+      headers:{
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/vnd.github+json",
+        ...(options.headers||{})
+      }
+    });
+    return res;
+  }
+
+  async function verifyTokenAndLoad(){
+    const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${PRODUCTS_PATH}?ref=${BRANCH}`);
+    if(!res.ok) throw new Error("auth failed");
+    const data = await res.json();
+    productsSha = data.sha;
+    const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g,""))));
+    products = JSON.parse(decoded);
+    products.forEach((p,i)=>{ if(p.order===undefined) p.order = i; if(p.visible===undefined) p.visible = true; });
+  }
+
+  document.getElementById("loginBtn").addEventListener("click", async ()=>{
+    const val = document.getElementById("tokenInput").value.trim();
+    if(!val) return;
+    token = val;
+    const btn = document.getElementById("loginBtn");
+    btn.textContent = "⏳ جاري التحقق...";
+    btn.disabled = true;
+    try{
+      await verifyTokenAndLoad();
+      storeToken(val);
+      showApp();
+    }catch(e){
+      document.getElementById("loginErr").classList.add("show");
+      token = null;
+    }
+    btn.textContent = "دخول";
+    btn.disabled = false;
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", ()=>{
+    clearToken();
+    location.reload();
+  });
+
+  function showApp(){
+    document.getElementById("loginGate").style.display = "none";
+    document.getElementById("adminApp").style.display = "block";
+    renderList();
+  }
+
+  // ================= STATUS ================= 
+  function setStatus(type, msg){
+    const bar = document.getElementById("statusBar");
+    bar.className = "status-bar " + type;
+    bar.textContent = msg;
+    if(type === "saved"){
+      setTimeout(()=>{ bar.className = "status-bar hidden"; }, 2500);
+    }
+  }
+
+  function markDirty(){
+    dirty = true;
+    document.getElementById("saveAllBtn").disabled = false;
+  }
+
+  // ================= RENDER =================
+  function money(n){ return Math.round(n||0).toLocaleString('en-US'); }
+
+  function productRow(p, idx){
+    const thumb = p.image
+      ? `<img class="thumb" src="${p.image}" alt="">`
+      : `<div class="thumb">${p.emoji||"🥬"}</div>`;
+    return `
+    <div class="product-row ${p.visible===false?'hidden-item':''}" data-id="${p.id}">
+      <div class="thumb-wrap">
+        ${thumb}
+        <label class="thumb-upload">📷 صورة
+          <input type="file" accept="image/*" class="img-input" data-id="${p.id}">
+        </label>
+      </div>
+      <div class="fields">
+        <div class="row1">
+          <input type="text" class="f-name" data-id="${p.id}" value="${(p.name||"").replace(/"/g,'&quot;')}" placeholder="اسم المنتج">
+          <select class="f-cat" data-id="${p.id}">
+            <option value="veg" ${p.cat==='veg'?'selected':''}>خضروات</option>
+            <option value="fruit" ${p.cat==='fruit'?'selected':''}>فواكه</option>
+          </select>
+        </div>
+        <div class="row2">
+          <input type="number" class="f-price" data-id="${p.id}" value="${p.price||0}" placeholder="السعر">
+          <input type="text" class="f-unit" data-id="${p.id}" value="${p.unit||'كغم'}" placeholder="الوحدة (كغم/حبة)">
+        </div>
+        <input type="text" class="desc f-desc" data-id="${p.id}" value="${(p.description||"").replace(/"/g,'&quot;')}" placeholder="وصف مختصر (اختياري)">
+        <div class="toggle-row">
+          <label><input type="checkbox" class="f-visible" data-id="${p.id}" ${p.visible!==false?'checked':''}> ظاهر للزبون</label>
+          <label><input type="checkbox" class="f-onsale" data-id="${p.id}" ${p.onSale?'checked':''}> عرض خاص</label>
+          <span class="sale-fields" style="${p.onSale?'':'display:none'}" data-oldprice-wrap="${p.id}">
+            السعر قبل الخصم: <input type="number" class="f-oldprice" data-id="${p.id}" value="${p.oldPrice||''}">
+          </span>
+        </div>
+      </div>
+      <div class="row-actions">
+        <button class="move-up" data-id="${p.id}" title="فوق">▲</button>
+        <button class="move-down" data-id="${p.id}" title="تحت">▼</button>
+        <button class="del" data-id="${p.id}" title="حذف">🗑️</button>
+      </div>
+    </div>`;
+  }
+
+  function renderList(){
+    const sorted = [...products].sort((a,b)=>(a.order??999)-(b.order??999));
+    const filtered = sorted.filter(p=>{
+      if(catFilter !== "all" && p.cat !== catFilter) return false;
+      if(searchTerm && !p.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      return true;
+    });
+    const list = document.getElementById("productList");
+    list.innerHTML = filtered.length
+      ? filtered.map(p=>productRow(p)).join("")
+      : `<p class="empty-note">لا توجد منتجات مطابقة</p>`;
+  }
+
+  function findProduct(id){ return products.find(p=>p.id===id); }
+
+  // ================= FIELD EDITS =================
+  document.getElementById("productList").addEventListener("input",(e)=>{
+    const id = e.target.dataset.id;
+    if(!id) return;
+    const p = findProduct(id);
+    if(!p) return;
+    if(e.target.classList.contains("f-name")) p.name = e.target.value;
+    if(e.target.classList.contains("f-price")) p.price = Number(e.target.value)||0;
+    if(e.target.classList.contains("f-unit")) p.unit = e.target.value;
+    if(e.target.classList.contains("f-desc")) p.description = e.target.value;
+    if(e.target.classList.contains("f-oldprice")) p.oldPrice = Number(e.target.value)||0;
+    markDirty();
+  });
+
+  document.getElementById("productList").addEventListener("change",(e)=>{
+    const id = e.target.dataset.id;
+    if(!id) return;
+    const p = findProduct(id);
+    if(!p) return;
+    if(e.target.classList.contains("f-cat")){ p.cat = e.target.value; markDirty(); }
+    if(e.target.classList.contains("f-visible")){
+      p.visible = e.target.checked;
+      e.target.closest(".product-row").classList.toggle("hidden-item", !p.visible);
+      markDirty();
+    }
+    if(e.target.classList.contains("f-onsale")){
+      p.onSale = e.target.checked;
+      const wrap = document.querySelector(`[data-oldprice-wrap="${id}"]`);
+      if(wrap) wrap.style.display = p.onSale ? "flex" : "none";
+      markDirty();
+    }
+  });
+
+  document.getElementById("productList").addEventListener("click", async (e)=>{
+    const id = e.target.dataset.id;
+    if(!id) return;
+    const p = findProduct(id);
+
+    if(e.target.classList.contains("del")){
+      if(confirm(`حذف "${p.name}" نهائياً؟`)){
+        products = products.filter(x=>x.id!==id);
+        markDirty();
+        renderList();
+      }
+    }
+    if(e.target.classList.contains("move-up") || e.target.classList.contains("move-down")){
+      const sorted = [...products].sort((a,b)=>(a.order??999)-(b.order??999));
+      const i = sorted.findIndex(x=>x.id===id);
+      const swapWith = e.target.classList.contains("move-up") ? i-1 : i+1;
+      if(swapWith >= 0 && swapWith < sorted.length){
+        const tmp = sorted[i].order;
+        sorted[i].order = sorted[swapWith].order;
+        sorted[swapWith].order = tmp;
+        markDirty();
+        renderList();
+      }
+    }
+  });
+
+  // ================= IMAGE UPLOAD =================
+  document.getElementById("productList").addEventListener("change", async (e)=>{
+    if(!e.target.classList.contains("img-input") || !e.target.files[0]) return;
+    const id = e.target.dataset.id;
+    const p = findProduct(id);
+    const file = e.target.files[0];
+    setStatus("saving", "⏳ جاري رفع الصورة...");
+    try{
+      const dataUrl = await compressImage(file);
+      const base64 = dataUrl.split(",")[1];
+      const ext = "jpg";
+      const filename = `images/${id}-${Date.now()}.${ext}`;
+      const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${filename}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          message: `رفع صورة: ${p.name}`,
+          content: base64,
+          branch: BRANCH
+        })
+      });
+      if(!res.ok) throw new Error("upload failed");
+      p.image = filename;
+      markDirty();
+      renderList();
+      setStatus("saved", "✅ تم رفع الصورة — اضغط 'حفظ كل التغييرات' لتثبيتها");
+    }catch(err){
+      console.error(err);
+      setStatus("error", "⚠️ تعذّر رفع الصورة، حاول مجدداً");
+    }
+  });
+
+  function compressImage(file){
+    return new Promise((resolve,reject)=>{
+      const reader = new FileReader();
+      reader.onload = (e)=>{
+        const img = new Image();
+        img.onload = ()=>{
+          const maxDim = 800;
+          let w = img.width, h = img.height;
+          if(w>h && w>maxDim){ h = Math.round(h*maxDim/w); w = maxDim; }
+          else if(h>=w && h>maxDim){ w = Math.round(w*maxDim/h); h = maxDim; }
+          const canvas = document.createElement("canvas");
+          canvas.width = w; canvas.height = h;
+          canvas.getContext("2d").drawImage(img,0,0,w,h);
+          resolve(canvas.toDataURL("image/jpeg", 0.75));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ================= ADD PRODUCT =================
+  document.getElementById("addProductBtn").addEventListener("click", ()=>{
+    const id = "p" + Date.now();
+    const maxOrder = products.reduce((m,p)=>Math.max(m, p.order??0), 0);
+    products.push({
+      id, name:"منتج جديد", price:0, cat:"veg", unit:"كغم",
+      emoji:"🥬", image:null, visible:true, order:maxOrder+1
+    });
+    markDirty();
+    renderList();
+  });
+
+  // ================= SEARCH / FILTER =================
+  document.getElementById("searchAdmin").addEventListener("input",(e)=>{
+    searchTerm = e.target.value.trim();
+    renderList();
+  });
+  document.querySelectorAll(".cat-filter button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".cat-filter button").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      catFilter = btn.dataset.cat;
+      renderList();
+    });
+  });
+
+  // ================= SAVE ALL =================
+  document.getElementById("saveAllBtn").addEventListener("click", async ()=>{
+    const btn = document.getElementById("saveAllBtn");
+    btn.disabled = true;
+    setStatus("saving", "⏳ جاري الحفظ على الموقع...");
+    try{
+      const content = JSON.stringify(products, null, 2);
+      const base64 = btoa(unescape(encodeURIComponent(content)));
+      const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${PRODUCTS_PATH}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          message: "تحديث المنتجات من لوحة التحكم",
+          content: base64,
+          sha: productsSha,
+          branch: BRANCH
+        })
+      });
+      if(!res.ok) throw new Error("save failed");
+      const data = await res.json();
+      productsSha = data.content.sha;
+      dirty = false;
+      setStatus("saved", "✅ تم الحفظ — التغييرات راح تطلع بالموقع خلال دقيقة");
+    }catch(err){
+      console.error(err);
+      setStatus("error", "⚠️ تعذّر الحفظ، تأكد من اتصال الإنترنت وحاول مجدداً");
+      btn.disabled = false;
+    }
+  });
+
+  window.addEventListener("beforeunload", (e)=>{
+    if(dirty){ e.preventDefault(); e.returnValue = ""; }
+  });
+
+  // ================= INIT =================
+  (async function init(){
+    const saved = getStoredToken();
+    if(saved){
+      token = saved;
+      try{
+        await verifyTokenAndLoad();
+        showApp();
+      }catch(e){
+        clearToken();
+        token = null;
+      }
+    }
+  })();
+</script>
+</body>
+</html>
