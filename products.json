@@ -227,7 +227,7 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🍈",
-    "image": null,
+    "image": "images/melon-1784696613129.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 20
@@ -252,7 +252,7 @@
     "price": 3000,
     "cat": "fruit",
     "emoji": "⚪",
-    "image": null,
+    "image": "images/figw-1784696625456.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 22
@@ -263,7 +263,7 @@
     "price": 3000,
     "cat": "fruit",
     "emoji": "⚫",
-    "image": null,
+    "image": "images/figb-1784696634645.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 23
