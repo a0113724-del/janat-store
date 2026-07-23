@@ -458,19 +458,5 @@
     "image": "images/p1784772747691-1784772772874.jpg",
     "visible": true,
     "order": 32
-  },
-  {
-    "id": "p1784800179215",
-    "name": "ساره ",
-    "price": 0,
-    "cat": "veg",
-    "unit": "كغم",
-    "emoji": "🥬",
-    "image": "images/p1784800179215-1784800190001.jpg",
-    "visible": true,
-    "order": 41,
-    "description": "مجاني بس انريد نخلص ",
-    "onSale": true,
-    "oldPrice": 0
   }
 ]
