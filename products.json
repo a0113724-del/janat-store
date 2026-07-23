@@ -355,7 +355,7 @@
     "image": "images/peach_musk-1784696741847.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 33
+    "order": 34
   },
   {
     "id": "peach_sofi",
@@ -366,7 +366,7 @@
     "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 32
+    "order": 33
   },
   {
     "id": "lemon",
@@ -377,7 +377,7 @@
     "image": "images/lemon-1784696814127.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 34
+    "order": 35
   },
   {
     "id": "apricot",
@@ -388,7 +388,7 @@
     "image": "images/apricot-1784696822940.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 35
+    "order": 36
   },
   {
     "id": "pear",
@@ -399,7 +399,7 @@
     "image": "images/pear-1784696835030.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 36
+    "order": 37
   },
   {
     "id": "reky",
@@ -410,7 +410,7 @@
     "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 37
+    "order": 38
   },
   {
     "id": "watermelon",
@@ -424,7 +424,7 @@
     "onSale": false,
     "oldPrice": 1400,
     "visible": true,
-    "order": 38
+    "order": 39
   },
   {
     "id": "dates",
@@ -435,7 +435,7 @@
     "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 39
+    "order": 40
   },
   {
     "id": "p1784760931307",
@@ -457,6 +457,6 @@
     "emoji": "🥬",
     "image": "images/p1784772747691-1784772772874.jpg",
     "visible": true,
-    "order": 40
+    "order": 32
   }
 ]
