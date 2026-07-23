@@ -26,13 +26,14 @@
   {
     "id": "potato",
     "name": "بطاطا",
-    "price": 500,
+    "price": 750,
     "cat": "veg",
     "emoji": "🥔",
     "image": "images/potato-1784696041577.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 2
+    "order": 2,
+    "description": "3 كيلوات ب 2000"
   },
   {
     "id": "eggplant",
