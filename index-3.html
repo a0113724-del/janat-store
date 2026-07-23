@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>جنة الفواكه والخضار</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1C2A1D;
+    --forest:#153122;
+    --forest-2:#1E4530;
+    --leaf:#3E7A44;
+    --leaf-light:#6BA36E;
+    --gold:#C99A2E;
+    --gold-light:#E9CD86;
+    --cream:#F6F1E1;
+    --paper:#FBF8EF;
+    --card-bg:#FFFFFF;
+    --card-border:rgba(62,122,68,.14);
+    --pomegranate:#A13A2E;
+    --line: rgba(201,154,46,.35);
+    --bar-h: 68px;
+  }
+  html.dark{
+    --ink:#EDEBE0;
+    --paper:#12160F;
+    --cream:#171C13;
+    --card-bg:#1C221A;
+    --card-border:rgba(233,205,134,.16);
+  }
+  html.dark body{ background:var(--paper); }
+  html.dark .catnav{ background:rgba(18,22,15,.92); border-bottom-color:rgba(233,205,134,.14); }
+  html.dark .card{ background:var(--card-bg); border-color:var(--card-border); }
+  html.dark .card .img-wrap{ background:#232B1F; }
+  html.dark .fruit-section{ background:linear-gradient(180deg, #201a0e 0%, var(--paper) 65%); }
+  html.dark .search-wrap input{ background:var(--card-bg); color:var(--ink); border-color:var(--card-border); }
+  html.dark .sheet{ background:var(--paper); }
+  html.dark .field input, html.dark .field textarea{ background:var(--card-bg); color:var(--ink); border-color:var(--card-border); }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Tajawal', sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.55;
+    padding-bottom:calc(var(--bar-h) + 18px);
+  }
+  h1,h2,h3, .display{ font-family:'Aref Ruqaa', serif; }
+  button{ font-family:inherit; }
+  img{ display:block; }
+
+  /* ---------- HEADER ---------- */
+  .site-header{
+    background:linear-gradient(180deg, var(--forest) 0%, var(--forest-2) 100%);
+    color:var(--gold-light);
+    padding:28px 18px 26px;
+    text-align:center;
+    position:relative;
+  }
+  .logo-badge{
+    width:64px; height:64px; margin:0 auto 10px;
+    background:radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold));
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.9rem;
+    box-shadow:0 6px 18px rgba(0,0,0,.25);
+  }
+  .site-header h1{
+    font-size:clamp(1.8rem,7vw,2.6rem);
+    background:linear-gradient(180deg, #F3DFA1, var(--gold));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    margin-bottom:6px;
+  }
+  .site-header .tag{
+    color:#DCE7DA; font-size:.92rem; max-width:380px; margin:0 auto 18px; opacity:.92;
+  }
+  .features{
+    display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
+    max-width:480px; margin:0 auto;
+  }
+  .features .chip{
+    background:rgba(255,255,255,.08);
+    border:1px solid var(--line);
+    color:var(--gold-light);
+    font-size:.74rem; font-weight:700;
+    padding:7px 14px; border-radius:100px;
+    display:flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+
+  /* ---------- CATEGORY NAV ---------- */
+  .catnav{
+    position:sticky; top:0; z-index:30;
+    background:rgba(251,248,239,.95);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid rgba(62,122,68,.18);
+    display:flex; gap:10px;
+    padding:12px 16px;
+    overflow-x:auto;
+  }
+  .catnav button{
+    flex:0 0 auto; font-weight:700; font-size:.88rem;
+    border:1.5px solid var(--leaf); color:var(--leaf);
+    background:transparent; padding:8px 20px; border-radius:100px;
+    cursor:pointer; transition:.2s; white-space:nowrap;
+  }
+  .catnav button.active{ background:var(--leaf); color:#fff; }
+
+  .toolbar{
+    display:flex; gap:10px; align-items:center; padding:0 16px 12px;
+    max-width:1080px; margin:0 auto;
+  }
+  .search-wrap{ flex:1; position:relative; }
+  .search-wrap input{
+    width:100%; border:1.5px solid var(--card-border); border-radius:100px;
+    padding:10px 40px 10px 14px; font-family:'Tajawal',sans-serif; font-size:.86rem;
+    background:var(--card-bg); color:var(--ink);
+  }
+  .search-wrap input:focus{ outline:none; border-color:var(--leaf); }
+  .search-wrap .icon{ position:absolute; inset-inline-end:14px; top:50%; transform:translateY(-50%); opacity:.5; }
+  .theme-toggle{
+    flex:0 0 auto; width:40px; height:40px; border-radius:50%;
+    border:1.5px solid var(--card-border); background:var(--card-bg); color:var(--ink);
+    font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- FACEBOOK LINK ---------- */
+  .fb-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(255,255,255,.08); border:1px solid var(--line); color:var(--gold-light);
+    font-size:.76rem; font-weight:700; padding:7px 16px; border-radius:100px;
+    text-decoration:none; margin-top:10px;
+  }
+  .footer-fb-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    background:#1877F2; color:#fff; font-weight:800; font-size:.86rem;
+    padding:11px 22px; border-radius:100px; text-decoration:none; margin-top:16px;
+  }
+
+  /* ---------- PROMO BANNER ---------- */
+  .promo-banner{
+    background:linear-gradient(90deg, var(--pomegranate), #7a2c22);
+    color:#fff; text-align:center; padding:12px 16px;
+    font-weight:800; font-size:.92rem;
+    display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;
+    position:relative; overflow:hidden;
+  }
+  .promo-banner::before{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent);
+    animation:promoShine 2.8s ease-in-out infinite;
+  }
+  @keyframes promoShine{
+    0%{ transform:translateX(-100%); }
+    100%{ transform:translateX(100%); }
+  }
+  .promo-banner .tag-new{
+    background:var(--gold); color:var(--forest); font-size:.68rem; font-weight:900;
+    padding:3px 10px; border-radius:100px;
+  }
+
+  .first-order-check{
+    display:flex; align-items:flex-start; gap:8px; margin-top:12px;
+    background:#FDEDEA; border:1.5px dashed var(--pomegranate); border-radius:12px;
+    padding:12px; font-size:.82rem; cursor:pointer;
+  }
+  html.dark .first-order-check{ background:#241512; }
+  .first-order-check input{ margin-top:3px; flex:0 0 auto; }
+  .first-order-check .txt strong{ color:var(--pomegranate); }
+
+  /* ---------- OFFERS SECTION ---------- */
+  .offer-section{
+    background:
+      radial-gradient(ellipse at 85% 0%, rgba(161,58,46,.14), transparent 55%),
+      linear-gradient(180deg, #FDEDEA 0%, var(--paper) 65%);
+    border-radius:28px; padding-top:34px; margin-top:6px;
+  }
+  html.dark .offer-section{ background:linear-gradient(180deg, #241512 0%, var(--paper) 65%); }
+  .offer-section .section-head h2{ color:var(--pomegranate); }
+  .offer-section .section-head .rule{ background:var(--pomegranate); }
+  .countdown-banner{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    background:linear-gradient(90deg, var(--pomegranate), #7a2c22);
+    color:#fff; font-weight:800; font-size:.86rem;
+    padding:10px 18px; border-radius:100px;
+    max-width:360px; margin:0 auto 22px;
+    box-shadow:0 6px 18px rgba(161,58,46,.3);
+  }
+  .card.offer-card{ border-color:rgba(161,58,46,.35); }
+  .card.offer-card::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:4px;
+    background:linear-gradient(90deg, var(--pomegranate), var(--gold));
+  }
+
+  /* ---------- SECTIONS ---------- */
+  .section{ padding:34px 16px 6px; max-width:1080px; margin:0 auto; }
+  .section-head{ text-align:center; margin-bottom:22px; }
+  .section-head .kicker{ color:var(--pomegranate); font-weight:700; font-size:.76rem; letter-spacing:.14em; }
+  .section-head h2{ font-size:1.9rem; color:var(--forest); margin-top:4px; }
+  .section-head .rule{ width:60px; height:2px; background:var(--gold); margin:12px auto 0; }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:14px;
+    margin-bottom:14px;
+  }
+  @media(min-width:520px){ .grid{ grid-template-columns:repeat(3,1fr); } }
+  @media(min-width:800px){ .grid{ grid-template-columns:repeat(4,1fr); } }
+  @media(min-width:1040px){ .grid{ grid-template-columns:repeat(5,1fr); } }
+
+  .card{
+    background:var(--card-bg);
+    border:1px solid var(--card-border);
+    border-radius:16px;
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    transition:.2s;
+    position:relative;
+  }
+  .card:hover{ box-shadow:0 10px 24px rgba(21,49,34,.1); }
+  .card .img-wrap{
+    width:100%; aspect-ratio:1/1;
+    background:#EFEBDD;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden; position:relative;
+  }
+  .card .img-wrap img{ width:100%; height:100%; object-fit:cover; }
+  .card .img-wrap .placeholder-emoji{ font-size:2.6rem; opacity:.85; }
+  .card .body{ padding:10px 10px 12px; text-align:center; }
+  .card h3{ font-family:'Tajawal',sans-serif; font-weight:700; font-size:.92rem; margin-bottom:4px; color:var(--ink); }
+  .card .price{ color:var(--pomegranate); font-weight:900; font-size:.86rem; margin-bottom:10px; }
+  .card .price small{ font-weight:500; font-size:.68rem; color:#8a8a7c; }
+  .card .price .old{
+    text-decoration:line-through; color:#9a9a90; font-weight:600; font-size:.76rem; margin-inline-end:6px;
+  }
+  .discount-badge{
+    position:absolute; top:8px; inset-inline-end:8px; z-index:2;
+    background:var(--pomegranate); color:#fff; font-size:.66rem; font-weight:800;
+    padding:3px 8px; border-radius:100px; box-shadow:0 3px 8px rgba(0,0,0,.2);
+  }
+
+  .qty-row{ display:flex; align-items:center; justify-content:space-between; gap:6px; }
+  .qty-row button{
+    width:32px; height:32px; border-radius:9px; flex:0 0 auto;
+    border:1.5px solid var(--leaf); background:#fff; color:var(--leaf);
+    font-size:1.15rem; font-weight:700; cursor:pointer; line-height:1;
+  }
+  .qty-row button:active{ transform:scale(.9); }
+  .qty-row .qty-val{
+    flex:1; text-align:center; font-weight:800; font-size:.86rem; color:var(--forest);
+  }
+  .qty-row .qty-val small{ display:block; font-weight:500; font-size:.6rem; color:#8a8a7c; }
+  .card.has-qty{ outline:2px solid var(--leaf); }
+
+  .note{ text-align:center; font-size:.76rem; color:#8a8a7c; margin:4px 0 26px; }
+  .mini-arch{ display:flex; justify-content:center; margin:6px 0; opacity:.5; }
+
+  /* ---------- FRUIT SECTION (distinct, eye-catching) ---------- */
+  .fruit-section{
+    background:
+      radial-gradient(ellipse at 15% 0%, rgba(201,154,46,.12), transparent 55%),
+      linear-gradient(180deg, #FFF8E9 0%, var(--paper) 65%);
+    border-radius:28px;
+    padding-top:34px;
+    margin-top:6px;
+  }
+  .fruit-section .section-head h2{ color:var(--pomegranate); }
+  .fruit-section .section-head .rule{ background:var(--pomegranate); }
+  .fruit-banner{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background:linear-gradient(90deg, var(--gold), var(--pomegranate));
+    color:#fff; font-weight:800; font-size:.82rem;
+    padding:9px 16px; border-radius:100px;
+    max-width:340px; margin:0 auto 22px;
+    box-shadow:0 6px 18px rgba(161,58,46,.25);
+  }
+  .card.fruit-card{ border-color:rgba(201,154,46,.35); position:relative; }
+  .card.fruit-card::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:4px;
+    background:linear-gradient(90deg, var(--gold), var(--pomegranate));
+  }
+  .card.fruit-card.has-qty{ outline-color:var(--gold); }
+  .card.fruit-card .qty-row button{ border-color:var(--pomegranate); color:var(--pomegranate); }
+  .ribbon{
+    position:absolute; top:8px; inset-inline-start:8px; z-index:2;
+    background:var(--pomegranate); color:#fff; font-size:.62rem; font-weight:800;
+    padding:3px 9px; border-radius:100px; box-shadow:0 3px 8px rgba(0,0,0,.2);
+    display:flex; align-items:center; gap:3px;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    background:var(--forest); color:var(--gold-light);
+    text-align:center; padding:34px 20px 26px; margin-top:30px;
+  }
+  footer .display{ font-size:1.4rem; margin-bottom:6px; }
+  footer p{ color:#DCE7DA; font-size:.82rem; opacity:.85; }
+  footer .admin-link{
+    display:inline-block; margin-top:16px; color:rgba(233,205,134,.55);
+    text-decoration:none; font-size:.72rem; border:1px dashed rgba(233,205,134,.3);
+    padding:6px 14px; border-radius:100px;
+  }
+
+  /* ---------- FIXED CART BAR ---------- */
+  .cart-bar{
+    position:fixed; bottom:0; left:0; right:0; z-index:50;
+    background:var(--forest); color:#fff;
+    padding:10px 16px; padding-bottom:calc(10px + env(safe-area-inset-bottom));
+    display:flex; align-items:center; gap:12px;
+    box-shadow:0 -6px 20px rgba(0,0,0,.2);
+    height:var(--bar-h);
+  }
+  .cart-bar .count-badge{
+    background:var(--pomegranate); color:#fff; min-width:26px; height:26px;
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:.78rem; font-weight:900; flex:0 0 auto;
+  }
+  .cart-bar .totals{ flex:1; overflow:hidden; }
+  .cart-bar .totals .l1{ font-size:.7rem; color:var(--gold-light); opacity:.8; }
+  .cart-bar .totals .l2{ font-weight:900; font-size:1.02rem; }
+  .cart-bar .go-btn{
+    background:var(--gold); color:var(--forest); border:none;
+    font-weight:800; font-size:.86rem; padding:11px 20px; border-radius:12px;
+    cursor:pointer; flex:0 0 auto; white-space:nowrap;
+  }
+  .cart-bar .go-btn:disabled{ background:#5b6a5e; color:#c8d1c9; cursor:not-allowed; }
+
+  /* ---------- OVERLAY & SHEET ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(21,49,34,.55);
+    z-index:60; opacity:0; pointer-events:none; transition:.25s;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+
+  .sheet{
+    position:fixed; left:0; right:0; bottom:0; z-index:70;
+    background:var(--paper);
+    border-radius:20px 20px 0 0;
+    max-height:88vh; display:flex; flex-direction:column;
+    transform:translateY(105%); transition:.3s ease;
+  }
+  .sheet.show{ transform:translateY(0); }
+  .sheet-head{
+    background:var(--forest); color:var(--gold-light);
+    padding:16px 18px; display:flex; justify-content:space-between; align-items:center;
+    border-radius:20px 20px 0 0;
+  }
+  .sheet-head h3{ font-weight:700; font-size:1.05rem; }
+  .sheet-head button{ background:none; border:none; color:var(--gold-light); font-size:1.3rem; cursor:pointer; }
+  .sheet-body{ overflow-y:auto; padding:16px 18px; }
+
+  .cart-line{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 0; border-bottom:1px dashed rgba(62,122,68,.25);
+  }
+  .cart-line img, .cart-line .ph{
+    width:44px; height:44px; border-radius:10px; object-fit:cover; flex:0 0 auto;
+    background:#EFEBDD; display:flex; align-items:center; justify-content:center; font-size:1.2rem;
+  }
+  .cart-line .info{ flex:1; }
+  .cart-line .info .n{ font-weight:700; font-size:.86rem; }
+  .cart-line .info .p{ font-size:.74rem; color:#8a8a7c; }
+  .cart-line .qty-row{ width:110px; }
+  .cart-line .rm{ background:none; border:none; color:var(--pomegranate); font-size:1rem; cursor:pointer; padding:4px; }
+
+  .cart-empty{ text-align:center; color:#8a8a7c; padding:30px 0; font-size:.9rem; }
+
+  .form-section{ margin-top:18px; }
+  .form-section h4{ font-size:.95rem; color:var(--forest); margin-bottom:10px; }
+  .field{ margin-bottom:12px; }
+  .field label{ display:block; font-size:.78rem; font-weight:700; margin-bottom:5px; color:var(--ink); }
+  .field input, .field textarea{
+    width:100%; border:1.5px solid rgba(62,122,68,.3); border-radius:10px;
+    padding:10px 12px; font-family:'Tajawal',sans-serif; font-size:.88rem;
+    background:#fff; color:var(--ink);
+  }
+  .field input:focus, .field textarea:focus{ outline:none; border-color:var(--leaf); }
+  .gps-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; background:#fff; border:1.5px dashed var(--leaf); color:var(--leaf);
+    padding:11px; border-radius:10px; font-weight:700; font-size:.84rem; cursor:pointer; margin-top:4px;
+  }
+  .gps-status{ font-size:.75rem; color:var(--leaf); margin-top:6px; display:none; }
+  .gps-status.show{ display:block; }
+
+  .total-row{
+    display:flex; justify-content:space-between; font-weight:900; font-size:1.05rem;
+    margin:16px 0 12px; color:var(--forest); padding-top:12px; border-top:1px solid rgba(62,122,68,.2);
+  }
+  .send-btn{
+    width:100%; background:#25D366; color:#fff; border:none;
+    padding:14px; border-radius:12px; font-weight:900; font-size:1rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:8px;
+  }
+  .send-btn:disabled{ background:#b9c9bd; cursor:not-allowed; }
+  .err{ color:var(--pomegranate); font-size:.76rem; margin-bottom:8px; display:none; }
+  .err.show{ display:block; }
+
+</style>
+</head>
+<body>
+
+  <!-- ================= HEADER ================= -->
+  <header class="site-header">
+    <div class="logo-badge">🌿</div>
+    <h1 class="display">جنة الفواكه والخضار</h1>
+    <p class="tag">فواكه وخضروات طازجة تصل لباب بيتك</p>
+    <p class="tag" style="margin-top:-12px; font-size:.8rem;">📍 أبو صخير - قرب مستشفى المناذرة العام</p>
+    <div class="features">
+      <span class="chip">🚴 توصيل سريع</span>
+      <span class="chip">🌤️ اختيار يومي طازج</span>
+      <span class="chip">⚖️ وزن دقيق</span>
+    </div>
+    <div>
+      <a class="fb-chip" href="https://www.facebook.com/share/1CAVCSGsXX/" target="_blank" rel="noopener">
+        📘 تابعنا على فيسبوك
+      </a>
+    </div>
+  </header>
+
+  <!-- ================= PROMO BANNER ================= -->
+  <div class="promo-banner">
+    <span class="tag-new">جديد</span>
+    🚴 التوصيل الأول مجاني لكل زبون جديد!
+  </div>
+
+  <!-- ================= CATEGORY NAV ================= -->
+  <nav class="catnav">
+    <button class="active" data-target="veg">🥕 الخضروات</button>
+    <button data-target="fruit">🍉 الفواكه</button>
+    <button data-target="offers">🔥 العروض</button>
+  </nav>
+
+  <!-- ================= SEARCH + DARK MODE ================= -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="دوّر على منتج...">
+      <span class="icon">🔍</span>
+    </div>
+    <button class="theme-toggle" id="themeToggle" title="الوضع الليلي">🌙</button>
+  </div>
+
+  <!-- ================= VEGETABLES ================= -->
+  <section class="section" id="veg">
+    <div class="section-head">
+      <div class="kicker">القسم الأول</div>
+      <h2 class="display">قسم الخضروات</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="grid" id="veg-grid"></div>
+  </section>
+
+  <div class="mini-arch">
+    <svg width="110" height="24" viewBox="0 0 120 26"><path d="M0,26 Q60,-16 120,26" fill="none" stroke="#C99A2E" stroke-width="2"/></svg>
+  </div>
+
+  <!-- ================= FRUITS ================= -->
+  <section class="section fruit-section" id="fruit">
+    <div class="section-head">
+      <div class="kicker">القسم الثاني</div>
+      <h2 class="display">قسم الفواكه</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="fruit-banner">🍉 فواكه الموسم — طازجة يومياً</div>
+    <div class="grid" id="fruit-grid"></div>
+  </section>
+
+  <div class="mini-arch">
+    <svg width="110" height="24" viewBox="0 0 120 26"><path d="M0,26 Q60,-16 120,26" fill="none" stroke="#A13A2E" stroke-width="2"/></svg>
+  </div>
+
+  <!-- ================= OFFERS ================= -->
+  <section class="section offer-section" id="offers">
+    <div class="section-head">
+      <div class="kicker">القسم الثالث</div>
+      <h2 class="display">قسم العروض</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="countdown-banner">⏰ عروض اليوم فقط — <span id="countdownVal">--:--:--</span></div>
+    <div class="grid" id="offers-grid"></div>
+    <p class="note" id="offersEmpty" style="display:none;">لا توجد عروض حالياً — تابعنا قريباً 🔥</p>
+  </section>
+
+  <footer>
+    <div class="display">جنة الفواكه والخضار</div>
+    <p>📍 أبو صخير - قرب مستشفى المناذرة العام</p>
+    <p>اطلب الآن وسيصل طلبك مباشرة عبر واتساب</p>
+    <a class="footer-fb-btn" href="https://www.facebook.com/share/1CAVCSGsXX/" target="_blank" rel="noopener">
+      📘 صفحتنا على فيسبوك
+    </a>
+  </footer>
+
+  <!-- ================= FIXED CART BAR ================= -->
+  <div class="cart-bar">
+    <div class="count-badge" id="barCount">0</div>
+    <div class="totals">
+      <div class="l1">عدد المنتجات · المجموع</div>
+      <div class="l2" id="barTotal">0 د.ع</div>
+    </div>
+    <button class="go-btn" id="openCheckout" disabled>🧺 إتمام الطلب</button>
+  </div>
+
+  <!-- ================= OVERLAY ================= -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ================= CHECKOUT SHEET ================= -->
+  <div class="sheet" id="checkoutSheet">
+    <div class="sheet-head">
+      <h3>🧺 إتمام الطلب</h3>
+      <button id="closeCheckout">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div id="cartLines"><p class="cart-empty">السلة فارغة</p></div>
+
+      <div class="form-section">
+        <h4>بيانات التوصيل</h4>
+        <div class="field">
+          <label>الاسم الكامل *</label>
+          <input type="text" id="custName" placeholder="مثال: أحمد محمد">
+        </div>
+        <div class="field">
+          <label>رقم الهاتف *</label>
+          <input type="tel" id="custPhone" placeholder="07xxxxxxxxx">
+        </div>
+        <div class="field">
+          <label>العنوان / الموقع</label>
+          <textarea id="custAddress" rows="2" placeholder="المنطقة، الحي، أقرب نقطة دالة..."></textarea>
+        </div>
+        <button class="gps-btn" id="gpsBtn">📍 تحديد موقعي الحالي</button>
+        <div class="gps-status" id="gpsStatus"></div>
+        <div class="field" style="margin-top:12px;">
+          <label>ملاحظات (اختياري)</label>
+          <textarea id="custNotes" rows="2" placeholder="أي تفاصيل إضافية عن الطلب..."></textarea>
+        </div>
+        <label class="first-order-check">
+          <input type="checkbox" id="firstOrderCheck">
+          <span class="txt">🎁 <strong>هذا أول طلب لي</strong> — التوصيل مجاني لأول مرة</span>
+        </label>
+      </div>
+
+      <div class="total-row"><span>المجموع الكلي</span><span id="sheetTotal">0 د.ع</span></div>
+      <div class="err" id="formErr">الرجاء إدخال الاسم ورقم الهاتف.</div>
+      <button class="send-btn" id="sendBtn">📲 إرسال الطلب عبر واتساب</button>
+    </div>
+  </div>
+
+
+<script>
+  const WHATSAPP_NUMBER = "9647778711942";
+
+  // Fallback data used if products.json can't be loaded (e.g. previewing this
+  // file directly inside Claude, or opening it by double-click). Mirrors
+  // products.json so the site always shows the full catalog either way.
+  const fallbackProducts = [
+  {
+    "id": "tomato",
+    "name": "طماطة",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🍅",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 0
+  },
+  {
+    "id": "cucumber",
+    "name": "خيار",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🥒",
+    "image": null,
+    "unit": "كغم",
+    "onSale": true,
+    "oldPrice": 700,
+    "visible": true,
+    "order": 1
+  },
+  {
+    "id": "potato",
+    "name": "بطاطا",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🥔",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 2
+  },
+  {
+    "id": "eggplant",
+    "name": "باذنجان",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🍆",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 3
+  },
+  {
+    "id": "zucchini",
+    "name": "شجر (كوسة)",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥒",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 4
+  },
+  {
+    "id": "cabbagew",
+    "name": "الهانة بيضاء",
+    "price": 750,
+    "cat": "veg",
+    "emoji": "🥬",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 5
+  },
+  {
+    "id": "cabbager",
+    "name": "الهانة حمراء",
+    "price": 750,
+    "cat": "veg",
+    "emoji": "🥬",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 6
+  },
+  {
+    "id": "caulif",
+    "name": "قرنابيط",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥦",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 7
+  },
+  {
+    "id": "pepperc",
+    "name": "فلفل بارد",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🫑",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 8
+  },
+  {
+    "id": "pepperh",
+    "name": "فلفل حار",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🌶️",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 9
+  },
+  {
+    "id": "onionw",
+    "name": "بصل ابيض",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🧅",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 10
+  },
+  {
+    "id": "oniony",
+    "name": "بصل اصفر",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🧅",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 11
+  },
+  {
+    "id": "onionh",
+    "name": "بصل حار",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🧅",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 12
+  },
+  {
+    "id": "cucaroma",
+    "name": "اخيار عطر روزي",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥒",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 13
+  },
+  {
+    "id": "lobia",
+    "name": "لوبيه",
+    "price": 2000,
+    "cat": "veg",
+    "emoji": "🫘",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 14
+  },
+  {
+    "id": "bamia",
+    "name": "بانيه (بامية)",
+    "price": 2000,
+    "cat": "veg",
+    "emoji": "🌿",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 15
+  },
+  {
+    "id": "bakela",
+    "name": "باقلاء",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🫛",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 16
+  },
+  {
+    "id": "carrot",
+    "name": "جزر",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥕",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 17
+  },
+  {
+    "id": "garlic",
+    "name": "ثوم",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🧄",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 18
+  },
+  {
+    "id": "ginger",
+    "name": "زنجبيل",
+    "price": 8000,
+    "cat": "veg",
+    "emoji": "🫚",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 19
+  },
+  {
+    "id": "melon",
+    "name": "شمام",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🍈",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 20
+  },
+  {
+    "id": "banana",
+    "name": "موز",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍌",
+    "image": null,
+    "featured": true,
+    "unit": "كغم",
+    "onSale": true,
+    "oldPrice": 1500,
+    "visible": true,
+    "order": 21
+  },
+  {
+    "id": "figw",
+    "name": "تين ابيض",
+    "price": 3000,
+    "cat": "fruit",
+    "emoji": "⚪",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 22
+  },
+  {
+    "id": "figb",
+    "name": "تين اسود",
+    "price": 3000,
+    "cat": "fruit",
+    "emoji": "⚫",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 23
+  },
+  {
+    "id": "orange",
+    "name": "برتقال",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍊",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 24
+  },
+  {
+    "id": "grape",
+    "name": "عنب",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍇",
+    "image": null,
+    "featured": true,
+    "unit": "كغم",
+    "visible": true,
+    "order": 25
+  },
+  {
+    "id": "kojar",
+    "name": "كوجه حمراء",
+    "price": 1500,
+    "cat": "fruit",
+    "emoji": "🔴",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 26
+  },
+  {
+    "id": "kojay",
+    "name": "كوجه صفراء",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🟡",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 27
+  },
+  {
+    "id": "cherry",
+    "name": "كرز",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍒",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 28
+  },
+  {
+    "id": "apple_iraq",
+    "name": "تفاح عراقي",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍎",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 29
+  },
+  {
+    "id": "peach_tini",
+    "name": "خوخ تيني",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍑",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 30
+  },
+  {
+    "id": "peach_musk",
+    "name": "خوخ مسكي",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍑",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 31
+  },
+  {
+    "id": "peach_sofi",
+    "name": "خوخ صوفي",
+    "price": 1500,
+    "cat": "fruit",
+    "emoji": "🍑",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 32
+  },
+  {
+    "id": "lemon",
+    "name": "ليمون",
+    "price": 2500,
+    "cat": "fruit",
+    "emoji": "🍋",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 33
+  },
+  {
+    "id": "apricot",
+    "name": "مشمش",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🟠",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 34
+  },
+  {
+    "id": "pear",
+    "name": "عرموط",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍐",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 35
+  },
+  {
+    "id": "reky",
+    "name": "ركي",
+    "price": 500,
+    "cat": "fruit",
+    "emoji": "🍈",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 36
+  },
+  {
+    "id": "watermelon",
+    "name": "بطيخ",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍉",
+    "image": null,
+    "featured": true,
+    "unit": "كغم",
+    "onSale": true,
+    "oldPrice": 1400,
+    "visible": true,
+    "order": 37
+  },
+  {
+    "id": "dates",
+    "name": "تمر",
+    "price": 10000,
+    "cat": "fruit",
+    "emoji": "🌴",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 38
+  }
+];
+
+  let products = [];
+  const cart = {}; // id -> qty (kg)
+  let gpsCoords = null;
+
+  function money(n){ return Math.round(n).toLocaleString('en-US') + " د.ع"; }
+
+  // ---------- LOAD PRODUCTS FROM products.json ----------
+  async function loadProducts(){
+    try{
+      const res = await fetch("products.json", { cache: "no-store" });
+      if(!res.ok) throw new Error("fetch failed");
+      products = await res.json();
+    }catch(e){
+      console.warn("تعذّر تحميل products.json، سيتم استخدام بيانات احتياطية.", e);
+      products = fallbackProducts;
+    }
+  }
+
+  // ---------- RENDER PRODUCT GRIDS ----------
+  function productCard(p){
+    const qty = cart[p.id] || 0;
+    const imgHtml = p.image
+      ? `<img src="${p.image}" alt="${p.name}">`
+      : `<span class="placeholder-emoji">${p.emoji||"🥬"}</span>`;
+    const isFruit = p.cat === "fruit";
+    const isOffer = !!p.onSale;
+    const unit = p.unit || "كغم";
+    const ribbon = p.featured ? `<span class="ribbon">⭐ الأكثر طلباً</span>` : "";
+    let discountBadge = "";
+    let priceHtml = `${money(p.price)} <small>/ ${unit}</small>`;
+    if(isOffer && p.oldPrice && p.oldPrice > p.price){
+      const pct = Math.round((1 - p.price/p.oldPrice) * 100);
+      discountBadge = `<span class="discount-badge">خصم ${pct}%</span>`;
+      priceHtml = `<span class="old">${money(p.oldPrice)}</span>${money(p.price)} <small>/ ${unit}</small>`;
+    }
+    const cardClass = isOffer ? "offer-card" : (isFruit ? "fruit-card" : "");
+    return `
+    <div class="card ${cardClass} ${qty>0?'has-qty':''}" data-id="${p.id}">
+      <div class="img-wrap">${ribbon}${discountBadge}${imgHtml}</div>
+      <div class="body">
+        <h3>${p.name}</h3>
+        <div class="price">${priceHtml}</div>
+        <div class="qty-row">
+          <button class="minus" data-id="${p.id}">−</button>
+          <span class="qty-val" id="qv-${p.id}">${qty}<small>${unit}</small></span>
+          <button class="plus" data-id="${p.id}">+</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  let searchTerm = "";
+
+  function matchesSearch(p){
+    if(!searchTerm) return true;
+    return p.name.toLowerCase().includes(searchTerm.toLowerCase());
+  }
+
+  function renderGrids(){
+    const visible = products.filter(p => p.visible !== false);
+    const sorted = [...visible].sort((a,b)=>(a.order ?? 999) - (b.order ?? 999));
+    const veg = sorted.filter(p=>p.cat==="veg" && matchesSearch(p));
+    const fruit = sorted.filter(p=>p.cat==="fruit" && matchesSearch(p));
+    const offers = sorted.filter(p=>p.onSale && matchesSearch(p));
+
+    document.getElementById("veg-grid").innerHTML =
+      veg.map(productCard).join("") || `<p class="note">لا توجد نتائج</p>`;
+    document.getElementById("fruit-grid").innerHTML =
+      fruit.map(productCard).join("") || `<p class="note">لا توجد نتائج</p>`;
+    document.getElementById("offers-grid").innerHTML = offers.map(productCard).join("");
+    document.getElementById("offersEmpty").style.display = offers.length ? "none" : "block";
+  }
+
+  function findProduct(id){ return products.find(p=>p.id===id); }
+
+  document.body.addEventListener("click",(e)=>{
+    const plus = e.target.closest(".grid .plus");
+    const minus = e.target.closest(".grid .minus");
+    if(plus){ changeQty(plus.dataset.id, 1); }
+    if(minus){ changeQty(minus.dataset.id, -1); }
+  });
+
+  function changeQty(id, delta){
+    const newQty = Math.max(0, (cart[id]||0) + delta);
+    if(newQty===0) delete cart[id]; else cart[id] = newQty;
+    const p = findProduct(id);
+    const unit = (p && p.unit) || "كغم";
+    const qv = document.getElementById("qv-"+id);
+    if(qv){ qv.innerHTML = `${cart[id]||0}<small>${unit}</small>`; }
+    const card = qv ? qv.closest(".card") : null;
+    if(card){ card.classList.toggle("has-qty",(cart[id]||0)>0); }
+    updateCartUI();
+  }
+
+  // ---------- CART BAR & CHECKOUT SHEET ----------
+  const barCount = document.getElementById("barCount");
+  const barTotal = document.getElementById("barTotal");
+  const openCheckoutBtn = document.getElementById("openCheckout");
+  const cartLines = document.getElementById("cartLines");
+  const sheetTotal = document.getElementById("sheetTotal");
+  const overlay = document.getElementById("overlay");
+  const checkoutSheet = document.getElementById("checkoutSheet");
+
+  function cartCount(){ return Object.values(cart).reduce((a,b)=>a+b,0); }
+  function cartTotal(){
+    return Object.entries(cart).reduce((s,[id,q])=>{
+      const p = findProduct(id); return s + (p?p.price*q:0);
+    },0);
+  }
+
+  function updateCartUI(){
+    const count = cartCount();
+    const total = cartTotal();
+    barCount.textContent = count;
+    barTotal.textContent = money(total);
+    openCheckoutBtn.disabled = count===0;
+    sheetTotal.textContent = money(total);
+
+    const entries = Object.entries(cart).filter(([,q])=>q>0);
+    if(entries.length===0){
+      cartLines.innerHTML = `<p class="cart-empty">السلة فارغة — اختر كمية من المنتجات أعلاه</p>`;
+    } else {
+      cartLines.innerHTML = entries.map(([id,qty])=>{
+        const p = findProduct(id);
+        const unit = p.unit || "كغم";
+        const thumb = p.image ? `<img src="${p.image}" alt="">` : `<div class="ph">${p.emoji||"🥬"}</div>`;
+        return `
+        <div class="cart-line" data-id="${id}">
+          ${thumb}
+          <div class="info">
+            <div class="n">${p.name}</div>
+            <div class="p">${money(p.price)} × ${qty} ${unit} = ${money(p.price*qty)}</div>
+          </div>
+          <div class="qty-row">
+            <button class="d-minus" data-id="${id}">−</button>
+            <span class="qty-val">${qty}</span>
+            <button class="d-plus" data-id="${id}">+</button>
+          </div>
+          <button class="rm" data-id="${id}">🗑️</button>
+        </div>`;
+      }).join("");
+    }
+  }
+
+  cartLines.addEventListener("click",(e)=>{
+    const id = e.target.dataset.id;
+    if(!id) return;
+    if(e.target.classList.contains("d-plus")) changeQty(id, 1);
+    if(e.target.classList.contains("d-minus")) changeQty(id, -1);
+    if(e.target.classList.contains("rm")){ delete cart[id]; changeQty(id,0); }
+  });
+
+  function openSheet(sheet){ sheet.classList.add("show"); overlay.classList.add("show"); }
+  function closeSheets(){
+    checkoutSheet.classList.remove("show");
+    overlay.classList.remove("show");
+  }
+  openCheckoutBtn.addEventListener("click", ()=>openSheet(checkoutSheet));
+  document.getElementById("closeCheckout").addEventListener("click", closeSheets);
+  overlay.addEventListener("click", closeSheets);
+
+  // ---------- GPS ----------
+  const gpsBtn = document.getElementById("gpsBtn");
+  const gpsStatus = document.getElementById("gpsStatus");
+  gpsBtn.addEventListener("click", ()=>{
+    if(!navigator.geolocation){
+      gpsStatus.textContent = "⚠️ المتصفح لا يدعم تحديد الموقع";
+      gpsStatus.classList.add("show");
+      return;
+    }
+    gpsBtn.textContent = "⏳ جاري تحديد الموقع...";
+    navigator.geolocation.getCurrentPosition(
+      (pos)=>{
+        gpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        gpsBtn.textContent = "📍 تحديد موقعي الحالي";
+        gpsStatus.textContent = `✅ تم تحديد الموقع (${gpsCoords.lat.toFixed(5)}, ${gpsCoords.lng.toFixed(5)})`;
+        gpsStatus.classList.add("show");
+      },
+      (err)=>{
+        gpsBtn.textContent = "📍 تحديد موقعي الحالي";
+        gpsStatus.textContent = "⚠️ تعذّر الوصول للموقع، تأكد من تفعيل صلاحية الموقع";
+        gpsStatus.classList.add("show");
+      }
+    );
+  });
+
+  // ---------- SEND ORDER ----------
+  const sendBtn = document.getElementById("sendBtn");
+  const formErr = document.getElementById("formErr");
+  sendBtn.addEventListener("click", ()=>{
+    const name = document.getElementById("custName").value.trim();
+    const phone = document.getElementById("custPhone").value.trim();
+    const address = document.getElementById("custAddress").value.trim();
+    const notes = document.getElementById("custNotes").value.trim();
+    const isFirstOrder = document.getElementById("firstOrderCheck").checked;
+    const entries = Object.entries(cart).filter(([,q])=>q>0);
+
+    if(!name || !phone || entries.length===0){
+      formErr.textContent = entries.length===0
+        ? "الرجاء اختيار منتج واحد على الأقل."
+        : "الرجاء إدخال الاسم ورقم الهاتف.";
+      formErr.classList.add("show");
+      return;
+    }
+    formErr.classList.remove("show");
+
+    let msg = "🌿 طلب جديد من جنة الفواكه والخضار\n\n";
+    msg += `👤 الاسم: ${name}\n`;
+    msg += `📞 الهاتف: ${phone}\n`;
+    if(address) msg += `📍 العنوان: ${address}\n`;
+    if(gpsCoords) msg += `🗺️ الموقع الحالي: https://maps.google.com/?q=${gpsCoords.lat},${gpsCoords.lng}\n`;
+    if(isFirstOrder) msg += `\n🎁 هذا أول طلب — التوصيل مجاني\n`;
+    msg += `\n🧺 المنتجات:\n`;
+    entries.forEach(([id,qty])=>{
+      const p = findProduct(id);
+      const unit = p.unit || "كغم";
+      msg += `• ${p.name} × ${qty} ${unit} = ${money(p.price*qty)}\n`;
+    });
+    msg += `\nالمجموع الكلي: ${money(cartTotal())}`;
+    if(notes) msg += `\n\n📝 ملاحظات: ${notes}`;
+
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+    window.open(url, "_blank");
+  });
+
+  // ---------- CATEGORY NAV ----------
+  document.querySelectorAll(".catnav button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".catnav button").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.target).scrollIntoView({behavior:"smooth", block:"start"});
+    });
+  });
+
+  // ---------- SEARCH ----------
+  document.getElementById("searchInput").addEventListener("input",(e)=>{
+    searchTerm = e.target.value.trim();
+    renderGrids();
+  });
+
+  // ---------- DARK MODE ----------
+  const themeToggle = document.getElementById("themeToggle");
+  function applyTheme(dark){
+    document.documentElement.classList.toggle("dark", dark);
+    themeToggle.textContent = dark ? "☀️" : "🌙";
+    try{ localStorage.setItem("janat-theme", dark ? "dark" : "light"); }catch(e){}
+  }
+  themeToggle.addEventListener("click", ()=>{
+    applyTheme(!document.documentElement.classList.contains("dark"));
+  });
+  (function initTheme(){
+    let saved = null;
+    try{ saved = localStorage.getItem("janat-theme"); }catch(e){}
+    if(saved) applyTheme(saved === "dark");
+    else if(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) applyTheme(true);
+  })();
+
+  // ---------- OFFERS COUNTDOWN (resets nightly at midnight) ----------
+  function updateCountdown(){
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setHours(24,0,0,0);
+    let diff = Math.max(0, midnight - now);
+    const h = String(Math.floor(diff/3600000)).padStart(2,"0");
+    const m = String(Math.floor((diff%3600000)/60000)).padStart(2,"0");
+    const s = String(Math.floor((diff%60000)/1000)).padStart(2,"0");
+    const el = document.getElementById("countdownVal");
+    if(el) el.textContent = `${h}:${m}:${s}`;
+  }
+  setInterval(updateCountdown, 1000);
+
+  // ---------- INIT ----------
+  (async function init(){
+    await loadProducts();
+    renderGrids();
+    updateCartUI();
+    updateCountdown();
+  })();
+</script>
+</body>
+</html>
