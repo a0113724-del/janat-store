@@ -447,5 +447,16 @@
     "image": "images/p1784760931307-1784760957102.jpg",
     "visible": true,
     "order": 20
+  },
+  {
+    "id": "p1784772747691",
+    "name": "برتقال بناني ",
+    "price": 1500,
+    "cat": "veg",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": "images/p1784772747691-1784772772874.jpg",
+    "visible": true,
+    "order": 40
   }
 ]
