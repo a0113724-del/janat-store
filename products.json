@@ -33,7 +33,9 @@
     "unit": "كغم",
     "visible": true,
     "order": 2,
-    "description": "3 كيلوات ب 2000"
+    "description": "3 كيلوات ب 2000",
+    "onSale": true,
+    "oldPrice": 2000
   },
   {
     "id": "eggplant",
