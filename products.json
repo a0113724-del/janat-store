@@ -62,7 +62,7 @@
   {
     "id": "cabbagew",
     "name": "الهانة بيضاء",
-    "price": 750,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🥬",
     "image": "images/cabbagew-1784696071405.jpg",
@@ -73,7 +73,7 @@
   {
     "id": "cabbager",
     "name": "الهانة حمراء",
-    "price": 750,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🥬",
     "image": "images/cabbager-1784696319194.jpg",
@@ -95,7 +95,7 @@
   {
     "id": "pepperc",
     "name": "فلفل بارد",
-    "price": 1000,
+    "price": 1500,
     "cat": "veg",
     "emoji": "🫑",
     "image": "images/pepperc-1784696098612.jpg",
@@ -106,7 +106,7 @@
   {
     "id": "pepperh",
     "name": "فلفل حار",
-    "price": 1000,
+    "price": 1500,
     "cat": "veg",
     "emoji": "🌶️",
     "image": "images/pepperh-1784760806639.jpg",
@@ -117,7 +117,7 @@
   {
     "id": "onionw",
     "name": "بصل ابيض",
-    "price": 500,
+    "price": 750,
     "cat": "veg",
     "emoji": "🧅",
     "image": "images/onionw-1784696105914.jpg",
@@ -128,7 +128,7 @@
   {
     "id": "oniony",
     "name": "بصل اصفر",
-    "price": 500,
+    "price": 750,
     "cat": "veg",
     "emoji": "🧅",
     "image": "images/oniony-1784696412901.jpg",
@@ -183,7 +183,7 @@
   {
     "id": "bakela",
     "name": "باقلاء",
-    "price": 1000,
+    "price": 1250,
     "cat": "veg",
     "emoji": "🫛",
     "image": "images/bakela-1784696162994.jpg",
@@ -194,7 +194,7 @@
   {
     "id": "carrot",
     "name": "جزر",
-    "price": 1000,
+    "price": 1250,
     "cat": "veg",
     "emoji": "🥕",
     "image": "images/carrot-1784696534558.jpg",
@@ -252,7 +252,7 @@
   {
     "id": "figw",
     "name": "تين ابيض",
-    "price": 3000,
+    "price": 2500,
     "cat": "fruit",
     "emoji": "⚪",
     "image": "images/figw-1784696625456.jpg",
