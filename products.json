@@ -5,7 +5,7 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🍅",
-    "image": null,
+    "image": "images/tomato-1785117823924.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 0
@@ -16,9 +16,9 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🥒",
-    "image": null,
+    "image": "images/cucumber-1785117845595.jpg",
     "unit": "كغم",
-    "onSale": true,
+    "onSale": false,
     "oldPrice": 700,
     "visible": true,
     "order": 1
