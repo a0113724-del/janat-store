@@ -249,10 +249,10 @@
   {
     "id": "figw",
     "name": "تين ابيض",
-    "price": 3000,
+    "price": 2500,
     "cat": "fruit",
     "emoji": "⚪",
-    "image": null,
+    "image": "images/figw-1785118481332.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 22
@@ -260,10 +260,10 @@
   {
     "id": "figb",
     "name": "تين اسود",
-    "price": 3000,
+    "price": 2500,
     "cat": "fruit",
     "emoji": "⚫",
-    "image": null,
+    "image": "images/figb-1785118505537.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 23
@@ -274,7 +274,7 @@
     "price": 1000,
     "cat": "fruit",
     "emoji": "🍊",
-    "image": null,
+    "image": "images/orange-1785118528910.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 24
@@ -294,7 +294,7 @@
   {
     "id": "kojar",
     "name": "كوجه حمراء",
-    "price": 1500,
+    "price": 2000,
     "cat": "fruit",
     "emoji": "🔴",
     "image": null,
@@ -305,7 +305,7 @@
   {
     "id": "kojay",
     "name": "كوجه صفراء",
-    "price": 1000,
+    "price": 2000,
     "cat": "fruit",
     "emoji": "🟡",
     "image": null,
