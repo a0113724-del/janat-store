@@ -29,7 +29,7 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🥔",
-    "image": null,
+    "image": "images/potato-1785117857046.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 2
@@ -40,7 +40,7 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🍆",
-    "image": null,
+    "image": "images/eggplant-1785117873353.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 3
@@ -51,7 +51,7 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🥒",
-    "image": null,
+    "image": "images/zucchini-1785117895651.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 4
