@@ -5,7 +5,7 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🍅",
-    "image": "images/tomato-1784695324606.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 0
@@ -16,9 +16,9 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🥒",
-    "image": "images/cucumber-1784696035686.jpg",
+    "image": null,
     "unit": "كغم",
-    "onSale": false,
+    "onSale": true,
     "oldPrice": 700,
     "visible": true,
     "order": 1
@@ -26,16 +26,13 @@
   {
     "id": "potato",
     "name": "بطاطا",
-    "price": 750,
+    "price": 500,
     "cat": "veg",
     "emoji": "🥔",
-    "image": "images/potato-1784696041577.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 2,
-    "description": "",
-    "onSale": false,
-    "oldPrice": 2000
+    "order": 2
   },
   {
     "id": "eggplant",
@@ -43,7 +40,7 @@
     "price": 500,
     "cat": "veg",
     "emoji": "🍆",
-    "image": "images/eggplant-1784696299342.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 3
@@ -54,7 +51,7 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🥒",
-    "image": "images/zucchini-1784696064842.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 4
@@ -62,10 +59,10 @@
   {
     "id": "cabbagew",
     "name": "الهانة بيضاء",
-    "price": 1000,
+    "price": 750,
     "cat": "veg",
     "emoji": "🥬",
-    "image": "images/cabbagew-1784696071405.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 5
@@ -73,10 +70,10 @@
   {
     "id": "cabbager",
     "name": "الهانة حمراء",
-    "price": 1000,
+    "price": 750,
     "cat": "veg",
     "emoji": "🥬",
-    "image": "images/cabbager-1784696319194.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 6
@@ -87,7 +84,7 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🥦",
-    "image": "images/caulif-1784696088858.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 7
@@ -95,10 +92,10 @@
   {
     "id": "pepperc",
     "name": "فلفل بارد",
-    "price": 1500,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🫑",
-    "image": "images/pepperc-1784696098612.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 8
@@ -106,10 +103,10 @@
   {
     "id": "pepperh",
     "name": "فلفل حار",
-    "price": 1500,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🌶️",
-    "image": "images/pepperh-1784760806639.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 9
@@ -117,10 +114,10 @@
   {
     "id": "onionw",
     "name": "بصل ابيض",
-    "price": 750,
+    "price": 500,
     "cat": "veg",
     "emoji": "🧅",
-    "image": "images/onionw-1784696105914.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 10
@@ -128,10 +125,10 @@
   {
     "id": "oniony",
     "name": "بصل اصفر",
-    "price": 750,
+    "price": 500,
     "cat": "veg",
     "emoji": "🧅",
-    "image": "images/oniony-1784696412901.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 11
@@ -142,7 +139,7 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🧅",
-    "image": "images/onionh-1784696120393.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 12
@@ -153,7 +150,7 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🥒",
-    "image": "images/cucaroma-1784696137723.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 13
@@ -164,7 +161,7 @@
     "price": 2000,
     "cat": "veg",
     "emoji": "🫘",
-    "image": "images/lobia-1784696423938.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 14
@@ -175,7 +172,7 @@
     "price": 2000,
     "cat": "veg",
     "emoji": "🌿",
-    "image": "images/bamia-1784696150243.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 15
@@ -183,10 +180,10 @@
   {
     "id": "bakela",
     "name": "باقلاء",
-    "price": 1250,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🫛",
-    "image": "images/bakela-1784696162994.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 16
@@ -194,10 +191,10 @@
   {
     "id": "carrot",
     "name": "جزر",
-    "price": 1250,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🥕",
-    "image": "images/carrot-1784696534558.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 17
@@ -208,7 +205,7 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🧄",
-    "image": "images/garlic-1784696176355.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 18
@@ -219,7 +216,7 @@
     "price": 8000,
     "cat": "veg",
     "emoji": "🫚",
-    "image": "images/ginger-1784696559473.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 19
@@ -230,10 +227,10 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🍈",
-    "image": "images/melon-1784696613129.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 21
+    "order": 20
   },
   {
     "id": "banana",
@@ -241,24 +238,24 @@
     "price": 1000,
     "cat": "fruit",
     "emoji": "🍌",
-    "image": "images/banana-1784696701398.jpg",
+    "image": null,
     "featured": true,
     "unit": "كغم",
     "onSale": true,
     "oldPrice": 1500,
     "visible": true,
-    "order": 22
+    "order": 21
   },
   {
     "id": "figw",
     "name": "تين ابيض",
-    "price": 2500,
+    "price": 3000,
     "cat": "fruit",
     "emoji": "⚪",
-    "image": "images/figw-1784696625456.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 23
+    "order": 22
   },
   {
     "id": "figb",
@@ -266,10 +263,10 @@
     "price": 3000,
     "cat": "fruit",
     "emoji": "⚫",
-    "image": "images/figb-1784696634645.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 24
+    "order": 23
   },
   {
     "id": "orange",
@@ -277,10 +274,10 @@
     "price": 1000,
     "cat": "fruit",
     "emoji": "🍊",
-    "image": "images/orange-1784696712362.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 25
+    "order": 24
   },
   {
     "id": "grape",
@@ -292,7 +289,7 @@
     "featured": true,
     "unit": "كغم",
     "visible": true,
-    "order": 26
+    "order": 25
   },
   {
     "id": "kojar",
@@ -303,7 +300,7 @@
     "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 27
+    "order": 26
   },
   {
     "id": "kojay",
@@ -314,7 +311,7 @@
     "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 28
+    "order": 27
   },
   {
     "id": "cherry",
@@ -322,10 +319,10 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🍒",
-    "image": "images/cherry-1784696016258.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 29
+    "order": 28
   },
   {
     "id": "apple_iraq",
@@ -333,10 +330,10 @@
     "price": 1000,
     "cat": "fruit",
     "emoji": "🍎",
-    "image": "images/apple_iraq-1784696729894.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 31
+    "order": 29
   },
   {
     "id": "peach_tini",
@@ -344,7 +341,7 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🍑",
-    "image": "images/peach_tini-1784696804169.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
     "order": 30
@@ -355,10 +352,10 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🍑",
-    "image": "images/peach_musk-1784696741847.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 34
+    "order": 31
   },
   {
     "id": "peach_sofi",
@@ -369,7 +366,7 @@
     "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 33
+    "order": 32
   },
   {
     "id": "lemon",
@@ -377,10 +374,10 @@
     "price": 2500,
     "cat": "fruit",
     "emoji": "🍋",
-    "image": "images/lemon-1784696814127.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 35
+    "order": 33
   },
   {
     "id": "apricot",
@@ -388,10 +385,10 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🟠",
-    "image": "images/apricot-1784696822940.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 36
+    "order": 34
   },
   {
     "id": "pear",
@@ -399,21 +396,21 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🍐",
-    "image": "images/pear-1784696835030.jpg",
+    "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 37
+    "order": 35
   },
   {
     "id": "reky",
     "name": "ركي",
-    "price": 750,
+    "price": 500,
     "cat": "fruit",
     "emoji": "🍈",
     "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 38
+    "order": 36
   },
   {
     "id": "watermelon",
@@ -421,45 +418,23 @@
     "price": 1000,
     "cat": "fruit",
     "emoji": "🍉",
-    "image": "images/watermelon-1784696849707.jpg",
+    "image": null,
     "featured": true,
     "unit": "كغم",
-    "onSale": false,
+    "onSale": true,
     "oldPrice": 1400,
     "visible": true,
-    "order": 39
+    "order": 37
   },
   {
     "id": "dates",
     "name": "تمر",
-    "price": 6000,
+    "price": 10000,
     "cat": "fruit",
     "emoji": "🌴",
     "image": null,
     "unit": "كغم",
     "visible": true,
-    "order": 40
-  },
-  {
-    "id": "p1784760931307",
-    "name": "شونذر ",
-    "price": 1500,
-    "cat": "veg",
-    "unit": "كغم",
-    "emoji": "🥬",
-    "image": "images/p1784760931307-1784760957102.jpg",
-    "visible": true,
-    "order": 20
-  },
-  {
-    "id": "p1784772747691",
-    "name": "برتقال بناني ",
-    "price": 1500,
-    "cat": "fruit",
-    "unit": "كغم",
-    "emoji": "🥬",
-    "image": "images/p1784772747691-1784772772874.jpg",
-    "visible": true,
-    "order": 32
+    "order": 38
   }
 ]
