@@ -73,7 +73,7 @@
     "price": 750,
     "cat": "veg",
     "emoji": "🥬",
-    "image": null,
+    "image": "images/cabbager-1785118194726.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 6
@@ -84,7 +84,7 @@
     "price": 1000,
     "cat": "veg",
     "emoji": "🥦",
-    "image": null,
+    "image": "images/caulif-1785118209319.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 7
@@ -92,10 +92,10 @@
   {
     "id": "pepperc",
     "name": "فلفل بارد",
-    "price": 1000,
+    "price": 1750,
     "cat": "veg",
     "emoji": "🫑",
-    "image": null,
+    "image": "images/pepperc-1785118218992.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 8
@@ -103,10 +103,10 @@
   {
     "id": "pepperh",
     "name": "فلفل حار",
-    "price": 1000,
+    "price": 2000,
     "cat": "veg",
     "emoji": "🌶️",
-    "image": null,
+    "image": "images/pepperh-1785118241705.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 9
