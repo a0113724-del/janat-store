@@ -319,7 +319,7 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🍒",
-    "image": null,
+    "image": "images/cherry-1785118574023.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 28
@@ -327,10 +327,10 @@
   {
     "id": "apple_iraq",
     "name": "تفاح عراقي",
-    "price": 1000,
+    "price": 1500,
     "cat": "fruit",
     "emoji": "🍎",
-    "image": null,
+    "image": "images/apple_iraq-1785118591938.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 29
@@ -341,7 +341,7 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🍑",
-    "image": null,
+    "image": "images/peach_tini-1785118608639.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 30
@@ -352,7 +352,7 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🍑",
-    "image": null,
+    "image": "images/peach_musk-1785118623236.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 31
