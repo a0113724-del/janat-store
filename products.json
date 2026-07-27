@@ -161,7 +161,7 @@
     "price": 2000,
     "cat": "veg",
     "emoji": "🫘",
-    "image": null,
+    "image": "images/lobia-1785118364694.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 14
@@ -180,10 +180,10 @@
   {
     "id": "bakela",
     "name": "باقلاء",
-    "price": 1000,
+    "price": 1500,
     "cat": "veg",
     "emoji": "🫛",
-    "image": null,
+    "image": "images/bakela-1785118380413.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 16
@@ -191,10 +191,10 @@
   {
     "id": "carrot",
     "name": "جزر",
-    "price": 1000,
+    "price": 1500,
     "cat": "veg",
     "emoji": "🥕",
-    "image": null,
+    "image": "images/carrot-1785118402302.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 17
