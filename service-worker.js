@@ -8,7 +8,7 @@
    الكود يتحقق أول إذا موجود.
    ========================================================== */
 
-const CACHE_NAME = "janat-store-cache-v2";
+const CACHE_NAME = "janat-store-cache-v3";
 const CORE_ASSETS = [
   "./index.html",
   "./products.json",
@@ -73,7 +73,8 @@ self.addEventListener("fetch", (event) => {
     req.destination === "document" ||
     (req.headers.get("accept") || "").includes("text/html");
 
-  const isJson = req.url.endsWith(".json");
+  // ملفات السكربت والبيانات: نت أولاً حتى أي تعديل يوصل فوراً
+  const isFresh = /\.(json|js)(\?.*)?$/.test(req.url) && sameOrigin;
 
   // الصفحات: نت أولاً (حتى الأسعار تبقى محدثة) + إضافة الشريط + كاش احتياطي
   if (isPage && sameOrigin) {
@@ -100,8 +101,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // ملفات البيانات: نت أولاً وكاش احتياطي
-  if (isJson) {
+  // ملفات البيانات والسكربتات: نت أولاً وكاش احتياطي
+  if (isFresh) {
     event.respondWith(
       fetch(req)
         .then((res) => {
