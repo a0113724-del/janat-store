@@ -1,0 +1,1998 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>جنة الفواكه والخضار</title>
+
+<!-- Social sharing preview -->
+<meta property="og:title" content="جنة الفواكه والخضار">
+<meta property="og:description" content="فواكه وخضروات طازجة توصل لباب بيتك 🚴 اطلب الآن عبر واتساب — أبو صخير، قرب مستشفى المناذرة العام">
+<meta property="og:image" content="https://a0113724-del.github.io/janat-store/og-image.jpg">
+<meta property="og:url" content="https://a0113724-del.github.io/janat-store/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="جنة الفواكه والخضار">
+<meta name="twitter:description" content="فواكه وخضروات طازجة توصل لباب بيتك 🚴">
+<meta name="twitter:image" content="https://a0113724-del.github.io/janat-store/og-image.jpg">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#153122">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="جنة الفواكه">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1C2A1D;
+    --forest:#153122;
+    --forest-2:#1E4530;
+    --leaf:#3E7A44;
+    --leaf-light:#6BA36E;
+    --gold:#C99A2E;
+    --gold-light:#E9CD86;
+    --cream:#F6F1E1;
+    --paper:#FBF8EF;
+    --card-bg:#FFFFFF;
+    --card-border:rgba(62,122,68,.14);
+    --pomegranate:#A13A2E;
+    --line: rgba(201,154,46,.35);
+    --bar-h: 68px;
+  }
+  html.dark{
+    --ink:#EDEBE0;
+    --paper:#12160F;
+    --cream:#171C13;
+    --card-bg:#1C221A;
+    --card-border:rgba(233,205,134,.16);
+  }
+  html.dark body{ background:var(--paper); }
+  html.dark .catnav{ background:rgba(18,22,15,.92); border-bottom-color:rgba(233,205,134,.14); }
+  html.dark .card{ background:var(--card-bg); border-color:var(--card-border); }
+  html.dark .card .img-wrap{ background:#232B1F; }
+  html.dark .fruit-section{ background:linear-gradient(180deg, #201a0e 0%, var(--paper) 65%); }
+  html.dark .search-wrap input{ background:var(--card-bg); color:var(--ink); border-color:var(--card-border); }
+  html.dark .sheet{ background:var(--paper); }
+  html.dark .field input, html.dark .field textarea{ background:var(--card-bg); color:var(--ink); border-color:var(--card-border); }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Tajawal', sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.55;
+    padding-bottom:calc(var(--bar-h) + 18px);
+  }
+  h1,h2,h3, .display{ font-family:'Aref Ruqaa', serif; }
+  button{ font-family:inherit; }
+  img{ display:block; }
+
+  /* ---------- HEADER ---------- */
+  .site-header{
+    background:
+      linear-gradient(180deg, rgba(21,49,34,.88) 0%, rgba(30,69,48,.94) 65%, var(--forest-2) 100%),
+      url('hero-bg.jpg');
+    background-size:cover;
+    background-position:center 30%;
+    color:var(--gold-light);
+    padding:36px 18px 30px;
+    text-align:center;
+    position:relative;
+  }
+  .logo-badge{
+    width:64px; height:64px; margin:0 auto 10px;
+    background:radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold));
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.9rem;
+    box-shadow:0 6px 18px rgba(0,0,0,.4);
+    border:2px solid rgba(233,205,134,.5);
+  }
+  .site-header h1{
+    font-size:clamp(1.8rem,7vw,2.6rem);
+    background:linear-gradient(180deg, #F3DFA1, var(--gold));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    margin-bottom:6px;
+    text-shadow:0 4px 24px rgba(0,0,0,.3);
+  }
+  .site-header .tag{
+    color:#F2F5F0; font-size:.92rem; max-width:380px; margin:0 auto 18px; opacity:.95;
+    text-shadow:0 2px 10px rgba(0,0,0,.5);
+  }
+  .features{
+    display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
+    max-width:480px; margin:0 auto;
+  }
+  .features .chip{
+    background:rgba(255,255,255,.08);
+    border:1px solid var(--line);
+    color:var(--gold-light);
+    font-size:.74rem; font-weight:700;
+    padding:7px 14px; border-radius:100px;
+    display:flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+
+  /* ---------- CATEGORY NAV ---------- */
+  .catnav{
+    position:sticky; top:0; z-index:30;
+    background:rgba(251,248,239,.95);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid rgba(62,122,68,.18);
+    display:flex; align-items:center; gap:8px;
+    padding:12px 16px;
+  }
+  html.dark .catnav{ background:rgba(18,22,15,.92); }
+  .catnav-scroll{ display:flex; gap:10px; overflow-x:auto; flex:1; min-width:0; }
+  .catnav button{
+    flex:0 0 auto; font-weight:700; font-size:.88rem;
+    border:1.5px solid var(--leaf); color:var(--leaf);
+    background:transparent; padding:8px 20px; border-radius:100px;
+    cursor:pointer; transition:.2s; white-space:nowrap;
+  }
+  .catnav button.active{ background:var(--leaf); color:#fff; }
+  .points-badge{
+    flex:0 0 auto; display:none; align-items:center; gap:5px;
+    background:linear-gradient(90deg, var(--gold-light), var(--gold));
+    color:var(--forest); font-weight:900; font-size:.8rem;
+    padding:8px 14px; border-radius:100px; white-space:nowrap; cursor:pointer; border:none;
+  }
+  .points-badge.show{ display:flex; }
+
+  .subcat-tabs{
+    display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:18px;
+  }
+  .subcat-tabs button{
+    flex:0 0 auto; font-size:.78rem; font-weight:700;
+    border:1.5px solid var(--card-border); background:var(--card-bg); color:var(--ink);
+    padding:7px 16px; border-radius:100px; cursor:pointer; white-space:nowrap;
+  }
+  .subcat-tabs button.active{ background:var(--leaf); color:#fff; border-color:var(--leaf); }
+
+  .custom-request-box{
+    margin-top:24px; background:var(--card-bg); border:1.5px dashed var(--leaf);
+    border-radius:16px; padding:20px; text-align:center;
+  }
+  .custom-request-box .crb-icon{ font-size:2.2rem; margin-bottom:8px; }
+  .custom-request-box h3{ font-family:'Tajawal',sans-serif; font-size:1rem; color:var(--forest); margin-bottom:6px; }
+  html.dark .custom-request-box h3{ color:var(--gold-light); }
+  .custom-request-box p{ font-size:.8rem; color:#8a8a7c; margin-bottom:14px; }
+  .custom-request-box textarea{
+    width:100%; border:1.5px solid var(--card-border); border-radius:12px;
+    padding:12px; font-family:'Tajawal',sans-serif; font-size:.88rem;
+    background:var(--paper); color:var(--ink); resize:vertical;
+  }
+  .custom-request-box textarea:focus{ outline:none; border-color:var(--leaf); }
+
+  .referral-box{
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    border-radius:20px; padding:26px 22px; text-align:center;
+  }
+  .referral-box .rb-icon{ font-size:2.4rem; margin-bottom:8px; }
+  .referral-box h3{ font-family:'Tajawal',sans-serif; font-weight:900; font-size:1.05rem; color:var(--forest); margin-bottom:6px; }
+  .referral-box p{ font-size:.82rem; color:#3c2f12; margin-bottom:16px; line-height:1.6; }
+  .referral-box p b{ color:var(--pomegranate); }
+  .referral-btn{
+    background:var(--forest); color:var(--gold-light); border:none;
+    padding:13px 26px; border-radius:100px; font-weight:800; font-size:.88rem; cursor:pointer;
+  }
+  .referral-hint{ font-size:.76rem; color:#3c2f12; margin-top:10px; opacity:.85; }
+
+  /* ---------- HOW TO ORDER BUTTON ---------- */
+  .howto-section{ max-width:1080px; margin:0 auto; padding:0 16px 6px; }
+  .howto-toggle{
+    width:100%; background:linear-gradient(90deg, var(--leaf), var(--forest));
+    border:none; border-radius:14px; padding:15px 18px; font-weight:800; font-size:.9rem;
+    color:#fff; cursor:pointer;
+  }
+
+  /* ---------- TUTORIAL OVERLAY (step-by-step) ---------- */
+  .tutorial-overlay{
+    position:fixed; inset:0; z-index:200;
+    background:rgba(21,49,34,.75); backdrop-filter:blur(2px);
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .tutorial-overlay.show{ display:flex; }
+  .tutorial-box{
+    background:var(--paper); border-radius:24px; padding:28px 22px 20px;
+    max-width:380px; width:100%; text-align:center; position:relative;
+    box-shadow:0 30px 70px rgba(0,0,0,.4);
+  }
+  .tutorial-close{
+    position:absolute; top:14px; left:14px; background:none; border:none;
+    font-size:1.2rem; color:#9a9a90; cursor:pointer;
+  }
+  .tutorial-dots{ display:flex; gap:7px; justify-content:center; margin-bottom:22px; }
+  .tutorial-dots span{
+    width:9px; height:9px; border-radius:50%; background:var(--card-border); transition:.2s;
+  }
+  .tutorial-dots span.active{ background:var(--leaf); width:22px; border-radius:5px; }
+  .tutorial-slide{ min-height:230px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .tutorial-icon{
+    width:100px; height:100px; border-radius:50%; margin:0 auto 18px;
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    display:flex; align-items:center; justify-content:center; font-size:2.6rem;
+    animation: tutorialPop .4s ease;
+  }
+  @keyframes tutorialPop{ 0%{transform:scale(.5); opacity:0;} 100%{transform:scale(1); opacity:1;} }
+  .tutorial-title{ font-family:'Tajawal',sans-serif; font-weight:900; font-size:1.15rem; color:var(--forest); margin-bottom:10px; }
+  html.dark .tutorial-title{ color:var(--gold-light); }
+  .tutorial-text{ font-size:.92rem; color:var(--ink); line-height:1.8; max-width:300px; }
+  .tutorial-text b{ color:var(--pomegranate); }
+  .tutorial-nav{ display:flex; gap:10px; margin-top:24px; }
+  .tutorial-btn{
+    flex:1; padding:13px; border-radius:100px; font-weight:800; font-size:.86rem; cursor:pointer; border:none;
+  }
+  .tutorial-btn.primary{ background:var(--leaf); color:#fff; }
+  .tutorial-btn.secondary{ background:var(--card-bg); color:var(--ink); border:1.5px solid var(--card-border); }
+  .tutorial-btn.secondary:disabled{ opacity:.35; cursor:not-allowed; }
+  .tutorial-skip{
+    display:block; margin:14px auto 0; background:none; border:none;
+    color:#9a9a90; font-size:.78rem; text-decoration:underline; cursor:pointer;
+  }
+
+  .toolbar{
+    display:flex; gap:10px; align-items:center; padding:0 16px 12px;
+    max-width:1080px; margin:0 auto;
+  }
+  .search-wrap{ flex:1; position:relative; }
+  .search-wrap input{
+    width:100%; border:1.5px solid var(--card-border); border-radius:100px;
+    padding:10px 40px 10px 14px; font-family:'Tajawal',sans-serif; font-size:.86rem;
+    background:var(--card-bg); color:var(--ink);
+  }
+  .search-wrap input:focus{ outline:none; border-color:var(--leaf); }
+  .search-wrap .icon{ position:absolute; inset-inline-end:14px; top:50%; transform:translateY(-50%); opacity:.5; }
+  .theme-toggle{
+    flex:0 0 auto; width:40px; height:40px; border-radius:50%;
+    border:1.5px solid var(--card-border); background:var(--card-bg); color:var(--ink);
+    font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- FACEBOOK LINK ---------- */
+  .fb-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(255,255,255,.08); border:1px solid var(--line); color:var(--gold-light);
+    font-size:.76rem; font-weight:700; padding:7px 16px; border-radius:100px;
+    text-decoration:none; margin-top:10px;
+  }
+  .footer-fb-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    background:#1877F2; color:#fff; font-weight:800; font-size:.86rem;
+    padding:11px 22px; border-radius:100px; text-decoration:none; margin-top:16px;
+  }
+
+  /* ---------- PROMO BANNER ---------- */
+  .promo-banner{
+    background:linear-gradient(90deg, var(--pomegranate), #7a2c22);
+    color:#fff; text-align:center; padding:12px 16px;
+    font-weight:800; font-size:.92rem;
+    display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;
+    position:relative; overflow:hidden;
+  }
+  .promo-banner::before{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent);
+    animation:promoShine 2.8s ease-in-out infinite;
+  }
+  @keyframes promoShine{
+    0%{ transform:translateX(-100%); }
+    100%{ transform:translateX(100%); }
+  }
+  .promo-banner .tag-new{
+    background:var(--gold); color:var(--forest); font-size:.68rem; font-weight:900;
+    padding:3px 10px; border-radius:100px;
+  }
+
+  .referral-banner{
+    display:block; width:100%; border:none; cursor:pointer;
+    background:linear-gradient(90deg, var(--gold), #B8862A);
+    color:var(--forest); text-align:center; padding:11px 16px;
+    font-weight:800; font-size:.86rem;
+  }
+  .referral-banner b{ color:var(--pomegranate); }
+
+  .first-order-check{
+    display:flex; align-items:flex-start; gap:8px; margin-top:12px;
+    background:#FDEDEA; border:1.5px dashed var(--pomegranate); border-radius:12px;
+    padding:12px; font-size:.82rem; cursor:pointer;
+  }
+  html.dark .first-order-check{ background:#241512; }
+  .first-order-check input{ margin-top:3px; flex:0 0 auto; }
+  .first-order-check .txt strong{ color:var(--pomegranate); }
+
+  .points-info{
+    margin-top:8px; font-size:.8rem; font-weight:700; padding:8px 12px;
+    background:#FFF3D6; color:#8a6a10; border-radius:10px; display:flex; align-items:center; gap:6px;
+  }
+  html.dark .points-info{ background:#3a2f10; color:var(--gold-light); }
+  .points-redeem{ border-color:var(--gold) !important; background:#FFF8E9; }
+  html.dark .points-redeem{ background:#2a2412; }
+  .discount-row{ color:var(--leaf); font-weight:800; border-top:none !important; padding-top:0 !important; margin:0 0 6px !important; }
+  .discount-row span:last-child{ color:var(--leaf); }
+
+  /* ---------- PWA INSTALL BUTTON ---------- */
+  .install-btn{
+    position:fixed; bottom:calc(var(--bar-h) + 14px); inset-inline-end:16px; z-index:45;
+    background:var(--gold); color:var(--forest); border:none;
+    padding:11px 18px; border-radius:100px; font-weight:800; font-size:.82rem;
+    display:none; align-items:center; gap:8px; cursor:pointer;
+    box-shadow:0 8px 22px rgba(201,154,46,.4);
+  }
+  .install-btn.show{ display:flex; }
+
+  /* ---------- WHATSAPP FLOATING BUTTON ---------- */
+  .whatsapp-float{
+    position:fixed; bottom:calc(var(--bar-h) + 14px); inset-inline-start:16px; z-index:45;
+    width:56px; height:56px; border-radius:50%;
+    background:#25D366; color:#fff; border:none;
+    display:flex; align-items:center; justify-content:center; font-size:1.7rem;
+    box-shadow:0 8px 22px rgba(37,211,102,.45); cursor:pointer;
+  }
+  .whatsapp-float:active{ transform:scale(.94); }
+
+  /* ---------- INSTALL GUIDE SECTION ---------- */
+  .install-guide{
+    background:linear-gradient(180deg, var(--forest), var(--forest-2));
+    color:var(--gold-light); padding:36px 20px; text-align:center;
+  }
+  .install-guide h2{ font-size:1.3rem; margin-bottom:6px; }
+  .install-guide .sub{ font-size:.82rem; color:#DCE7DA; opacity:.85; margin-bottom:20px; }
+  .device-tabs{ display:flex; gap:10px; justify-content:center; margin-bottom:20px; }
+  .device-tabs button{
+    background:rgba(255,255,255,.08); border:1.5px solid rgba(233,205,134,.35);
+    color:var(--gold-light); padding:9px 22px; border-radius:100px;
+    font-weight:700; font-size:.86rem; cursor:pointer;
+  }
+  .device-tabs button.active{ background:var(--gold); color:var(--forest); border-color:var(--gold); }
+  .install-steps{
+    max-width:420px; margin:0 auto; text-align:right;
+    background:rgba(255,255,255,.06); border-radius:16px; padding:18px 20px;
+    display:none;
+  }
+  .install-steps.show{ display:block; }
+  .install-steps ol{ padding-inline-start:20px; }
+  .install-steps li{ margin-bottom:10px; font-size:.88rem; line-height:1.7; }
+  .install-steps .icon-inline{ font-size:1rem; }
+
+  /* ---------- OFFERS SECTION ---------- */
+  .offer-section{
+    background:
+      radial-gradient(ellipse at 85% 0%, rgba(161,58,46,.14), transparent 55%),
+      linear-gradient(180deg, #FDEDEA 0%, var(--paper) 65%);
+    border-radius:28px; padding-top:34px; margin-top:6px;
+  }
+  html.dark .offer-section{ background:linear-gradient(180deg, #241512 0%, var(--paper) 65%); }
+  .offer-section .section-head h2{ color:var(--pomegranate); }
+  .offer-section .section-head .rule{ background:var(--pomegranate); }
+  .countdown-banner{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    background:linear-gradient(90deg, var(--pomegranate), #7a2c22);
+    color:#fff; font-weight:800; font-size:.86rem;
+    padding:10px 18px; border-radius:100px;
+    max-width:360px; margin:0 auto 22px;
+    box-shadow:0 6px 18px rgba(161,58,46,.3);
+  }
+  .card.offer-card{ border-color:rgba(161,58,46,.35); }
+  .card.offer-card::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:4px;
+    background:linear-gradient(90deg, var(--pomegranate), var(--gold));
+  }
+
+  /* ---------- SECTIONS ---------- */
+  .section{ padding:34px 16px 6px; max-width:1080px; margin:0 auto; }
+  .section-head{ text-align:center; margin-bottom:22px; }
+  .section-head .kicker{ color:var(--pomegranate); font-weight:700; font-size:.76rem; letter-spacing:.14em; }
+  .section-head h2{ font-size:1.9rem; color:var(--forest); margin-top:4px; }
+  .section-head .rule{ width:60px; height:2px; background:var(--gold); margin:12px auto 0; }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:14px;
+    margin-bottom:14px;
+  }
+  @media(min-width:520px){ .grid{ grid-template-columns:repeat(3,1fr); } }
+  @media(min-width:800px){ .grid{ grid-template-columns:repeat(4,1fr); } }
+  @media(min-width:1040px){ .grid{ grid-template-columns:repeat(5,1fr); } }
+
+  .card{
+    background:var(--card-bg);
+    border:1px solid var(--card-border);
+    border-radius:16px;
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    transition:.2s;
+    position:relative;
+  }
+  .card:hover{ box-shadow:0 10px 24px rgba(21,49,34,.1); }
+  .card .img-wrap{
+    width:100%; aspect-ratio:1/1;
+    background:#EFEBDD;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden; position:relative;
+  }
+  .card .img-wrap img{ width:100%; height:100%; object-fit:cover; }
+  .card .img-wrap .placeholder-emoji{ font-size:2.6rem; opacity:.85; }
+  .card .body{ padding:10px 10px 12px; text-align:center; }
+  .card h3{ font-family:'Tajawal',sans-serif; font-weight:700; font-size:.92rem; margin-bottom:4px; color:var(--ink); }
+  .card .price{ color:var(--pomegranate); font-weight:900; font-size:.86rem; margin-bottom:10px; }
+  .card .price small{ font-weight:500; font-size:.68rem; color:#8a8a7c; }
+  .card .price .old{
+    text-decoration:line-through; color:#9a9a90; font-weight:600; font-size:.76rem; margin-inline-end:6px;
+  }
+  .discount-badge{
+    position:absolute; top:8px; inset-inline-end:8px; z-index:2;
+    background:var(--pomegranate); color:#fff; font-size:.66rem; font-weight:800;
+    padding:3px 8px; border-radius:100px; box-shadow:0 3px 8px rgba(0,0,0,.2);
+  }
+
+  .qty-row{ display:flex; align-items:center; justify-content:space-between; gap:6px; }
+  .qty-row button{
+    width:32px; height:32px; border-radius:9px; flex:0 0 auto;
+    border:1.5px solid var(--leaf); background:#fff; color:var(--leaf);
+    font-size:1.15rem; font-weight:700; cursor:pointer; line-height:1;
+  }
+  .qty-row button:active{ transform:scale(.9); }
+  .qty-row .qty-val{
+    flex:1; text-align:center; font-weight:800; font-size:.86rem; color:var(--forest);
+  }
+  .qty-row .qty-val small{ display:block; font-weight:500; font-size:.6rem; color:#8a8a7c; }
+  .card.has-qty{ outline:2px solid var(--leaf); }
+
+  .note{ text-align:center; font-size:.76rem; color:#8a8a7c; margin:4px 0 26px; }
+  .mini-arch{ display:flex; justify-content:center; margin:6px 0; opacity:.5; }
+
+  /* ---------- FRUIT SECTION (distinct, eye-catching) ---------- */
+  .fruit-section{
+    background:
+      radial-gradient(ellipse at 15% 0%, rgba(201,154,46,.12), transparent 55%),
+      linear-gradient(180deg, #FFF8E9 0%, var(--paper) 65%);
+    border-radius:28px;
+    padding-top:34px;
+    margin-top:6px;
+  }
+  .fruit-section .section-head h2{ color:var(--pomegranate); }
+  .fruit-section .section-head .rule{ background:var(--pomegranate); }
+  .fruit-banner{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background:linear-gradient(90deg, var(--gold), var(--pomegranate));
+    color:#fff; font-weight:800; font-size:.82rem;
+    padding:9px 16px; border-radius:100px;
+    max-width:340px; margin:0 auto 22px;
+    box-shadow:0 6px 18px rgba(161,58,46,.25);
+  }
+  .card.fruit-card{ border-color:rgba(201,154,46,.35); position:relative; }
+  .card.fruit-card::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:4px;
+    background:linear-gradient(90deg, var(--gold), var(--pomegranate));
+  }
+  .card.fruit-card.has-qty{ outline-color:var(--gold); }
+  .card.fruit-card .qty-row button{ border-color:var(--pomegranate); color:var(--pomegranate); }
+  .ribbon{
+    position:absolute; top:8px; inset-inline-start:8px; z-index:2;
+    background:var(--pomegranate); color:#fff; font-size:.62rem; font-weight:800;
+    padding:3px 9px; border-radius:100px; box-shadow:0 3px 8px rgba(0,0,0,.2);
+    display:flex; align-items:center; gap:3px;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    background:var(--forest); color:var(--gold-light);
+    text-align:center; padding:34px 20px 26px; margin-top:30px;
+  }
+  footer .display{ font-size:1.4rem; margin-bottom:6px; }
+  footer p{ color:#DCE7DA; font-size:.82rem; opacity:.85; }
+  footer .admin-link{
+    display:inline-block; margin-top:16px; color:rgba(233,205,134,.55);
+    text-decoration:none; font-size:.72rem; border:1px dashed rgba(233,205,134,.3);
+    padding:6px 14px; border-radius:100px;
+  }
+
+  /* ---------- FIXED CART BAR ---------- */
+  .cart-bar{
+    position:fixed; bottom:0; left:0; right:0; z-index:50;
+    background:var(--forest); color:#fff;
+    padding:10px 16px; padding-bottom:calc(10px + env(safe-area-inset-bottom));
+    display:flex; align-items:center; gap:12px;
+    box-shadow:0 -6px 20px rgba(0,0,0,.2);
+    height:var(--bar-h);
+  }
+  .cart-bar .count-badge{
+    background:var(--pomegranate); color:#fff; min-width:26px; height:26px;
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:.78rem; font-weight:900; flex:0 0 auto;
+  }
+  .cart-bar .totals{ flex:1; overflow:hidden; }
+  .cart-bar .totals .l1{ font-size:.7rem; color:var(--gold-light); opacity:.8; }
+  .cart-bar .totals .l2{ font-weight:900; font-size:1.02rem; }
+  .cart-bar .go-btn{
+    background:var(--gold); color:var(--forest); border:none;
+    font-weight:800; font-size:.86rem; padding:11px 20px; border-radius:12px;
+    cursor:pointer; flex:0 0 auto; white-space:nowrap;
+  }
+  .cart-bar .go-btn:disabled{ background:#5b6a5e; color:#c8d1c9; cursor:not-allowed; }
+
+  /* ---------- OVERLAY & SHEET ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(21,49,34,.55);
+    z-index:60; opacity:0; pointer-events:none; transition:.25s;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+
+  .sheet{
+    position:fixed; left:0; right:0; bottom:0; z-index:70;
+    background:var(--paper);
+    border-radius:20px 20px 0 0;
+    max-height:88vh; display:flex; flex-direction:column;
+    transform:translateY(105%); transition:.3s ease;
+  }
+  .sheet.show{ transform:translateY(0); }
+  .sheet-head{
+    background:var(--forest); color:var(--gold-light);
+    padding:16px 18px; display:flex; justify-content:space-between; align-items:center;
+    border-radius:20px 20px 0 0;
+  }
+  .sheet-head h3{ font-weight:700; font-size:1.05rem; }
+  .sheet-head button{ background:none; border:none; color:var(--gold-light); font-size:1.3rem; cursor:pointer; }
+  .sheet-body{ overflow-y:auto; padding:16px 18px; }
+
+  .cart-line{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 0; border-bottom:1px dashed rgba(62,122,68,.25);
+  }
+  .cart-line img, .cart-line .ph{
+    width:44px; height:44px; border-radius:10px; object-fit:cover; flex:0 0 auto;
+    background:#EFEBDD; display:flex; align-items:center; justify-content:center; font-size:1.2rem;
+  }
+  .cart-line .info{ flex:1; }
+  .cart-line .info .n{ font-weight:700; font-size:.86rem; }
+  .cart-line .info .p{ font-size:.74rem; color:#8a8a7c; }
+  .cart-line .qty-row{ width:110px; }
+  .cart-line .rm{ background:none; border:none; color:var(--pomegranate); font-size:1rem; cursor:pointer; padding:4px; }
+
+  .cart-empty{ text-align:center; color:#8a8a7c; padding:30px 0; font-size:.9rem; }
+
+  .form-section{ margin-top:18px; }
+  .form-section h4{ font-size:.95rem; color:var(--forest); margin-bottom:10px; }
+  .field{ margin-bottom:12px; }
+  .field label{ display:block; font-size:.78rem; font-weight:700; margin-bottom:5px; color:var(--ink); }
+  .field input, .field textarea{
+    width:100%; border:1.5px solid rgba(62,122,68,.3); border-radius:10px;
+    padding:10px 12px; font-family:'Tajawal',sans-serif; font-size:.88rem;
+    background:#fff; color:var(--ink);
+  }
+  .field input:focus, .field textarea:focus{ outline:none; border-color:var(--leaf); }
+  .gps-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; background:#fff; border:1.5px dashed var(--leaf); color:var(--leaf);
+    padding:11px; border-radius:10px; font-weight:700; font-size:.84rem; cursor:pointer; margin-top:4px;
+  }
+  .gps-btn:disabled{ opacity:.6; cursor:not-allowed; }
+  .gps-status{ font-size:.75rem; color:var(--leaf); margin-top:6px; display:none; }
+  .gps-status.show{ display:block; }
+
+  .total-row{
+    display:flex; justify-content:space-between; font-weight:900; font-size:1.05rem;
+    margin:16px 0 12px; color:var(--forest); padding-top:12px; border-top:1px solid rgba(62,122,68,.2);
+  }
+  .send-btn{
+    width:100%; background:#25D366; color:#fff; border:none;
+    padding:14px; border-radius:12px; font-weight:900; font-size:1rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:8px;
+  }
+  .send-btn:disabled{ background:#b9c9bd; cursor:not-allowed; }
+  .err{ color:var(--pomegranate); font-size:.76rem; margin-bottom:8px; display:none; }
+  .err.show{ display:block; }
+
+</style>
+</head>
+<body>
+
+  <!-- ================= HEADER ================= -->
+  <header class="site-header">
+    <div class="logo-badge">🌿</div>
+    <h1 class="display">جنة الفواكه والخضار</h1>
+    <p class="tag">فواكه وخضروات طازجة تصل لباب بيتك</p>
+    <p class="tag" style="margin-top:-12px; font-size:.8rem;">📍 أبو صخير - قرب مستشفى المناذرة العام</p>
+    <div class="features">
+      <span class="chip">🚴 توصيل سريع</span>
+      <span class="chip">🌤️ اختيار يومي طازج</span>
+      <span class="chip">⚖️ وزن دقيق</span>
+    </div>
+    <div>
+      <a class="fb-chip" href="https://www.facebook.com/share/1CAVCSGsXX/" target="_blank" rel="noopener">
+        📘 تابعنا على فيسبوك
+      </a>
+    </div>
+  </header>
+
+  <!-- ================= PROMO BANNER ================= -->
+  <div class="promo-banner" id="promoBanner">
+    <span class="tag-new">جديد</span>
+    🚴 التوصيل الأول مجاني لكل زبون جديد!
+  </div>
+
+  <!-- ================= REFERRAL BANNER ================= -->
+  <button class="referral-banner" id="referralBannerBtn">
+    🎁 ادعُ صديق واربح <b>10 نقاط</b> عن كل صديق يطلب — اضغط هنا
+  </button>
+
+  <!-- ================= HOW TO ORDER BUTTON ================= -->
+  <section class="howto-section">
+    <button class="howto-toggle" id="howtoToggle">❓ شلون أطلب من الموقع؟ (شرح خطوة بخطوة)</button>
+  </section>
+
+  <!-- ================= HOW TO ORDER TUTORIAL OVERLAY ================= -->
+  <div class="tutorial-overlay" id="tutorialOverlay">
+    <div class="tutorial-box">
+      <button class="tutorial-close" id="tutorialClose">✕</button>
+      <div class="tutorial-dots" id="tutorialDots"></div>
+      <div class="tutorial-slide" id="tutorialSlide">
+        <!-- content injected by JS -->
+      </div>
+      <div class="tutorial-nav">
+        <button class="tutorial-btn secondary" id="tutorialPrev">◁ السابق</button>
+        <button class="tutorial-btn primary" id="tutorialNext">التالي ▷</button>
+      </div>
+      <button class="tutorial-skip" id="tutorialSkip">تخطي الشرح</button>
+    </div>
+  </div>
+
+  <!-- ================= CATEGORY NAV ================= -->
+  <nav class="catnav">
+    <div class="catnav-scroll">
+      <button class="active" data-target="veg">🥕 الخضروات</button>
+      <button data-target="fruit">🍉 الفواكه</button>
+      <button data-target="offers">🔥 العروض</button>
+    </div>
+    <button class="points-badge" id="pointsBadge" title="نقاط الولاء">⭐ <span id="pointsBadgeVal">0</span></button>
+  </nav>
+
+  <!-- ================= SEARCH + DARK MODE ================= -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="دوّر على منتج...">
+      <span class="icon">🔍</span>
+    </div>
+    <button class="theme-toggle" id="themeToggle" title="الوضع الليلي">🌙</button>
+  </div>
+
+  <!-- ================= VEGETABLES ================= -->
+  <section class="section" id="veg">
+    <div class="section-head">
+      <div class="kicker">القسم الأول</div>
+      <h2 class="display">قسم الخضروات</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="grid" id="veg-grid"></div>
+  </section>
+
+  <div class="mini-arch">
+    <svg width="110" height="24" viewBox="0 0 120 26"><path d="M0,26 Q60,-16 120,26" fill="none" stroke="#C99A2E" stroke-width="2"/></svg>
+  </div>
+
+  <!-- ================= FRUITS ================= -->
+  <section class="section fruit-section" id="fruit">
+    <div class="section-head">
+      <div class="kicker">القسم الثاني</div>
+      <h2 class="display">قسم الفواكه</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="fruit-banner">🍉 فواكه الموسم — طازجة يومياً</div>
+    <div class="grid" id="fruit-grid"></div>
+  </section>
+
+  <div class="mini-arch">
+    <svg width="110" height="24" viewBox="0 0 120 26"><path d="M0,26 Q60,-16 120,26" fill="none" stroke="#A13A2E" stroke-width="2"/></svg>
+  </div>
+
+  <!-- ================= CUSTOM REQUEST (أي منتج غير موجود بالقائمة) ================= -->
+  <section class="section">
+    <div class="custom-request-box">
+      <div class="crb-icon">🛍️</div>
+      <h3>ما لقيت اللي تريده؟</h3>
+      <p>اكتب أي منتج تحتاجه وما موجود بالقائمة، وراح نجيبه وياك مع طلبك</p>
+      <textarea id="customRequestInput" rows="2" placeholder="مثال: نوع منتج معيّن، حجم أكبر، ماركة محددة..."></textarea>
+    </div>
+  </section>
+
+  <!-- ================= OFFERS ================= -->
+  <section class="section offer-section" id="offers">
+    <div class="section-head">
+      <div class="kicker">القسم الثالث</div>
+      <h2 class="display">قسم العروض</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="countdown-banner">⏰ عروض اليوم فقط — <span id="countdownVal">--:--:--</span></div>
+    <div class="grid" id="offers-grid"></div>
+    <p class="note" id="offersEmpty" style="display:none;">لا توجد عروض حالياً — تابعنا قريباً 🔥</p>
+  </section>
+
+  <!-- ================= INSTALL GUIDE (always visible) ================= -->
+  <section class="install-guide">
+    <h2 class="display">📲 ثبّت تطبيق المتجر على جوالك</h2>
+    <p class="sub">يفتح بضغطة وحدة من شاشتك الرئيسية، بدون ما تدخل المتصفح كل مرة</p>
+    <div class="device-tabs">
+      <button class="active" data-device="android">🤖 أندرويد</button>
+      <button data-device="iphone">🍎 آيفون</button>
+    </div>
+    <div class="install-steps show" id="steps-android">
+      <ol>
+        <li>لو الرابط مفتوح داخل فيسبوك/انستغرام، اضغط النقاط (⋮) فوق واختار <b>"فتح في المتصفح"</b> أول</li>
+        <li>اضغط النقاط الثلاث (⋮) فوق يمين متصفح كروم</li>
+        <li>اختار <b>"إضافة إلى الشاشة الرئيسية"</b> (Add to Home screen)</li>
+        <li>اضغط <b>"إضافة"</b> للتأكيد</li>
+        <li>راح تطلع أيقونة المتجر على شاشتك 🎉</li>
+      </ol>
+    </div>
+    <div class="install-steps" id="steps-iphone">
+      <ol>
+        <li>افتح الرابط بمتصفح <b>Safari</b> (لازم Safari، مو كروم)</li>
+        <li>اضغط زر <b>المشاركة</b> <span class="icon-inline">⬆️</span> بالأسفل</li>
+        <li>مرّر لتحت ودور على <b>"إضافة إلى الشاشة الرئيسية"</b> (Add to Home Screen)</li>
+        <li>اضغط <b>"إضافة"</b> فوق يمين الشاشة</li>
+        <li>راح تطلع أيقونة المتجر على شاشتك 🎉</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ================= REFERRAL / INVITE FRIEND ================= -->
+  <section class="section">
+    <div class="referral-box">
+      <div class="rb-icon">🎁</div>
+      <h3>ادعُ صديق واربح نقاط!</h3>
+      <p>شارك رابطك الخاص، ولما صديقك يسوي أول طلب، تربح أنت <b>10 نقاط</b></p>
+      <button class="referral-btn" id="referralBtn">📤 شارك رابط الدعوة</button>
+      <div class="referral-hint" id="referralHint"></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="display">جنة الفواكه والخضار</div>
+    <p>📍 أبو صخير - قرب مستشفى المناذرة العام</p>
+    <p>اطلب الآن وسيصل طلبك مباشرة عبر واتساب</p>
+    <a class="footer-fb-btn" href="https://www.facebook.com/share/1CAVCSGsXX/" target="_blank" rel="noopener">
+      📘 صفحتنا على فيسبوك
+    </a>
+  </footer>
+
+  <!-- ================= PWA INSTALL BUTTON ================= -->
+  <button class="install-btn" id="installBtn">📲 ثبّت التطبيق</button>
+
+  <!-- ================= WHATSAPP FLOATING CONTACT BUTTON ================= -->
+  <button class="whatsapp-float" id="waFloatBtn" title="تواصل معنا عبر واتساب">💬</button>
+
+  <!-- ================= FIXED CART BAR ================= -->
+  <div class="cart-bar">
+    <div class="count-badge" id="barCount">0</div>
+    <div class="totals">
+      <div class="l1">عدد المنتجات · المجموع</div>
+      <div class="l2" id="barTotal">0 د.ع</div>
+    </div>
+    <button class="go-btn" id="openCheckout" disabled>🧺 إتمام الطلب</button>
+  </div>
+
+  <!-- ================= OVERLAY ================= -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ================= CHECKOUT SHEET ================= -->
+  <div class="sheet" id="checkoutSheet">
+    <div class="sheet-head">
+      <h3>🧺 إتمام الطلب</h3>
+      <button id="closeCheckout">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div id="cartLines"><p class="cart-empty">السلة فارغة</p></div>
+
+      <div class="form-section">
+        <h4>بيانات التوصيل</h4>
+        <div class="field">
+          <label>الاسم الكامل *</label>
+          <input type="text" id="custName" placeholder="مثال: أحمد محمد">
+        </div>
+        <div class="field">
+          <label>رقم الهاتف *</label>
+          <input type="tel" id="custPhone" placeholder="07xxxxxxxxx">
+          <div class="points-info" id="pointsInfo" style="display:none;"></div>
+        </div>
+        <div class="field">
+          <label>العنوان / الموقع</label>
+          <textarea id="custAddress" rows="2" placeholder="المنطقة، الحي، أقرب نقطة دالة..."></textarea>
+        </div>
+        <button class="gps-btn" id="gpsBtn">📍 تحديد موقعي الحالي</button>
+        <div class="gps-status" id="gpsStatus"></div>
+        <div class="field" style="margin-top:12px;">
+          <label>ملاحظات (اختياري)</label>
+          <textarea id="custNotes" rows="2" placeholder="أي تفاصيل إضافية عن الطلب..."></textarea>
+        </div>
+        <label class="first-order-check" id="firstOrderRow">
+          <input type="checkbox" id="firstOrderCheck">
+          <span class="txt">🎁 <strong>هذا أول طلب لي</strong> — التوصيل مجاني لأول مرة</span>
+        </label>
+        <label class="first-order-check points-redeem" id="pointsRedeemRow" style="display:none;">
+          <input type="checkbox" id="usePointsCheck">
+          <span class="txt">⭐ <strong>استخدم نقاطي</strong> (<span id="redeemableText">0 د.ع</span> خصم متاح)</span>
+        </label>
+      </div>
+
+      <div class="total-row discount-row" id="discountRow" style="display:none;">
+        <span>خصم النقاط</span><span id="discountVal">- 0 د.ع</span>
+      </div>
+
+      <div class="total-row"><span>المجموع الكلي</span><span id="sheetTotal">0 د.ع</span></div>
+      <div class="err" id="formErr">الرجاء إدخال الاسم ورقم الهاتف.</div>
+      <button class="send-btn" id="sendBtn">📲 إرسال الطلب عبر واتساب</button>
+    </div>
+  </div>
+
+
+<script>
+  const WHATSAPP_NUMBER = "9647778711942";
+
+  // ⚠️ حط هنا رابط Google Apps Script بعد نشره (راجع دليل-ربط-التقارير.md)
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxs_MKe9t1O6ghLWA5G44OrB69A23m1RayxrfZ0HpblHHG2NRxRRkpljbHWTfYPWAHp/exec";
+
+  // ---------- WHATSAPP FLOATING BUTTON: direct chat ----------
+  (function initWhatsappFloat(){
+    const btn = document.getElementById("waFloatBtn");
+    if(!btn) return;
+    btn.addEventListener("click", ()=>{
+      const msg = "مرحبا 🌿 عندي سؤال عن جنة الفواكه والخضار";
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
+    });
+  })();
+
+  // ---------- REFERRAL: CAPTURE ?ref= FROM URL ----------
+  (function captureReferral(){
+    try{
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get("ref");
+      if(ref && !localStorage.getItem("janat-referred-by")){
+        localStorage.setItem("janat-referred-by", ref);
+      }
+    }catch(e){}
+  })();
+
+  // ---------- APPROXIMATE LOCATION (city-level, via IP — no permission popup) ----------
+  // ملاحظة: هذا تقريبي بحدود المدينة اعتماداً على شركة الإنترنت، وليس دقيقاً
+  // كموقع GPS. يُستخدم فقط كمؤشر إضافي لكشف الطلبات المشبوهة، وليس عنواناً دقيقاً.
+  let approxLocationText = "";
+  (async function fetchApproxLocation(){
+    try{
+      const res = await fetch("https://ipapi.co/json/");
+      if(!res.ok) throw new Error("geo lookup failed");
+      const geo = await res.json();
+      const parts = [geo.city, geo.region, geo.country_name].filter(Boolean);
+      approxLocationText = parts.join("، ") || "غير معروف";
+    }catch(e){
+      approxLocationText = "غير معروف";
+    }
+    logAnalyticsEvent("visit");
+    prefetchLocationInBackground();
+  })();
+
+  // يطلب إذن الموقع بهدوء بالخلفية أول ما يفتح التطبيق (مرة وحدة)، عشان لما
+  // الزبون يضغط "تحديد موقعي" وقت الطلب يكون المتصفح خزّن نتيجة جاهزة ويرجعها
+  // فوراً بدل ما ينتظر بحث جديد بالكامل.
+  function prefetchLocationInBackground(){
+    if(!navigator.geolocation) return;
+    let already = false;
+    try{ already = sessionStorage.getItem("janat-loc-prefetched") === "1"; }catch(e){}
+    if(already) return;
+    try{ sessionStorage.setItem("janat-loc-prefetched", "1"); }catch(e){}
+    navigator.geolocation.getCurrentPosition(
+      ()=>{ /* بس نخزّن بذاكرة المتصفح، ما نستخدمها إلا لو الزبون ضغط الزر بنفسه */ },
+      ()=>{ /* رفض أو فشل — ولا مشكلة، زر الطلب راح يجرب من جديد وقتها */ },
+      { enableHighAccuracy:false, timeout:8000, maximumAge:600000 }
+    );
+  }
+
+  // ---------- ANALYTICS: VISITS & APP INSTALLS ----------
+  function logAnalyticsEvent(eventType){
+    if(!GOOGLE_SCRIPT_URL) return;
+    if(eventType === "visit"){
+      let already = false;
+      try{ already = sessionStorage.getItem("janat-visit-logged") === "1"; }catch(e){}
+      if(already) return;
+      try{ sessionStorage.setItem("janat-visit-logged", "1"); }catch(e){}
+    }
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ type: "analytics", eventType, approxLocation: approxLocationText })
+    }).catch(()=>{});
+  }
+
+  // Fallback data used if products.json can't be loaded (e.g. previewing this
+  // file directly inside Claude, or opening it by double-click). Mirrors
+  // products.json so the site always shows the full catalog either way.
+  const fallbackProducts = [
+  {
+    "id": "tomato",
+    "name": "طماطة",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🍅",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 0
+  },
+  {
+    "id": "cucumber",
+    "name": "خيار",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🥒",
+    "image": null,
+    "unit": "كغم",
+    "onSale": true,
+    "oldPrice": 700,
+    "visible": true,
+    "order": 1
+  },
+  {
+    "id": "potato",
+    "name": "بطاطا",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🥔",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 2
+  },
+  {
+    "id": "eggplant",
+    "name": "باذنجان",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🍆",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 3
+  },
+  {
+    "id": "zucchini",
+    "name": "شجر (كوسة)",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥒",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 4
+  },
+  {
+    "id": "cabbagew",
+    "name": "الهانة بيضاء",
+    "price": 750,
+    "cat": "veg",
+    "emoji": "🥬",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 5
+  },
+  {
+    "id": "cabbager",
+    "name": "الهانة حمراء",
+    "price": 750,
+    "cat": "veg",
+    "emoji": "🥬",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 6
+  },
+  {
+    "id": "caulif",
+    "name": "قرنابيط",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥦",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 7
+  },
+  {
+    "id": "pepperc",
+    "name": "فلفل بارد",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🫑",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 8
+  },
+  {
+    "id": "pepperh",
+    "name": "فلفل حار",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🌶️",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 9
+  },
+  {
+    "id": "onionw",
+    "name": "بصل ابيض",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🧅",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 10
+  },
+  {
+    "id": "oniony",
+    "name": "بصل اصفر",
+    "price": 500,
+    "cat": "veg",
+    "emoji": "🧅",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 11
+  },
+  {
+    "id": "onionh",
+    "name": "بصل حار",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🧅",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 12
+  },
+  {
+    "id": "cucaroma",
+    "name": "اخيار عطر روزي",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥒",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 13
+  },
+  {
+    "id": "lobia",
+    "name": "لوبيه",
+    "price": 2000,
+    "cat": "veg",
+    "emoji": "🫘",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 14
+  },
+  {
+    "id": "bamia",
+    "name": "بانيه (بامية)",
+    "price": 2000,
+    "cat": "veg",
+    "emoji": "🌿",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 15
+  },
+  {
+    "id": "bakela",
+    "name": "باقلاء",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🫛",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 16
+  },
+  {
+    "id": "carrot",
+    "name": "جزر",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🥕",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 17
+  },
+  {
+    "id": "garlic",
+    "name": "ثوم",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🧄",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 18
+  },
+  {
+    "id": "ginger",
+    "name": "زنجبيل",
+    "price": 8000,
+    "cat": "veg",
+    "emoji": "🫚",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 19
+  },
+  {
+    "id": "melon",
+    "name": "شمام",
+    "price": 1000,
+    "cat": "veg",
+    "emoji": "🍈",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 20
+  },
+  {
+    "id": "banana",
+    "name": "موز",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍌",
+    "image": null,
+    "featured": true,
+    "unit": "كغم",
+    "onSale": true,
+    "oldPrice": 1500,
+    "visible": true,
+    "order": 21
+  },
+  {
+    "id": "figw",
+    "name": "تين ابيض",
+    "price": 3000,
+    "cat": "fruit",
+    "emoji": "⚪",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 22
+  },
+  {
+    "id": "figb",
+    "name": "تين اسود",
+    "price": 3000,
+    "cat": "fruit",
+    "emoji": "⚫",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 23
+  },
+  {
+    "id": "orange",
+    "name": "برتقال",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍊",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 24
+  },
+  {
+    "id": "grape",
+    "name": "عنب",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍇",
+    "image": null,
+    "featured": true,
+    "unit": "كغم",
+    "visible": true,
+    "order": 25
+  },
+  {
+    "id": "kojar",
+    "name": "كوجه حمراء",
+    "price": 1500,
+    "cat": "fruit",
+    "emoji": "🔴",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 26
+  },
+  {
+    "id": "kojay",
+    "name": "كوجه صفراء",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🟡",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 27
+  },
+  {
+    "id": "cherry",
+    "name": "كرز",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍒",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 28
+  },
+  {
+    "id": "apple_iraq",
+    "name": "تفاح عراقي",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍎",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 29
+  },
+  {
+    "id": "peach_tini",
+    "name": "خوخ تيني",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍑",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 30
+  },
+  {
+    "id": "peach_musk",
+    "name": "خوخ مسكي",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍑",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 31
+  },
+  {
+    "id": "peach_sofi",
+    "name": "خوخ صوفي",
+    "price": 1500,
+    "cat": "fruit",
+    "emoji": "🍑",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 32
+  },
+  {
+    "id": "lemon",
+    "name": "ليمون",
+    "price": 2500,
+    "cat": "fruit",
+    "emoji": "🍋",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 33
+  },
+  {
+    "id": "apricot",
+    "name": "مشمش",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🟠",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 34
+  },
+  {
+    "id": "pear",
+    "name": "عرموط",
+    "price": 2000,
+    "cat": "fruit",
+    "emoji": "🍐",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 35
+  },
+  {
+    "id": "reky",
+    "name": "ركي",
+    "price": 500,
+    "cat": "fruit",
+    "emoji": "🍈",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 36
+  },
+  {
+    "id": "watermelon",
+    "name": "بطيخ",
+    "price": 1000,
+    "cat": "fruit",
+    "emoji": "🍉",
+    "image": null,
+    "featured": true,
+    "unit": "كغم",
+    "onSale": true,
+    "oldPrice": 1400,
+    "visible": true,
+    "order": 37
+  },
+  {
+    "id": "dates",
+    "name": "تمر",
+    "price": 10000,
+    "cat": "fruit",
+    "emoji": "🌴",
+    "image": null,
+    "unit": "كغم",
+    "visible": true,
+    "order": 38
+  }
+];
+
+  let products = [];
+  const cart = {}; // id -> qty (kg)
+  let gpsCoords = null;
+
+  function money(n){ return Math.round(n).toLocaleString('en-US') + " د.ع"; }
+
+  // ---------- LOAD PRODUCTS FROM products.json ----------
+  async function loadProducts(){
+    try{
+      const res = await fetch("products.json", { cache: "no-store" });
+      if(!res.ok) throw new Error("fetch failed");
+      products = await res.json();
+    }catch(e){
+      console.warn("تعذّر تحميل products.json، سيتم استخدام بيانات احتياطية.", e);
+      products = fallbackProducts;
+    }
+  }
+
+  // ---------- RENDER PRODUCT GRIDS ----------
+  function productCard(p){
+    const qty = cart[p.id] || 0;
+    const imgHtml = p.image
+      ? `<img src="${p.image}" alt="${p.name}">`
+      : `<span class="placeholder-emoji">${p.emoji||"🥬"}</span>`;
+    const isFruit = p.cat === "fruit";
+    const isOffer = !!p.onSale;
+    const unit = p.unit || "كغم";
+    const ribbon = p.featured ? `<span class="ribbon">⭐ الأكثر طلباً</span>` : "";
+    let discountBadge = "";
+    let priceHtml = `${money(p.price)} <small>/ ${unit}</small>`;
+    if(isOffer && p.oldPrice && p.oldPrice > p.price){
+      const pct = Math.round((1 - p.price/p.oldPrice) * 100);
+      discountBadge = `<span class="discount-badge">خصم ${pct}%</span>`;
+      priceHtml = `<span class="old">${money(p.oldPrice)}</span>${money(p.price)} <small>/ ${unit}</small>`;
+    }
+    const cardClass = isOffer ? "offer-card" : (isFruit ? "fruit-card" : "");
+    return `
+    <div class="card ${cardClass} ${qty>0?'has-qty':''}" data-id="${p.id}">
+      <div class="img-wrap">${ribbon}${discountBadge}${imgHtml}</div>
+      <div class="body">
+        <h3>${p.name}</h3>
+        <div class="price">${priceHtml}</div>
+        <div class="qty-row">
+          <button class="minus" data-id="${p.id}">−</button>
+          <span class="qty-val" id="qv-${p.id}">${qty}<small>${unit}</small></span>
+          <button class="plus" data-id="${p.id}">+</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  let searchTerm = "";
+
+  function matchesSearch(p){
+    if(!searchTerm) return true;
+    return p.name.toLowerCase().includes(searchTerm.toLowerCase());
+  }
+
+  function renderGrids(){
+    const visible = products.filter(p => p.visible !== false);
+    const sorted = [...visible].sort((a,b)=>(a.order ?? 999) - (b.order ?? 999));
+    const veg = sorted.filter(p=>p.cat==="veg" && matchesSearch(p));
+    const fruit = sorted.filter(p=>p.cat==="fruit" && matchesSearch(p));
+    const offers = sorted.filter(p=>p.onSale && matchesSearch(p));
+
+    document.getElementById("veg-grid").innerHTML =
+      veg.map(productCard).join("") || `<p class="note">لا توجد نتائج</p>`;
+    document.getElementById("fruit-grid").innerHTML =
+      fruit.map(productCard).join("") || `<p class="note">لا توجد نتائج</p>`;
+    document.getElementById("offers-grid").innerHTML = offers.map(productCard).join("");
+    document.getElementById("offersEmpty").style.display = offers.length ? "none" : "block";
+  }
+
+  function findProduct(id){ return products.find(p=>p.id===id); }
+
+  document.body.addEventListener("click",(e)=>{
+    const plus = e.target.closest(".grid .plus");
+    const minus = e.target.closest(".grid .minus");
+    if(plus){ changeQty(plus.dataset.id, 1); }
+    if(minus){ changeQty(minus.dataset.id, -1); }
+  });
+
+  function changeQty(id, delta){
+    const newQty = Math.max(0, (cart[id]||0) + delta);
+    if(newQty===0) delete cart[id]; else cart[id] = newQty;
+    const p = findProduct(id);
+    const unit = (p && p.unit) || "كغم";
+    const qv = document.getElementById("qv-"+id);
+    if(qv){ qv.innerHTML = `${cart[id]||0}<small>${unit}</small>`; }
+    const card = qv ? qv.closest(".card") : null;
+    if(card){ card.classList.toggle("has-qty",(cart[id]||0)>0); }
+    updateCartUI();
+  }
+
+  // ---------- CART BAR & CHECKOUT SHEET ----------
+  const barCount = document.getElementById("barCount");
+  const barTotal = document.getElementById("barTotal");
+  const openCheckoutBtn = document.getElementById("openCheckout");
+  const cartLines = document.getElementById("cartLines");
+  const sheetTotal = document.getElementById("sheetTotal");
+  const overlay = document.getElementById("overlay");
+  const checkoutSheet = document.getElementById("checkoutSheet");
+
+  function cartCount(){ return Object.values(cart).reduce((a,b)=>a+b,0); }
+  function cartTotal(){
+    return Object.entries(cart).reduce((s,[id,q])=>{
+      const p = findProduct(id); return s + (p?p.price*q:0);
+    },0);
+  }
+
+  let currentPointsBalance = 0;
+  let currentRedeemableValue = 0;
+
+  // ---------- TOP POINTS BADGE (always visible in sticky nav) ----------
+  function updateTopPointsBadge(points){
+    const badge = document.getElementById("pointsBadge");
+    const val = document.getElementById("pointsBadgeVal");
+    if(!badge || !val) return;
+    if(points > 0){
+      val.textContent = points;
+      badge.classList.add("show");
+    }else{
+      badge.classList.remove("show");
+    }
+  }
+  document.getElementById("pointsBadge")?.addEventListener("click", ()=>{
+    document.querySelector(".referral-box")?.scrollIntoView({behavior:"smooth", block:"center"});
+  });
+  async function refreshPointsForPhone(phone){
+    if(!GOOGLE_SCRIPT_URL || !phone || phone.replace(/[^0-9]/g,"").length < 8) return;
+    try{
+      const res = await fetch(`${GOOGLE_SCRIPT_URL}?checkPoints=${encodeURIComponent(phone)}`);
+      const pdata = await res.json();
+      currentPointsBalance = pdata.points || 0;
+      currentRedeemableValue = pdata.redeemableValue || 0;
+      updateTopPointsBadge(currentPointsBalance);
+    }catch(e){ /* silent */ }
+  }
+  (function initTopPointsBadge(){
+    let myPhone = "";
+    try{ myPhone = localStorage.getItem("janat-my-phone") || ""; }catch(e){}
+    if(myPhone) refreshPointsForPhone(myPhone);
+  })();
+
+  function finalTotal(){
+    const base = cartTotal();
+    const usePointsEl = document.getElementById("usePointsCheck");
+    const discount = (usePointsEl && usePointsEl.checked) ? currentRedeemableValue : 0;
+    return Math.max(0, base - discount);
+  }
+
+  function updateCartUI(){
+    const count = cartCount();
+    const total = cartTotal();
+    barCount.textContent = count;
+    barTotal.textContent = money(total);
+    openCheckoutBtn.disabled = count===0;
+
+    const usePointsEl = document.getElementById("usePointsCheck");
+    const discountRow = document.getElementById("discountRow");
+    const discountVal = document.getElementById("discountVal");
+    if(usePointsEl && usePointsEl.checked && currentRedeemableValue > 0){
+      discountRow.style.display = "flex";
+      discountVal.textContent = "- " + money(currentRedeemableValue);
+    } else if(discountRow){
+      discountRow.style.display = "none";
+    }
+    sheetTotal.textContent = money(finalTotal());
+
+    const entries = Object.entries(cart).filter(([,q])=>q>0);
+    if(entries.length===0){
+      cartLines.innerHTML = `<p class="cart-empty">السلة فارغة — اختر كمية من المنتجات أعلاه</p>`;
+    } else {
+      cartLines.innerHTML = entries.map(([id,qty])=>{
+        const p = findProduct(id);
+        const unit = p.unit || "كغم";
+        const thumb = p.image ? `<img src="${p.image}" alt="">` : `<div class="ph">${p.emoji||"🥬"}</div>`;
+        return `
+        <div class="cart-line" data-id="${id}">
+          ${thumb}
+          <div class="info">
+            <div class="n">${p.name}</div>
+            <div class="p">${money(p.price)} × ${qty} ${unit} = ${money(p.price*qty)}</div>
+          </div>
+          <div class="qty-row">
+            <button class="d-minus" data-id="${id}">−</button>
+            <span class="qty-val">${qty}</span>
+            <button class="d-plus" data-id="${id}">+</button>
+          </div>
+          <button class="rm" data-id="${id}">🗑️</button>
+        </div>`;
+      }).join("");
+    }
+  }
+
+  cartLines.addEventListener("click",(e)=>{
+    const id = e.target.dataset.id;
+    if(!id) return;
+    if(e.target.classList.contains("d-plus")) changeQty(id, 1);
+    if(e.target.classList.contains("d-minus")) changeQty(id, -1);
+    if(e.target.classList.contains("rm")){ delete cart[id]; changeQty(id,0); }
+  });
+
+  function openSheet(sheet){ sheet.classList.add("show"); overlay.classList.add("show"); }
+  function closeSheets(){
+    checkoutSheet.classList.remove("show");
+    overlay.classList.remove("show");
+  }
+  openCheckoutBtn.addEventListener("click", ()=>openSheet(checkoutSheet));
+  document.getElementById("closeCheckout").addEventListener("click", closeSheets);
+  overlay.addEventListener("click", closeSheets);
+
+  // ---------- GPS ----------
+  const gpsBtn = document.getElementById("gpsBtn");
+  const gpsStatus = document.getElementById("gpsStatus");
+  let gpsSlowHintTimer = null;
+
+  function gpsSuccess(pos){
+    clearTimeout(gpsSlowHintTimer);
+    gpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    gpsBtn.textContent = "📍 تحديد موقعي الحالي";
+    gpsBtn.disabled = false;
+    gpsStatus.textContent = `✅ تم تحديد الموقع بنجاح`;
+    gpsStatus.classList.add("show");
+  }
+
+  function gpsFail(msg){
+    clearTimeout(gpsSlowHintTimer);
+    gpsBtn.textContent = "📍 تحديد موقعي الحالي";
+    gpsBtn.disabled = false;
+    gpsStatus.textContent = msg;
+    gpsStatus.classList.add("show");
+  }
+
+  gpsBtn.addEventListener("click", ()=>{
+    if(!navigator.geolocation){
+      gpsFail("⚠️ المتصفح لا يدعم تحديد الموقع — اكتب عنوانك يدوياً بالأعلى");
+      return;
+    }
+    gpsBtn.textContent = "⏳ جاري تحديد الموقع...";
+    gpsBtn.disabled = true;
+    gpsStatus.classList.remove("show");
+
+    // بعد 4 ثواني، إذا لسا ينتظر، نطمّن المستخدم إنه يقدر يكتب عنوانه يدوياً
+    gpsSlowHintTimer = setTimeout(()=>{
+      gpsStatus.textContent = "⏳ لسا نحاول تحديد موقعك... تقدر تكتب عنوانك بالأعلى بالأثناء";
+      gpsStatus.classList.add("show");
+    }, 4000);
+
+    // المحاولة الأولى: سريعة (دقة أقل، تقبل موقع محفوظ حديثاً) — تناسب أغلب الأجهزة
+    navigator.geolocation.getCurrentPosition(
+      gpsSuccess,
+      ()=>{
+        // فشلت أو تأخرت — نجرب محاولة ثانية بدقة أعلى ومهلة أطول
+        gpsStatus.textContent = "⏳ نحاول بطريقة أدق، لحظات...";
+        gpsStatus.classList.add("show");
+        navigator.geolocation.getCurrentPosition(
+          gpsSuccess,
+          (err)=>{
+            let msg = "⚠️ تعذّر تحديد الموقع تلقائياً — اكتب عنوانك يدوياً بالأعلى";
+            if(err && err.code === 1) msg = "⚠️ ما وافقت على صلاحية الموقع — فعّلها من إعدادات المتصفح أو اكتب عنوانك يدوياً";
+            gpsFail(msg);
+          },
+          { enableHighAccuracy:true, timeout:10000, maximumAge:0 }
+        );
+      },
+      { enableHighAccuracy:false, timeout:5000, maximumAge:600000 }
+    );
+  });
+
+  // ---------- SEND ORDER ----------
+  const sendBtn = document.getElementById("sendBtn");
+  const formErr = document.getElementById("formErr");
+  sendBtn.addEventListener("click", ()=>{
+    const name = document.getElementById("custName").value.trim();
+    const phone = document.getElementById("custPhone").value.trim();
+    const address = document.getElementById("custAddress").value.trim();
+    const notes = document.getElementById("custNotes").value.trim();
+    const customRequestEl = document.getElementById("customRequestInput");
+    const customRequest = customRequestEl ? customRequestEl.value.trim() : "";
+    const isFirstOrder = document.getElementById("firstOrderCheck").checked;
+    const usePointsEl = document.getElementById("usePointsCheck");
+    const usingPoints = !!(usePointsEl && usePointsEl.checked && currentRedeemableValue > 0);
+    const pointsUsedCount = usingPoints ? Math.floor(currentPointsBalance/10)*10 : 0;
+    const entries = Object.entries(cart).filter(([,q])=>q>0);
+
+    if(!name || !phone || (entries.length===0 && !customRequest)){
+      formErr.textContent = (entries.length===0 && !customRequest)
+        ? "الرجاء اختيار منتج واحد على الأقل أو كتابة طلب خاص."
+        : "الرجاء إدخال الاسم ورقم الهاتف.";
+      formErr.classList.add("show");
+      return;
+    }
+    formErr.classList.remove("show");
+
+    let msg = "🌿 طلب جديد من جنة الفواكه والخضار\n\n";
+    msg += `👤 الاسم: ${name}\n`;
+    msg += `📞 الهاتف: ${phone}\n`;
+    if(address) msg += `📍 العنوان: ${address}\n`;
+    if(gpsCoords){
+      msg += `🗺️ خرائط قوقل: https://maps.google.com/?q=${gpsCoords.lat},${gpsCoords.lng}\n`;
+      msg += `🧭 توصيل مباشر (Waze): https://waze.com/ul?ll=${gpsCoords.lat},${gpsCoords.lng}&navigate=yes\n`;
+    }
+    if(approxLocationText) msg += `🌐 الموقع التقريبي (شبكة الإنترنت): ${approxLocationText}\n`;
+    if(isFirstOrder) msg += `\n🎁 هذا أول طلب — التوصيل مجاني\n`;
+    const itemsSummaryLines = [];
+    if(entries.length){
+      msg += `\n🧺 المنتجات:\n`;
+      entries.forEach(([id,qty])=>{
+        const p = findProduct(id);
+        const unit = p.unit || "كغم";
+        msg += `• ${p.name} × ${qty} ${unit} = ${money(p.price*qty)}\n`;
+        itemsSummaryLines.push(`${p.name} × ${qty} ${unit}`);
+      });
+    }
+    if(customRequest){
+      msg += `\n🛍️ طلب خاص (غير موجود بالقائمة):\n${customRequest}\n`;
+    }
+    const subtotal = cartTotal();
+    msg += `\nالمجموع قبل الخصم: ${money(subtotal)}`;
+    if(usingPoints){
+      msg += `\n⭐ خصم النقاط (${pointsUsedCount} نقطة): - ${money(currentRedeemableValue)}`;
+    }
+    msg += `\nالمجموع النهائي: ${money(finalTotal())}`;
+    if(customRequest) msg += `\n(+ سعر الطلب الخاص يُحدد عند التأكيد)`;
+
+    // ملخص نقاط الولاء — توضيح إن النقاط "معلّقة" لحد ما يتأكد التسليم
+    const pointsEarnedThisOrder = 2; // نقطتين ثابتتين عن كل طلب يُستلم
+    if(entries.length > 0 || usingPoints){
+      msg += `\n\n⭐ راح تحصل على ${pointsEarnedThisOrder} نقطة بعد تأكيد استلام الطلب`;
+      msg += `\n💰 رصيدك الحالي: ${currentPointsBalance} نقطة`;
+    }
+    if(notes) msg += `\n\n📝 ملاحظات: ${notes}`;
+
+    // Log the order to Google Sheets (fire-and-forget, doesn't block sending)
+    let referredByPhone = "";
+    try{ referredByPhone = localStorage.getItem("janat-referred-by") || ""; }catch(e){}
+
+    if(GOOGLE_SCRIPT_URL){
+      fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({
+          name, phone, address,
+          approxLocation: gpsCoords
+            ? `دقيق: https://maps.google.com/?q=${gpsCoords.lat},${gpsCoords.lng}`
+            : approxLocationText,
+          items: itemsSummaryLines.join(" | ") + (customRequest ? ` [طلب خاص: ${customRequest}]` : ""),
+          total: finalTotal(),
+          pointsUsed: pointsUsedCount,
+          notes,
+          firstOrder: isFirstOrder,
+          referralPhone: referredByPhone
+        })
+      }).catch(()=>{ /* logging failure shouldn't block the order */ });
+    }
+    if(referredByPhone){
+      try{ localStorage.removeItem("janat-referred-by"); }catch(e){}
+    }
+
+
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+    window.open(url, "_blank");
+
+    // Remember on this device that the customer already placed an order,
+    // so the "first order free delivery" promo won't show again for them.
+    try{ localStorage.setItem("janat-has-ordered", "1"); }catch(e){}
+    hideFirstOrderPromo();
+  });
+
+  // ---------- FIRST-ORDER FREE DELIVERY PROMO ----------
+  function hideFirstOrderPromo(){
+    const banner = document.getElementById("promoBanner");
+    const row = document.getElementById("firstOrderRow");
+    if(banner) banner.style.display = "none";
+    if(row) row.style.display = "none";
+  }
+  function showFirstOrderPromoIfEligible(){
+    // Only re-show if this device hasn't already used its free first order
+    let hasOrderedLocally = false;
+    try{ hasOrderedLocally = localStorage.getItem("janat-has-ordered") === "1"; }catch(e){}
+    if(hasOrderedLocally) return;
+    const banner = document.getElementById("promoBanner");
+    const row = document.getElementById("firstOrderRow");
+    if(banner) banner.style.display = "";
+    if(row) row.style.display = "";
+  }
+  (function initFirstOrderPromo(){
+    let hasOrdered = false;
+    try{ hasOrdered = localStorage.getItem("janat-has-ordered") === "1"; }catch(e){}
+    if(hasOrdered) hideFirstOrderPromo();
+  })();
+
+  // Real check against the actual order history in Google Sheets by phone
+  // number — more reliable than device storage (works even from a new phone
+  // or after clearing browser data).
+  let phoneCheckTimer = null;
+  const custPhoneInput = document.getElementById("custPhone");
+  if(custPhoneInput){
+    custPhoneInput.addEventListener("input", ()=>{
+      clearTimeout(phoneCheckTimer);
+      const phone = custPhoneInput.value.trim();
+      if(phone.replace(/[^0-9]/g,"").length >= 8){
+        try{ localStorage.setItem("janat-my-phone", phone); }catch(e){}
+      }
+      const pointsInfo = document.getElementById("pointsInfo");
+      const pointsRedeemRow = document.getElementById("pointsRedeemRow");
+      if(!GOOGLE_SCRIPT_URL || phone.replace(/[^0-9]/g,"").length < 8){
+        if(pointsInfo) pointsInfo.style.display = "none";
+        if(pointsRedeemRow) pointsRedeemRow.style.display = "none";
+        return;
+      }
+      phoneCheckTimer = setTimeout(async ()=>{
+        try{
+          const res = await fetch(`${GOOGLE_SCRIPT_URL}?checkPhone=${encodeURIComponent(phone)}`);
+          const data = await res.json();
+          if(data.hasOrdered){
+            hideFirstOrderPromo();
+          }else{
+            showFirstOrderPromoIfEligible();
+          }
+        }catch(e){ /* silent — falls back to local device check only */ }
+
+        try{
+          const res2 = await fetch(`${GOOGLE_SCRIPT_URL}?checkPoints=${encodeURIComponent(phone)}`);
+          const pdata = await res2.json();
+          currentPointsBalance = pdata.points || 0;
+          currentRedeemableValue = pdata.redeemableValue || 0;
+          if(pointsInfo){
+            if(currentPointsBalance > 0){
+              pointsInfo.style.display = "flex";
+              pointsInfo.textContent = `⭐ عندك ${currentPointsBalance} نقطة`;
+            }else{
+              pointsInfo.style.display = "none";
+            }
+          }
+          if(pointsRedeemRow){
+            if(currentRedeemableValue > 0){
+              pointsRedeemRow.style.display = "flex";
+              document.getElementById("redeemableText").textContent = money(currentRedeemableValue);
+            }else{
+              pointsRedeemRow.style.display = "none";
+              const chk = document.getElementById("usePointsCheck");
+              if(chk) chk.checked = false;
+            }
+          }
+          updateTopPointsBadge(currentPointsBalance);
+          updateCartUI();
+        }catch(e){ /* silent */ }
+      }, 600);
+    });
+  }
+
+  document.addEventListener("change",(e)=>{
+    if(e.target && e.target.id === "usePointsCheck"){ updateCartUI(); }
+  });
+
+  // ---------- REFERRAL: SHARE (used by both banner + footer button) ----------
+  function shareReferralLink(){
+    const hint = document.getElementById("referralHint");
+    let myPhone = "";
+    try{ myPhone = localStorage.getItem("janat-my-phone") || ""; }catch(e){}
+
+    if(!myPhone){
+      if(hint) hint.textContent = "📝 اكتب رقم هاتفك مرة وحدة بصفحة الطلب أول، وبعدها رابطك الخاص يصير جاهز";
+      document.querySelector(".referral-box")?.scrollIntoView({behavior:"smooth", block:"center"});
+      return;
+    }
+
+    const baseUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, "");
+    const referralLink = `${baseUrl}?ref=${encodeURIComponent(myPhone)}`;
+    const shareText = `🌿 جرب جنة الفواكه والخضار! فواكه وخضروات طازجة توصل لباب بيتك\n\n${referralLink}\n\nأول طلب لك التوصيل مجاني 🎁`;
+
+    if(navigator.share){
+      navigator.share({ title:"جنة الفواكه والخضار", text:shareText }).catch(()=>{});
+    }else{
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+      window.open(waUrl, "_blank");
+    }
+    if(hint) hint.textContent = "✅ رابطك جاهز — لما صديقك يطلب أول مرة، تربح أنت 10 نقاط";
+  }
+  document.getElementById("referralBtn").addEventListener("click", shareReferralLink);
+  document.getElementById("referralBannerBtn").addEventListener("click", shareReferralLink);
+
+  // ---------- CATEGORY NAV ----------
+  document.querySelectorAll(".catnav button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".catnav button").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.target).scrollIntoView({behavior:"smooth", block:"start"});
+    });
+  });
+
+  // ---------- SEARCH ----------
+  document.getElementById("searchInput").addEventListener("input",(e)=>{
+    searchTerm = e.target.value.trim();
+    renderGrids();
+  });
+
+  // ---------- DARK MODE ----------
+  const themeToggle = document.getElementById("themeToggle");
+  function applyTheme(dark){
+    document.documentElement.classList.toggle("dark", dark);
+    themeToggle.textContent = dark ? "☀️" : "🌙";
+    try{ localStorage.setItem("janat-theme", dark ? "dark" : "light"); }catch(e){}
+  }
+  themeToggle.addEventListener("click", ()=>{
+    applyTheme(!document.documentElement.classList.contains("dark"));
+  });
+  (function initTheme(){
+    let saved = null;
+    try{ saved = localStorage.getItem("janat-theme"); }catch(e){}
+    if(saved) applyTheme(saved === "dark");
+    else if(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) applyTheme(true);
+  })();
+
+  // ---------- OFFERS COUNTDOWN (resets nightly at midnight) ----------
+  function updateCountdown(){
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setHours(24,0,0,0);
+    let diff = Math.max(0, midnight - now);
+    const h = String(Math.floor(diff/3600000)).padStart(2,"0");
+    const m = String(Math.floor((diff%3600000)/60000)).padStart(2,"0");
+    const s = String(Math.floor((diff%60000)/1000)).padStart(2,"0");
+    const el = document.getElementById("countdownVal");
+    if(el) el.textContent = `${h}:${m}:${s}`;
+  }
+  setInterval(updateCountdown, 1000);
+
+  // ---------- HOW TO ORDER: STEP-BY-STEP TUTORIAL ----------
+  const tutorialSteps = [
+    { icon:"🛒➕", title:"1. اختار المنتج", text:"تصفّح الأقسام (خضروات، فواكه، عروض) واضغط <b>+</b> على أي منتج تريده لتحديد الكمية" },
+    { icon:"🧾", title:"2. إتمام الطلب", text:"أسفل الشاشة راح تشوف عدد المنتجات والمجموع — اضغط <b>\"إتمام الطلب\"</b>" },
+    { icon:"📝", title:"3. عبّي بياناتك", text:"اكتب اسمك، رقم هاتفك، وعنوانك (أو اضغط زر <b>تحديد موقعي الحالي</b>)" },
+    { icon:"📲", title:"4. إرسال الطلب", text:"اضغط <b>\"إرسال الطلب عبر واتساب\"</b> — الرسالة تنكتب لحالها بكل تفاصيل طلبك" },
+    { icon:"✅", title:"5. التأكيد", text:"بس اضغط زر الإرسال ⬆️ داخل واتساب، وطلبك يوصلنا فوراً ونأكده وياك" },
+  ];
+  let tutorialIndex = 0;
+
+  const tutorialOverlay = document.getElementById("tutorialOverlay");
+  const tutorialSlide = document.getElementById("tutorialSlide");
+  const tutorialDots = document.getElementById("tutorialDots");
+  const tutorialPrev = document.getElementById("tutorialPrev");
+  const tutorialNext = document.getElementById("tutorialNext");
+
+  function renderTutorialStep(){
+    const step = tutorialSteps[tutorialIndex];
+    tutorialSlide.innerHTML = `
+      <div class="tutorial-icon">${step.icon}</div>
+      <div class="tutorial-title">${step.title}</div>
+      <div class="tutorial-text">${step.text}</div>
+    `;
+    tutorialDots.innerHTML = tutorialSteps.map((_,i)=>
+      `<span class="${i===tutorialIndex?'active':''}"></span>`
+    ).join("");
+    tutorialPrev.disabled = tutorialIndex === 0;
+    tutorialNext.textContent = tutorialIndex === tutorialSteps.length-1 ? "ابدأ التسوق 🛍️" : "التالي ▷";
+  }
+
+  function openTutorial(){
+    tutorialIndex = 0;
+    renderTutorialStep();
+    tutorialOverlay.classList.add("show");
+  }
+  function closeTutorial(){
+    tutorialOverlay.classList.remove("show");
+  }
+
+  document.getElementById("howtoToggle").addEventListener("click", openTutorial);
+  document.getElementById("tutorialClose").addEventListener("click", closeTutorial);
+  document.getElementById("tutorialSkip").addEventListener("click", closeTutorial);
+  tutorialOverlay.addEventListener("click", (e)=>{ if(e.target === tutorialOverlay) closeTutorial(); });
+
+  tutorialPrev.addEventListener("click", ()=>{
+    if(tutorialIndex > 0){ tutorialIndex--; renderTutorialStep(); }
+  });
+  tutorialNext.addEventListener("click", ()=>{
+    if(tutorialIndex < tutorialSteps.length-1){ tutorialIndex++; renderTutorialStep(); }
+    else{ closeTutorial(); }
+  });
+
+  // ---------- INSTALL GUIDE: DEVICE TABS ----------
+  document.querySelectorAll(".device-tabs button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".device-tabs button").forEach(b=>b.classList.remove("active"));
+      document.querySelectorAll(".install-steps").forEach(s=>s.classList.remove("show"));
+      btn.classList.add("active");
+      document.getElementById("steps-"+btn.dataset.device).classList.add("show");
+    });
+  });
+  (function autoDetectDevice(){
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if(isIOS){
+      const iphoneBtn = document.querySelector('[data-device="iphone"]');
+      if(iphoneBtn) iphoneBtn.click();
+    }
+  })();
+
+  // ---------- PWA: INSTALL PROMPT ----------
+  let deferredInstallPrompt = null;
+  const installBtn = document.getElementById("installBtn");
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    installBtn.classList.add("show");
+  });
+
+  installBtn.addEventListener("click", async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    installBtn.classList.remove("show");
+  });
+
+  window.addEventListener("appinstalled", () => {
+    installBtn.classList.remove("show");
+    logAnalyticsEvent("install");
+  });
+
+  // ---------- PWA: SERVICE WORKER ----------
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("service-worker.js").catch((err) => {
+        console.warn("Service worker registration failed:", err);
+      });
+    });
+  }
+
+  // ---------- INIT ----------
+  (async function init(){
+    await loadProducts();
+    renderGrids();
+    updateCartUI();
+    updateCountdown();
+  })();
+</script>
+</body>
+</html>
