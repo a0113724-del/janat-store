@@ -16,7 +16,19 @@
   /* نخفي شريط السلة القديم ونستخدم الشريط الجديد بداله */
   .cart-bar{ display:none !important; }
 
-  body{ padding-bottom:calc(var(--nav-h) + 26px) !important; }
+  body{ padding-bottom:calc(var(--nav-h) + 30px) !important; transition:padding-bottom .2s; }
+  body.jn-has-cart{ padding-bottom:calc(var(--nav-h) + 96px) !important; }
+
+  /* نخفي شريط الأقسام العلوي لأن الشريط السفلي صار يسوي نفس الشغلة */
+  .catnav{ display:none !important; }
+
+  /* شارة النقاط تصير شريحة عائمة فوق */
+  .jn-points-holder{
+    position:fixed; top:10px; inset-inline-start:12px; z-index:46;
+  }
+  .jn-points-holder .points-badge{
+    box-shadow:0 6px 18px rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.35);
+  }
 
   .jn-tabbar{
     position:fixed; bottom:0; left:0; right:0; z-index:48;
@@ -211,6 +223,7 @@
     cCount.textContent = n;
     cTotal.textContent = total;
     checkout.classList.toggle("show", n > 0);
+    document.body.classList.toggle("jn-has-cart", n > 0);
   }
 
   if (srcCount && "MutationObserver" in window) {
@@ -222,7 +235,16 @@
   setTimeout(sync, 300);
   setInterval(sync, 1500); // ضمان إضافي خفيف
 
-  /* ---------------- 5) لمسات تطبيق ---------------- */
+  /* ---------------- 5) شارة النقاط ---------------- */
+  var pb = document.getElementById("pointsBadge");
+  if (pb) {
+    var holder = document.createElement("div");
+    holder.className = "jn-points-holder";
+    document.body.appendChild(holder);
+    holder.appendChild(pb);
+  }
+
+  /* ---------------- 6) لمسات تطبيق ---------------- */
   /* لما التطبيق مثبّت ومفتوح كتطبيق، نخفي قسم "شلون تثبّت التطبيق" */
   var standalone =
     (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
