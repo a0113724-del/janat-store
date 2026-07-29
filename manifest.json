@@ -1,17 +1,27 @@
 {
   "name": "جنة الفواكه والخضار",
   "short_name": "جنة",
+  "description": "فواكه وخضروات طازجة توصل لباب بيتك — أبو صخير",
   "lang": "ar",
   "dir": "rtl",
-  "start_url": "./index.html",
+  "id": "/janat-store/",
+  "start_url": "./index.html?src=app",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "fullscreen", "minimal-ui"],
   "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#1f7a3f",
+  "background_color": "#FBF8EF",
+  "theme_color": "#153122",
+  "categories": ["shopping", "food"],
+  "prefer_related_applications": false,
   "icons": [
-    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "./icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "العروض", "short_name": "العروض", "url": "./index.html#offers", "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }] },
+    { "name": "الفواكه", "short_name": "الفواكه", "url": "./index.html#fruit", "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }] },
+    { "name": "الخضروات", "short_name": "الخضروات", "url": "./index.html#veg", "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }] }
   ]
 }
