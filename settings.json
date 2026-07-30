@@ -1,0 +1,13 @@
+{
+  "deliveryFee": 1000,
+  "freeDeliveryOver": 0,
+  "minOrderTotal": 0,
+  "firstOrderFreeDelivery": true,
+  "openHour": 8,
+  "closeHour": 22,
+  "manualClosed": false,
+  "closedMessage": "",
+  "pointsPerOrder": 2,
+  "promoText": "🚴 التوصيل الأول مجاني لكل زبون جديد!",
+  "announcement": ""
+}
