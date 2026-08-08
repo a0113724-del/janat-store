@@ -169,13 +169,23 @@
   .orders-list{ display:flex; flex-direction:column; gap:12px; }
   .order-card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:15px 16px; }
   .order-card.delivered{ opacity:.7; }
+  .order-card.flagged{ background:#FDEDEA; border-color:rgba(161,58,46,.45); }
+  .oc-flag{
+    display:flex; align-items:center; gap:6px;
+    background:rgba(161,58,46,.12); color:var(--pomegranate);
+    font-size:.78rem; font-weight:800; padding:8px 10px;
+    border-radius:10px; margin-bottom:10px;
+  }
   .oc-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:6px; }
   .oc-name{ font-weight:900; font-size:.98rem; }
   .oc-time{ font-size:.7rem; color:#888; white-space:nowrap; }
   .oc-phone{ font-size:.8rem; color:var(--leaf); direction:ltr; text-align:left; margin-bottom:6px; }
   .oc-items{ font-size:.78rem; color:#555; white-space:pre-line; margin-bottom:8px; line-height:1.6; }
-  .oc-bottom{ display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+  .oc-bottom{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; flex-wrap:wrap; }
   .oc-total{ font-weight:900; color:var(--pomegranate); font-size:.98rem; }
+  .oc-total-breakdown{ font-size:.78rem; color:#555; line-height:1.7; }
+  .oc-total-breakdown .pb-row{ display:flex; justify-content:space-between; gap:14px; min-width:160px; }
+  .oc-total-breakdown .pb-final{ font-weight:900; color:var(--pomegranate); font-size:.92rem; border-top:1px dashed var(--line); margin-top:2px; padding-top:2px; }
   .oc-badges{ display:flex; gap:6px; flex-wrap:wrap; }
   .badge{ font-size:.64rem; font-weight:800; padding:3px 9px; border-radius:100px; }
   .badge-status{ background:#FFF3D6; color:#8a6a10; }
@@ -754,7 +764,28 @@
       const btn = isDelivered
         ? `<button class="confirm-btn done" disabled>✅ تم التسليم</button>`
         : `<button class="confirm-btn" onclick="confirmDelivery('${o.orderId}', this)">✅ تأكيد الاستلام</button>`;
-      return `<div class="order-card ${isDelivered?'delivered':''}">
+
+      // تنبيه التلاعب — flag فاضي يعني الطلب سليم، ما نعرض أي علامة
+      const flag = (o.flag ?? "").toString().trim();
+      const isFlagged = !!flag;
+      const flagLine = isFlagged ? `<div class="oc-flag">⚠️ ${flag}</div>` : "";
+
+      // تفكيك السعر — الطلبات القديمة بدون هالحقول ترجع لعرض الإجمالي لحاله
+      const subtotalNum = Number(o.subtotal);
+      const deliveryFeeNum = Number(o.deliveryFee);
+      const hasBreakdown =
+        o.subtotal !== undefined && o.subtotal !== null && o.subtotal !== "" && Number.isFinite(subtotalNum) &&
+        o.deliveryFee !== undefined && o.deliveryFee !== null && o.deliveryFee !== "" && Number.isFinite(deliveryFeeNum);
+      const totalBlock = hasBreakdown
+        ? `<div class="oc-total-breakdown">
+            <div class="pb-row"><span>المجموع الفرعي</span><span>${money(subtotalNum)}</span></div>
+            <div class="pb-row"><span>رسوم التوصيل</span><span>${deliveryFeeNum === 0 ? "مجاني" : money(deliveryFeeNum)}</span></div>
+            <div class="pb-row pb-final"><span>الإجمالي</span><span>${money(o.total)}</span></div>
+          </div>`
+        : `<div class="oc-total">${money(o.total)}</div>`;
+
+      return `<div class="order-card ${isDelivered?'delivered':''} ${isFlagged?'flagged':''}">
+        ${flagLine}
         <div class="oc-top">
           <div class="oc-name">${o.name || "بدون اسم"} <span style="color:var(--gold); font-weight:900; font-size:.85rem;">#${o.seqNo || "—"}</span></div>
           <div class="oc-time">${timeStr}</div>
@@ -762,7 +793,7 @@
         <div class="oc-phone">📞 ${o.phone || "—"}</div>
         ${locationLine}
         <div class="oc-items">${(o.items||"").replace(/\|/g,"\n")}</div>
-        <div class="oc-bottom"><div class="oc-total">${money(o.total)}</div><div class="oc-badges">${badges}</div></div>
+        <div class="oc-bottom">${totalBlock}<div class="oc-badges">${badges}</div></div>
         ${btn}
       </div>`;
     }).join("");
@@ -801,6 +832,13 @@
   }
 
   // ================= PUSH NOTIFICATIONS =================
+  // الرد من Apps Script: { status:"ok", result:{ sent, failed, removed } }
+  function notifyResultText(data){
+    if(!data || data.status !== "ok") return "⚠️ تعذّر الإرسال";
+    const r = data.result || {};
+    return `وصل لـ ${r.sent||0} جهاز · فشل ${r.failed||0} · انحذف ${r.removed||0} رمز ميت`;
+  }
+
   function checkPushStatus(){
     const s = document.getElementById("pushStatus");
     if(Notification.permission === "granted"){
@@ -846,9 +884,8 @@
     const btn = document.getElementById("sendTestBtn");
     btn.disabled = true; btn.textContent = "⏳ جاري الإرسال...";
     try{
-      await fetch(GOOGLE_SCRIPT_URL, {
+      const res = await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({
           action: "sendTestNotification",
@@ -856,11 +893,11 @@
           body: "لو وصلك هذا، الإشعارات شغّالة تمام ✅"
         })
       });
-      btn.textContent = "✅ تم الإرسال — تحقق من جهازك";
+      btn.textContent = notifyResultText(await res.json());
     }catch(err){
       btn.textContent = "⚠️ تعذّر الإرسال";
     }
-    setTimeout(()=>{ btn.disabled = false; btn.textContent = "🔔 إرسال إشعار تجريبي الآن"; }, 2500);
+    setTimeout(()=>{ btn.disabled = false; btn.textContent = "🔔 إرسال إشعار تجريبي الآن"; }, 4000);
   });
 
   document.getElementById("sendBroadcastBtn").addEventListener("click", async ()=>{
@@ -870,19 +907,18 @@
     const btn = document.getElementById("sendBroadcastBtn");
     btn.disabled = true; btn.textContent = "⏳ جاري الإرسال...";
     try{
-      await fetch(GOOGLE_SCRIPT_URL, {
+      const res = await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ action: "sendCustomerBroadcast", title: title || "🌿 جنة الفواكه والخضار", body })
       });
-      btn.textContent = "✅ تم الإرسال لكل الزبائن";
+      btn.textContent = notifyResultText(await res.json());
       document.getElementById("broadcastTitle").value = "";
       document.getElementById("broadcastBody").value = "";
     }catch(err){
       btn.textContent = "⚠️ تعذّر الإرسال";
     }
-    setTimeout(()=>{ btn.disabled = false; btn.textContent = "📢 إرسال لكل الزبائن"; }, 2500);
+    setTimeout(()=>{ btn.disabled = false; btn.textContent = "📢 إرسال لكل الزبائن"; }, 4000);
   });
 
   // ================= INIT =================
