@@ -1182,6 +1182,25 @@
 
   function money(n){ return Math.round(n).toLocaleString('en-US') + " د.ع"; }
 
+  // ---------- توحيد صيغة رقم الهاتف ----------
+  // الزبون ممكن يكتبه بأي صيغة: 07801234567 · 7801234567 · +9647801234567
+  // · 00964 780 123 4567 · بمسافات أو شرطات. كلها نفس الرقم ولازم
+  // يتعرف عليه السستم كزبون واحد، حتى ما تضيع نقاطه أو يتكرر "أول طلب".
+  // الصيغة المعتمدة بكل مكان: 07XXXXXXXXX
+  function normalizePhone(raw){
+    // كيبورد عربي يكتب ٠١٢٣٤٥٦٧٨٩ وفارسي يكتب ۰۱۲۳۴۵۶۷۸۹ — نحوّلها أول
+    const s = String(raw || "").replace(/[٠-٩۰-۹]/g,
+      ch => String((ch.charCodeAt(0) & 0x0F)));
+    let d = s.replace(/[^0-9]/g, "");
+    if(!d) return "";
+    if(d.startsWith("00964")) d = d.slice(5);        // 00964...
+    else if(d.startsWith("964")) d = d.slice(3);     // 964...
+    if(d.startsWith("7")) d = "0" + d;               // كتب 78... بدون صفر
+    return d;
+  }
+  // موبايل عراقي صحيح: 11 رقم يبدأ بـ 07
+  function isValidPhone(raw){ return /^07[0-9]{9}$/.test(normalizePhone(raw)); }
+
   // ---------- كمية أقل من كيلو ----------
   function qtyStep(p){
     if(!p) return 1;
@@ -1401,9 +1420,10 @@
     document.querySelector(".referral-box")?.scrollIntoView({behavior:"smooth", block:"center"});
   });
   async function refreshPointsForPhone(phone){
-    if(!GOOGLE_SCRIPT_URL || !phone || phone.replace(/[^0-9]/g,"").length < 8) return;
+    const p = normalizePhone(phone);
+    if(!GOOGLE_SCRIPT_URL || !isValidPhone(p)) return;
     try{
-      const res = await fetch(`${GOOGLE_SCRIPT_URL}?checkPoints=${encodeURIComponent(phone)}`);
+      const res = await fetch(`${GOOGLE_SCRIPT_URL}?checkPoints=${encodeURIComponent(p)}`);
       const pdata = await res.json();
       currentPointsBalance = pdata.points || 0;
       currentRedeemableValue = pdata.redeemableValue || 0;
@@ -1678,7 +1698,8 @@
   }
   sendBtn.addEventListener("click", async ()=>{
     const name = document.getElementById("custName").value.trim();
-    const phone = document.getElementById("custPhone").value.trim();
+    // يُرسل موحّد دائماً حتى يتعرف عليه السستم مهما كتبه الزبون
+    const phone = normalizePhone(document.getElementById("custPhone").value);
     const address = document.getElementById("custAddress").value.trim();
     const notes = document.getElementById("custNotes").value.trim();
     const customRequestEl = document.getElementById("customRequestInput");
@@ -1693,6 +1714,12 @@
       formErr.textContent = (entries.length===0 && !customRequest)
         ? "الرجاء اختيار منتج واحد على الأقل أو كتابة طلب خاص."
         : "الرجاء إدخال الاسم ورقم الهاتف.";
+      formErr.classList.add("show");
+      return;
+    }
+    // رقم غلط = طلب ما نكدر نوصله، ونقاط تروح لرقم ما موجود
+    if(!isValidPhone(phone)){
+      formErr.textContent = "رقم الهاتف مو صحيح — اكتبه بصيغة 07XXXXXXXXX (11 رقم).";
       formErr.classList.add("show");
       return;
     }
@@ -1878,13 +1905,14 @@
   if(custPhoneInput){
     custPhoneInput.addEventListener("input", ()=>{
       clearTimeout(phoneCheckTimer);
-      const phone = custPhoneInput.value.trim();
-      if(phone.replace(/[^0-9]/g,"").length >= 8){
+      // يُبحث ويُحفظ بالصيغة الموحّدة — الزبون يبقى يشوف اللي كتبه بالحقل
+      const phone = normalizePhone(custPhoneInput.value);
+      if(isValidPhone(phone)){
         try{ localStorage.setItem("janat-my-phone", phone); }catch(e){}
       }
       const pointsInfo = document.getElementById("pointsInfo");
       const pointsRedeemRow = document.getElementById("pointsRedeemRow");
-      if(!GOOGLE_SCRIPT_URL || phone.replace(/[^0-9]/g,"").length < 8){
+      if(!GOOGLE_SCRIPT_URL || !isValidPhone(phone)){
         if(pointsInfo) pointsInfo.style.display = "none";
         if(pointsRedeemRow) pointsRedeemRow.style.display = "none";
         return;

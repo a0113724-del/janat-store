@@ -675,6 +675,19 @@
 
   // ================= ORDERS / REPORTS / CUSTOMERS =================
   function money(n){ return Math.round(n||0).toLocaleString('en-US') + " د.ع"; }
+
+  // نفس منطق التوحيد الموجود بـ index.html — عشان البحث يلاقي الزبون
+  // سواء انحفظ رقمه 07801234567 أو 7801234567 أو +9647801234567
+  function normalizePhone(raw){
+    const s = String(raw || "").replace(/[٠-٩۰-۹]/g,
+      ch => String((ch.charCodeAt(0) & 0x0F)));
+    let d = s.replace(/[^0-9]/g, "");
+    if(!d) return "";
+    if(d.startsWith("00964")) d = d.slice(5);
+    else if(d.startsWith("964")) d = d.slice(3);
+    if(d.startsWith("7")) d = "0" + d;
+    return d;
+  }
   function startOfDay(d){ const x=new Date(d); x.setHours(0,0,0,0); return x; }
   function startOfWeek(d){ const x=startOfDay(d); x.setDate(x.getDate()-x.getDay()); return x; }
   function startOfMonth(d){ const x=new Date(d); x.setDate(1); x.setHours(0,0,0,0); return x; }
@@ -801,7 +814,16 @@
 
   function renderCustomersTable(customers, filterText){
     const term = (filterText||"").trim().toLowerCase();
-    const filtered = customers.filter(c => !term || (c.name||"").toLowerCase().includes(term) || String(c.phone||"").includes(term));
+    const termDigits = String(term).replace(/[^0-9]/g,"");
+    const filtered = customers.filter(c => {
+      if(!term) return true;
+      if((c.name||"").toLowerCase().includes(term)) return true;
+      if(!termDigits) return false;
+      // يقارن بالصيغة الموحّدة + بالأرقام الخام، حتى يلاقيه بأي صيغة انحفظ بيها
+      const full = normalizePhone(c.phone);
+      const raw  = String(c.phone||"").replace(/[^0-9]/g,"");
+      return full.includes(termDigits) || raw.includes(termDigits) || full.includes(normalizePhone(term));
+    });
     const sorted = [...filtered].sort((a,b)=> Number(b.points||0) - Number(a.points||0));
     const body = document.getElementById("customersBody");
     if(sorted.length===0){ body.innerHTML = `<tr><td colspan="4" class="empty">لا يوجد زبائن مسجّلين بعد</td></tr>`; return; }
