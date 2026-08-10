@@ -703,6 +703,13 @@
 
   // نفس منطق التوحيد الموجود بـ index.html — عشان البحث يلاقي الزبون
   // سواء انحفظ رقمه 07801234567 أو 7801234567 أو +9647801234567
+  // للعرض: Google Sheets يخزّن 07831158964 كرقم ويشيل الصفر —
+  // نرجّعه حتى يبان الرقم صح باللوحة
+  function showPhone(raw){
+    const p = normalizePhone(raw);
+    return p || String(raw || "—");
+  }
+
   function normalizePhone(raw){
     const s = String(raw || "").replace(/[٠-٩۰-۹]/g,
       ch => String((ch.charCodeAt(0) & 0x0F)));
@@ -760,7 +767,7 @@
       body.innerHTML = users.map(u=>{
         // الزائر اللي ما كتب رقمه مجهول — ما نقدر نعرف اسمه
         const who = u.known
-          ? `${u.name || "بدون اسم"}<span class="u-phone">${u.phone}</span>`
+          ? `${u.name || "بدون اسم"}<span class="u-phone">${showPhone(u.phone)}</span>`
           : `<span class="u-anon">${u.label}</span>`;
         return `<tr class="${u.online ? 'is-online' : ''}">
           <td>${who}</td>
@@ -876,7 +883,7 @@
           <div class="oc-name">${o.name || "بدون اسم"} <span style="color:var(--gold); font-weight:900; font-size:.85rem;">#${o.seqNo || "—"}</span></div>
           <div class="oc-time">${timeStr}</div>
         </div>
-        <div class="oc-phone">📞 ${o.phone || "—"}</div>
+        <div class="oc-phone">📞 ${showPhone(o.phone)}</div>
         ${locationLine}
         <div class="oc-items">${(o.items||"").replace(/\|/g,"\n")}</div>
         <div class="oc-bottom">${totalBlock}<div class="oc-badges">${badges}</div></div>
@@ -900,7 +907,7 @@
     const sorted = [...filtered].sort((a,b)=> Number(b.points||0) - Number(a.points||0));
     const body = document.getElementById("customersBody");
     if(sorted.length===0){ body.innerHTML = `<tr><td colspan="4" class="empty">لا يوجد زبائن مسجّلين بعد</td></tr>`; return; }
-    body.innerHTML = sorted.map(c=>`<tr><td>${c.name || "—"}</td><td style="direction:ltr; text-align:left;">${c.phone || "—"}</td><td class="pts-cell">${c.points || 0}</td><td>${money(c.totalSpend)}</td></tr>`).join("");
+    body.innerHTML = sorted.map(c=>`<tr><td>${c.name || "—"}</td><td style="direction:ltr; text-align:left;">${showPhone(c.phone)}</td><td class="pts-cell">${c.points || 0}</td><td>${money(c.totalSpend)}</td></tr>`).join("");
   }
   document.getElementById("customerSearch").addEventListener("input",(e)=>{ renderCustomersTable(allCustomers, e.target.value); });
 

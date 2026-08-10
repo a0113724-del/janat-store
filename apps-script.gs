@@ -184,6 +184,8 @@ function getOrdersSheet() {
     sheet.getRange(1, COL_SUBTOTAL, 1, 3)
       .setValues([["المجموع الفرعي", "رسوم التوصيل", "تنبيه"]]);
   }
+  // بدونها Sheets يحوّل 07831158964 لرقم ويشيل الصفر
+  forceTextColumn(sheet, COL_PHONE);
   return sheet;
 }
 
@@ -194,6 +196,7 @@ function getCustomersSheet() {
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(["الهاتف", "الاسم", "مجموع النقاط", "إجمالي الصرف"]);
   }
+  forceTextColumn(sheet, 1);
   return sheet;
 }
 
@@ -268,6 +271,21 @@ function normalizePhone(p) {
 
 function isValidPhone(p) {
   return /^07[0-9]{9}$/.test(normalizePhone(p));
+}
+
+/**
+ * يخلي عمود كامل نصّي. لولاها Sheets يقرأ "07831158964" كرقم
+ * ويشيل الصفر البادئ، فيصير العرض غلط بلوحة التحكم.
+ * (المطابقة نفسها ما تتأثر لأن normalizePhone ترجّع الصفر عند القراءة.)
+ */
+function forceTextColumn(sheet, col) {
+  const key = "fmt-" + sheet.getSheetId() + "-" + col;
+  const cache = CacheService.getScriptCache();
+  if (cache.get(key)) return;              // انضبطت قريباً، ما نكررها
+  try {
+    sheet.getRange(1, col, sheet.getMaxRows(), 1).setNumberFormat("@");
+    cache.put(key, "1", 21600);            // 6 ساعات
+  } catch (e) { /* التنسيق ثانوي */ }
 }
 
 function jsonOut(obj) {
