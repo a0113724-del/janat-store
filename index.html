@@ -1123,13 +1123,34 @@
       if(already) return;
       try{ sessionStorage.setItem("janat-visit-logged", "1"); }catch(e){}
     }
+    let myPhone = "";
+    try{ myPhone = localStorage.getItem("janat-my-phone") || ""; }catch(e){}
     fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ type: "analytics", eventType, approxLocation: approxLocationText, visitorId: getVisitorId() })
+      body: JSON.stringify({
+        type: "analytics", eventType,
+        approxLocation: approxLocationText,
+        visitorId: getVisitorId(),
+        phone: myPhone            // يربط الجهاز بالزبون بقائمة النشطين
+      })
     }).catch(()=>{});
   }
+
+  // ---------- نبضة "لسه فاتح التطبيق" ----------
+  // تخلي لوحة التحكم تعرف مين فاتح التطبيق الآن. ما تنكتب بسجل Analytics —
+  // تحدّث "آخر ظهور" بس، وتتوقف إذا الصفحة مخفية حتى ما نستهلك الحصة.
+  (function initHeartbeat(){
+    if(!GOOGLE_SCRIPT_URL) return;
+    const HEARTBEAT_MS = 90000;
+    function beat(){
+      if(document.hidden) return;
+      logAnalyticsEvent("heartbeat");
+    }
+    setInterval(beat, HEARTBEAT_MS);
+    document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) beat(); });
+  })();
 
   // Fallback data used if products.json can't be loaded (e.g. previewing this
   // file directly inside Claude, or opening it by double-click). Mirrors
@@ -1786,6 +1807,8 @@
 
     let seqNo = 0;
     let saveState = "fail";   // ok | unknown | fail
+    let serverMsg = "";       // سبب الرفض لو السيرفر رفض الطلب
+    let serverTotals = null;  // الأرقام المعتمدة من السيرفر (هي الصحيحة)
     if(GOOGLE_SCRIPT_URL){
       try{
         const res = await fetch(GOOGLE_SCRIPT_URL, {
@@ -1797,6 +1820,11 @@
               ? `دقيق${usedSavedLocation ? " (محفوظ)" : ""}: https://maps.google.com/?q=${gpsCoords.lat},${gpsCoords.lng}`
               : approxLocationText,
             items: itemsSummaryLines.join(" | ") + (customRequest ? ` [طلب خاص: ${customRequest}]` : ""),
+            // تفاصيل السلة منظّمة — السيرفر يعيد حساب المجموع منها اعتماداً
+            // على products.json بدل ما يصدّق الرقم الجاي من المتصفح
+            lines: entries.map(([id, qty]) => ({ id, qty })),
+            customRequest: customRequest,
+            visitorId: getVisitorId(),
             orderRef: orderRef(),
             firstOrderVerified: firstOrderVerified === true,
             total: finalTotal(),
@@ -1811,8 +1839,23 @@
         });
         try{
           const data = await res.json();
-          seqNo = data.seqNo || 0;
-          saveState = seqNo ? "ok" : "unknown";
+          if(data.status === "error"){
+            // السيرفر رفض الطلب لسبب واضح (رقم غلط، أقل من الحد الأدنى...)
+            serverMsg = data.message || "";
+            saveState = "rejected";
+          }else{
+            seqNo = data.seqNo || 0;
+            saveState = seqNo ? "ok" : "unknown";
+            // الأرقام النهائية من السيرفر — لو اختلفت عن حساب الصفحة،
+            // حساب السيرفر هو المعتمد
+            if(typeof data.total === "number"){
+              serverTotals = {
+                subtotal: data.subtotal, deliveryFee: data.deliveryFee,
+                total: data.total, pointsUsed: data.pointsUsed,
+                pointsBalance: data.pointsBalance
+              };
+            }
+          }
         }catch(parseErr){
           // الرد وصل بس ما انقرأ — الطلب ممكن يكون انحفظ فعلاً
           saveState = res.ok ? "unknown" : "fail";
@@ -1839,14 +1882,33 @@
       document.getElementById("sendWhatsappBtn").onclick = openWhatsappWithOrder;
       if(window.silentlyEnableCustomerNotifications) window.silentlyEnableCustomerNotifications(phone);
 
+      // نعرض رقم السيرفر مو رقم الصفحة، وننبّه لو اختلفوا
+      if(serverTotals){
+        const box = document.getElementById("orderSuccessBox");
+        const differs = Math.abs(Number(serverTotals.total) - finalTotal()) > 1;
+        const line = document.createElement("div");
+        line.style.cssText = "font-size:.85rem; color:#555; margin:-8px 0 14px; line-height:1.7;";
+        line.innerHTML =
+          `المجموع المعتمد: <b style="color:var(--pomegranate)">${money(serverTotals.total)}</b>` +
+          (differs ? `<br><span style="color:var(--pomegranate); font-size:.78rem;">⚠️ تعدّل عن المعروض — الأسعار تحدّثت</span>` : "");
+        const anchor = document.getElementById("sendWhatsappBtn");
+        box.insertBefore(line, anchor);
+        if(typeof serverTotals.pointsBalance === "number"){
+          currentPointsBalance = serverTotals.pointsBalance;
+          currentRedeemableValue = Math.floor(currentPointsBalance / 10) * 1000;
+          updateTopPointsBadge(currentPointsBalance);
+        }
+      }
+
       try{ localStorage.setItem("janat-has-ordered", "1"); }catch(e){}
       pendingOrderRef = null;   // الطلب الجاي ياخذ مرجع جديد
       hideFirstOrderPromo();
       clearCartAfterOrder();
     }else{
       // ما وصلنا تأكيد الحفظ — ما نقول للزبون "تم بنجاح"، ونخلي سلته كما هي
-      document.getElementById("orderFailMsg").textContent = (saveState === "unknown")
-        ? "ما وصلنا تأكيد حفظ الطلب"
+      document.getElementById("orderFailMsg").textContent =
+        (saveState === "rejected") ? (serverMsg || "الطلب مرفوض")
+        : (saveState === "unknown") ? "ما وصلنا تأكيد حفظ الطلب"
         : "تعذّر إرسال الطلب — تأكد من الإنترنت";
       failBox.style.display = "block";
       document.getElementById("failWhatsappBtn").onclick = openWhatsappWithOrder;

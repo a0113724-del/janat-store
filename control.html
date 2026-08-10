@@ -218,6 +218,21 @@
   .token-box{ margin-top:14px; background:#F6F1E1; border:1px dashed var(--line); border-radius:10px; padding:10px; font-size:.66rem; font-family:monospace; word-break:break-all; text-align:right; color:#666; }
 
   .empty-note, .empty{ text-align:center; color:#888; padding:36px 20px; }
+
+  /* ---------- LIVE / ACTIVE USERS ---------- */
+  .live-dot{
+    display:inline-block; width:8px; height:8px; border-radius:50%;
+    background:#25D366; margin-inline-end:6px; vertical-align:middle;
+    box-shadow:0 0 0 0 rgba(37,211,102,.6); animation:livePulse 1.8s infinite;
+  }
+  @keyframes livePulse{
+    70%{ box-shadow:0 0 0 7px rgba(37,211,102,0); }
+    100%{ box-shadow:0 0 0 0 rgba(37,211,102,0); }
+  }
+  tr.is-online td{ background:rgba(37,211,102,.07); }
+  .u-anon{ color:#999; font-style:italic; }
+  .u-phone{ direction:ltr; display:block; font-size:.7rem; color:var(--leaf); }
+  @media (prefers-reduced-motion: reduce){ .live-dot{ animation:none; } }
 </style>
 </head>
 <body>
@@ -300,6 +315,16 @@
       <div class="bar-chart" id="weekChart"></div>
       <div class="section-h">📲 استخدام التطبيق</div>
       <div class="stats-row" id="appStatsRow"></div>
+
+      <div class="section-h">🟢 مين فاتح التطبيق الآن</div>
+      <div class="stats-row" id="liveStatsRow"></div>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>الزائر</th><th>الحالة</th><th>آخر ظهور</th><th>زيارات</th><th>مثبّت</th></tr></thead>
+          <tbody id="activeUsersBody"></tbody>
+        </table>
+      </div>
+      <p class="empty-note" id="activeUsersNote" style="font-size:.72rem; padding:12px 4px;"></p>
     </div>
 
     <!-- ---------- NOTIFICATIONS VIEW ---------- -->
@@ -704,6 +729,54 @@
     document.getElementById("appStatsRow").innerHTML = stats.map(s => `<div class="stat-card"><div class="lbl">${s.lbl}</div><div class="val">${s.val}</div></div>`).join("");
   }
 
+  // ---------- النشطون داخل التطبيق ----------
+  function timeAgo(d){
+    const t = new Date(d).getTime();
+    if(!t) return "—";
+    const mins = Math.floor((Date.now() - t) / 60000);
+    if(mins < 1) return "الآن";
+    if(mins < 60) return `قبل ${mins} دقيقة`;
+    const hrs = Math.floor(mins / 60);
+    if(hrs < 24) return `قبل ${hrs} ساعة`;
+    return `قبل ${Math.floor(hrs / 24)} يوم`;
+  }
+
+  function renderActiveUsers(d){
+    const stats = [
+      { lbl:"فاتح التطبيق الآن", val: d.onlineNow ?? 0, live:true },
+      { lbl:"دخلوا اليوم", val: d.today ?? 0 },
+      { lbl:"نشطين آخر 7 أيام", val: d.active7d ?? 0 },
+      { lbl:"إجمالي الأجهزة", val: d.total ?? 0 },
+    ];
+    document.getElementById("liveStatsRow").innerHTML = stats.map(s =>
+      `<div class="stat-card"><div class="lbl">${s.lbl}</div><div class="val">${
+        s.live && s.val > 0 ? '<span class="live-dot"></span>' : ''}${s.val}</div></div>`).join("");
+
+    const body = document.getElementById("activeUsersBody");
+    const users = Array.isArray(d.users) ? d.users : [];
+    if(users.length === 0){
+      body.innerHTML = `<tr><td colspan="5" class="empty">ما فيه زوار مسجّلين بعد</td></tr>`;
+    }else{
+      body.innerHTML = users.map(u=>{
+        // الزائر اللي ما كتب رقمه مجهول — ما نقدر نعرف اسمه
+        const who = u.known
+          ? `${u.name || "بدون اسم"}<span class="u-phone">${u.phone}</span>`
+          : `<span class="u-anon">${u.label}</span>`;
+        return `<tr class="${u.online ? 'is-online' : ''}">
+          <td>${who}</td>
+          <td>${u.online ? '<span class="live-dot"></span>متصل' : '—'}</td>
+          <td>${timeAgo(u.lastSeen)}</td>
+          <td>${u.visits || 0}</td>
+          <td>${u.installed ? '✅' : '—'}</td>
+        </tr>`;
+      }).join("");
+    }
+    const known = users.filter(u=>u.known).length;
+    document.getElementById("activeUsersNote").textContent =
+      `"متصل" = ظهر خلال آخر ${d.onlineWindowMinutes || 5} دقائق · ` +
+      `${known} من ${users.length} زائر معروفين بالاسم (الباقي ما كتبوا رقمهم بعد)`;
+  }
+
   function renderStats(orders){
     const now = new Date();
     const today = orders.filter(o => new Date(o.time) >= startOfDay(now));
@@ -846,6 +919,13 @@
 
       const res2 = await fetch(`${GOOGLE_SCRIPT_URL}?analyticsSummary=1`, { cache:"no-store" });
       renderAppStats(await res2.json());
+
+      // قائمة النشطين — لو السيرفر لسه ما انحدّث، نتجاهلها بهدوء
+      try{
+        const resLive = await fetch(`${GOOGLE_SCRIPT_URL}?activeUsers=1`, { cache:"no-store" });
+        const live = await resLive.json();
+        if(live && Array.isArray(live.users)) renderActiveUsers(live);
+      }catch(liveErr){ /* نسخة سيرفر قديمة */ }
 
       const res3 = await fetch(`${GOOGLE_SCRIPT_URL}?customersList=1`, { cache:"no-store" });
       allCustomers = await res3.json();
