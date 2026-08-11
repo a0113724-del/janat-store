@@ -772,16 +772,32 @@ function doPost(e) {
       const hasCustomRequest = String(data.customRequest || "").trim() !== "";
 
       let subtotal;
-      const calc = computeSubtotalFromLines(data.lines);
-      if (calc.ok) {
-        subtotal = calc.subtotal;
-        if (Math.abs(clientSubtotal - subtotal) > 1) {
-          flags.push("مجموع فرعي مختلف: أرسل " + clientSubtotal + " / الصحيح " + subtotal);
-        }
+      const noLines = !Array.isArray(data.lines) || data.lines.length === 0;
+
+      if (noLines && hasCustomRequest && clientSubtotal === 0) {
+        // طلب خاص لحاله بدون منتجات — سعره يُحدد بالتأكيد، مو حالة تنبيه
+        subtotal = 0;
       } else {
-        // نسخة قديمة من الواجهة، أو منتج انحذف — نقبل رقم العميل وننبّه
-        subtotal = clientSubtotal;
-        flags.push("ما انتحقق من المجموع (" + calc.issues.join("، ") + ")");
+        let calc = computeSubtotalFromLines(data.lines);
+
+        // اختلاف بسبب كاش الأسعار (5 دقائق) مو تلاعب — نجيب الأسعار
+        // طازجة ونعيد الحساب مرة وحدة قبل ما ننبّه
+        if (calc.ok && Math.abs(clientSubtotal - calc.subtotal) > 1) {
+          CacheService.getScriptCache().remove("product-prices");
+          const fresh = computeSubtotalFromLines(data.lines);
+          if (fresh.ok) calc = fresh;
+        }
+
+        if (calc.ok) {
+          subtotal = calc.subtotal;
+          if (Math.abs(clientSubtotal - subtotal) > 1) {
+            flags.push("مجموع فرعي مختلف: أرسل " + clientSubtotal + " / الصحيح " + subtotal);
+          }
+        } else {
+          // نسخة قديمة من الواجهة، أو منتج انحذف — نقبل رقم العميل وننبّه
+          subtotal = clientSubtotal;
+          flags.push("ما انتحقق من المجموع (" + calc.issues.join("، ") + ")");
+        }
       }
 
       // ═══ النقاط: مقيَّدة برصيده الفعلي ومن مضاعفات 10 ═══
