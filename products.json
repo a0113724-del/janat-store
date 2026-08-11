@@ -385,7 +385,7 @@
     "price": 750,
     "cat": "fruit",
     "emoji": "🍈",
-    "image": null,
+    "image": "images/reky-1786410488279.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 36
@@ -410,7 +410,7 @@
     "price": 2500,
     "cat": "fruit",
     "emoji": "🌴",
-    "image": null,
+    "image": "images/dates-1786410481883.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 38
