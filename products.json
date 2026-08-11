@@ -419,10 +419,10 @@
     "id": "p1786409740968",
     "name": "رمان مصري ",
     "price": 1500,
-    "cat": "veg",
+    "cat": "fruit",
     "unit": "كغم",
     "emoji": "🥬",
-    "image": null,
+    "image": "images/p1786409740968-1786409982391.jpg",
     "visible": true,
     "order": 39
   },
@@ -430,10 +430,10 @@
     "id": "p1786409743164",
     "name": "رمان يمني ",
     "price": 5000,
-    "cat": "veg",
+    "cat": "fruit",
     "unit": "كغم",
     "emoji": "🥬",
-    "image": null,
+    "image": "images/p1786409743164-1786409989766.jpg",
     "visible": true,
     "order": 40
   }
