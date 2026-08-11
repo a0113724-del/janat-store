@@ -414,5 +414,27 @@
     "unit": "كغم",
     "visible": true,
     "order": 38
+  },
+  {
+    "id": "p1786409740968",
+    "name": "رمان مصري ",
+    "price": 1500,
+    "cat": "veg",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": null,
+    "visible": true,
+    "order": 39
+  },
+  {
+    "id": "p1786409743164",
+    "name": "رمان يمني ",
+    "price": 5000,
+    "cat": "veg",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": null,
+    "visible": true,
+    "order": 40
   }
 ]
