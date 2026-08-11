@@ -244,6 +244,9 @@
       <h1>لوحة تحكم المتجر</h1>
       <p>الصق مفتاح الدخول الخاص فيك (GitHub Token)</p>
       <textarea id="tokenInput" placeholder="github_pat_xxxxxxxxxxxxxxxx"></textarea>
+      <input type="password" id="adminKeyInput" placeholder="مفتاح الإدارة (اختياري)"
+             style="width:100%; border:1.5px solid var(--line); border-radius:12px; padding:12px;
+                    font-family:monospace; font-size:.8rem; margin-bottom:12px;">
       <button id="loginBtn">دخول</button>
       <div class="login-err" id="loginErr">المفتاح غير صحيح أو ما عنده صلاحية — تأكد إنك نسخته كامل</div>
       <div class="howto">
@@ -413,6 +416,32 @@
   function storeToken(t){ try{ localStorage.setItem("janat-admin-token", t); }catch(e){} }
   function clearToken(){ try{ localStorage.removeItem("janat-admin-token"); }catch(e){} }
 
+  // ---------- مفتاح الإدارة (يقفل بيانات الزبائن بالسيرفر) ----------
+  // يبقى فاضي إذا ما ضبطت ADMIN_KEY بـ Apps Script — وقتها كلشي يشتغل زي قبل
+  function getAdminKey(){ try{ return localStorage.getItem("janat-admin-key") || ""; }catch(e){ return ""; } }
+  function storeAdminKey(k){ try{ localStorage.setItem("janat-admin-key", k); }catch(e){} }
+  function clearAdminKey(){ try{ localStorage.removeItem("janat-admin-key"); }catch(e){} }
+
+  // يضيف المفتاح لأي رابط قراءة إدارية
+  function adminUrl(extra){
+    const k = getAdminKey();
+    const sep = extra && extra.indexOf("?") === 0 ? "&" : "?";
+    return GOOGLE_SCRIPT_URL + (extra || "") + (k ? sep + "key=" + encodeURIComponent(k) : "");
+  }
+  // يضيف المفتاح لأي أمر إداري
+  function adminBody(obj){
+    const k = getAdminKey();
+    return JSON.stringify(k ? Object.assign({}, obj, { adminKey: k }) : obj);
+  }
+  // يكشف رد "مفتاحك غلط" ويطلب منك تعيد الدخول
+  function checkAuth(data){
+    if(data && data.unauthorized){
+      setStatus("error", "🔒 مفتاح الإدارة غلط — اضغط خروج وادخل بالمفتاح الصحيح");
+      return false;
+    }
+    return true;
+  }
+
   async function ghFetch(path, options={}){
     return fetch(`${API}${path}`, {
       ...options,
@@ -434,6 +463,7 @@
     const val = document.getElementById("tokenInput").value.trim();
     if(!val) return;
     token = val;
+    storeAdminKey(document.getElementById("adminKeyInput").value.trim());
     const btn = document.getElementById("loginBtn");
     btn.textContent = "⏳ جاري التحقق..."; btn.disabled = true;
     try{
@@ -447,7 +477,7 @@
     btn.textContent = "دخول"; btn.disabled = false;
   });
 
-  document.getElementById("logoutBtn").addEventListener("click", ()=>{ clearToken(); location.reload(); });
+  document.getElementById("logoutBtn").addEventListener("click", ()=>{ clearToken(); clearAdminKey(); location.reload(); });
 
   function showApp(){
     document.getElementById("loginGate").style.display = "none";
@@ -821,7 +851,7 @@
     try{
       const res = await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST", headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "confirmDelivery", orderId })
+        body: adminBody({ action: "confirmDelivery", orderId })
       });
       const data = await res.json();
       if(data.status === "ok"){
@@ -913,8 +943,10 @@
 
   async function loadOrdersData(){
     try{
-      const res = await fetch(GOOGLE_SCRIPT_URL, { cache:"no-store" });
+      const res = await fetch(adminUrl(), { cache:"no-store" });
       const orders = await res.json();
+      if(!checkAuth(orders)) return;
+      if(!Array.isArray(orders)) return;
       if(lastOrderCount !== null && orders.length > lastOrderCount){
         playBeep();
         const activeView = document.querySelector(".nav-btn.active")?.dataset.view;
@@ -924,18 +956,21 @@
       allOrders = orders;
       renderStats(orders); renderWeekChart(orders); renderOrdersList(orders);
 
-      const res2 = await fetch(`${GOOGLE_SCRIPT_URL}?analyticsSummary=1`, { cache:"no-store" });
-      renderAppStats(await res2.json());
+      const res2 = await fetch(adminUrl("?analyticsSummary=1"), { cache:"no-store" });
+      const summary = await res2.json();
+      if(checkAuth(summary)) renderAppStats(summary);
 
       // قائمة النشطين — لو السيرفر لسه ما انحدّث، نتجاهلها بهدوء
       try{
-        const resLive = await fetch(`${GOOGLE_SCRIPT_URL}?activeUsers=1`, { cache:"no-store" });
+        const resLive = await fetch(adminUrl("?activeUsers=1"), { cache:"no-store" });
         const live = await resLive.json();
         if(live && Array.isArray(live.users)) renderActiveUsers(live);
       }catch(liveErr){ /* نسخة سيرفر قديمة */ }
 
-      const res3 = await fetch(`${GOOGLE_SCRIPT_URL}?customersList=1`, { cache:"no-store" });
-      allCustomers = await res3.json();
+      const res3 = await fetch(adminUrl("?customersList=1"), { cache:"no-store" });
+      const custData = await res3.json();
+      if(!checkAuth(custData) || !Array.isArray(custData)) return;
+      allCustomers = custData;
       renderCustomersTable(allCustomers, document.getElementById("customerSearch").value);
     }catch(e){ console.error(e); }
   }
@@ -974,7 +1009,7 @@
           method: "POST",
           mode: "no-cors",
           headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({ action: "registerDeviceToken", token: tk })
+          body: adminBody({ action: "registerDeviceToken", token: tk })
         });
       } catch (regErr) { /* لو فشل التسجيل، الإشعارات بالمقدمة (foreground) تبقى تشتغل */ }
       const s = document.getElementById("pushStatus");
@@ -996,7 +1031,7 @@
       const res = await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({
+        body: adminBody({
           action: "sendTestNotification",
           title: "🔔 إشعار تجريبي",
           body: "لو وصلك هذا، الإشعارات شغّالة تمام ✅"
@@ -1019,7 +1054,7 @@
       const res = await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "sendCustomerBroadcast", title: title || "🌿 جنة الفواكه والخضار", body })
+        body: adminBody({ action: "sendCustomerBroadcast", title: title || "🌿 جنة الفواكه والخضار", body })
       });
       btn.textContent = notifyResultText(await res.json());
       document.getElementById("broadcastTitle").value = "";
