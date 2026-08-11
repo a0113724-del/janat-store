@@ -263,7 +263,7 @@
     "price": 1000,
     "cat": "fruit",
     "emoji": "🍇",
-    "image": null,
+    "image": "images/grape-1786410713411.jpg",
     "featured": true,
     "unit": "كغم",
     "visible": true,
@@ -286,7 +286,7 @@
     "price": 2000,
     "cat": "fruit",
     "emoji": "🟡",
-    "image": null,
+    "image": "images/kojay-1786410719479.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 27
