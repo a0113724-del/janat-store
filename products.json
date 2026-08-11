@@ -436,5 +436,16 @@
     "image": "images/p1786409743164-1786409989766.jpg",
     "visible": true,
     "order": 40
+  },
+  {
+    "id": "p1786410724425",
+    "name": "عنب اسود ",
+    "price": 1500,
+    "cat": "fruit",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": "images/p1786410724425-1786410742792.jpg",
+    "visible": true,
+    "order": 41
   }
 ]
