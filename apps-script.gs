@@ -790,11 +790,13 @@ function doPost(e) {
 
         if (calc.ok) {
           subtotal = calc.subtotal;
-          if (Math.abs(clientSubtotal - subtotal) > 1) {
-            flags.push("مجموع فرعي مختلف: أرسل " + clientSubtotal + " / الصحيح " + subtotal);
+          // ننبّه بس إذا الزبون أرسل رقم أقل من الحقيقي (محاولة يدفع أقل).
+          // لو أرسل أكثر أو مساوي، السيرفر صحّحه وما فيه ضرر — سكوت.
+          if (clientSubtotal > 0 && clientSubtotal < subtotal - 1) {
+            flags.push("مجموع فرعي أقل: أرسل " + clientSubtotal + " / الصحيح " + subtotal);
           }
         } else {
-          // نسخة قديمة من الواجهة، أو منتج انحذف — نقبل رقم العميل وننبّه
+          // منتج مجهول أو قائمة أسعار ما وصلت — هذي تستاهل تنبيه فعلاً
           subtotal = clientSubtotal;
           flags.push("ما انتحقق من المجموع (" + calc.issues.join("، ") + ")");
         }
@@ -813,11 +815,16 @@ function doPost(e) {
       // ═══ رسوم التوصيل والمجموع النهائي ═══
       const serverFee = computeDeliveryFee(subtotal, isGenuinelyFirstOrder);
       const total = Math.max(0, subtotal + serverFee - discount);
-      if (clientFee !== serverFee) {
-        flags.push("رسوم مختلفة: أرسل " + clientFee + " / الصحيح " + serverFee);
+
+      // الواجهة تعرف "أول طلب" من checkPhone اللي ينتظر 600ms بعد ما يكتب
+      // رقمه — لو ضغط تأكيد بسرعة، تحسب رسوم والسيرفر يعرف إنها مجانية.
+      // هذا اختلاف مشروع، والسيرفر هو المرجع. ننبّه بس لو الزبون حاول
+      // يدفع أقل من الصحيح.
+      if (clientFee > 0 && serverFee > clientFee) {
+        flags.push("رسوم أقل: أرسل " + clientFee + " / الصحيح " + serverFee);
       }
-      if (Math.abs(clientTotal - total) > 1 && !hasCustomRequest) {
-        flags.push("مجموع مختلف: أرسل " + clientTotal + " / الصحيح " + total);
+      if (!hasCustomRequest && clientTotal > 0 && clientTotal < total - 1) {
+        flags.push("مجموع أقل: أرسل " + clientTotal + " / الصحيح " + total);
       }
 
       // ═══ الحد الأدنى للطلب (طلبات المنتجات بس) ═══
