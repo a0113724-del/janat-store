@@ -4,7 +4,7 @@
   "minOrderTotal": 0,
   "firstOrderFreeDelivery": true,
   "openHour": 8,
-  "closeHour": 22,
+  "closeHour": 18,
   "manualClosed": false,
   "closedMessage": "",
   "pointsPerOrder": 2,
