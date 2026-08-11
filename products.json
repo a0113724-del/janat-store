@@ -2,7 +2,7 @@
   {
     "id": "tomato",
     "name": "طماطة",
-    "price": 500,
+    "price": 750,
     "cat": "veg",
     "emoji": "🍅",
     "image": "images/tomato-1785117823924.jpg",
@@ -13,7 +13,7 @@
   {
     "id": "cucumber",
     "name": "خيار",
-    "price": 500,
+    "price": 750,
     "cat": "veg",
     "emoji": "🥒",
     "image": "images/cucumber-1785117845595.jpg",
@@ -26,7 +26,7 @@
   {
     "id": "potato",
     "name": "بطاطا",
-    "price": 500,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🥔",
     "image": "images/potato-1785117857046.jpg",
@@ -37,7 +37,7 @@
   {
     "id": "eggplant",
     "name": "باذنجان",
-    "price": 500,
+    "price": 750,
     "cat": "veg",
     "emoji": "🍆",
     "image": "images/eggplant-1785117873353.jpg",
@@ -59,7 +59,7 @@
   {
     "id": "cabbagew",
     "name": "الهانة بيضاء",
-    "price": 750,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🥬",
     "image": "images/cabbagew-1785117919129.jpg",
@@ -70,7 +70,7 @@
   {
     "id": "cabbager",
     "name": "الهانة حمراء",
-    "price": 750,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🥬",
     "image": "images/cabbager-1785118194726.jpg",
@@ -81,7 +81,7 @@
   {
     "id": "caulif",
     "name": "قرنابيط",
-    "price": 1000,
+    "price": 1250,
     "cat": "veg",
     "emoji": "🥦",
     "image": "images/caulif-1785118209319.jpg",
@@ -92,7 +92,7 @@
   {
     "id": "pepperc",
     "name": "فلفل بارد",
-    "price": 1750,
+    "price": 1500,
     "cat": "veg",
     "emoji": "🫑",
     "image": "images/pepperc-1785118218992.jpg",
@@ -125,7 +125,7 @@
   {
     "id": "oniony",
     "name": "بصل اصفر",
-    "price": 750,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🧅",
     "image": "images/oniony-1785118290445.jpg",
@@ -158,7 +158,7 @@
   {
     "id": "lobia",
     "name": "لوبيه",
-    "price": 2000,
+    "price": 2500,
     "cat": "veg",
     "emoji": "🫘",
     "image": "images/lobia-1785118364694.jpg",
@@ -169,24 +169,13 @@
   {
     "id": "bamia",
     "name": "بانيه (بامية)",
-    "price": 2000,
+    "price": 3000,
     "cat": "veg",
     "emoji": "🌿",
     "image": "images/bamia-1785118344047.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 15
-  },
-  {
-    "id": "bakela",
-    "name": "باقلاء",
-    "price": 1500,
-    "cat": "veg",
-    "emoji": "🫛",
-    "image": "images/bakela-1785118380413.jpg",
-    "unit": "كغم",
-    "visible": true,
-    "order": 16
   },
   {
     "id": "carrot",
@@ -222,20 +211,9 @@
     "order": 19
   },
   {
-    "id": "melon",
-    "name": "شمام",
-    "price": 1000,
-    "cat": "veg",
-    "emoji": "🍈",
-    "image": "images/melon-1785118452162.jpg",
-    "unit": "كغم",
-    "visible": true,
-    "order": 20
-  },
-  {
     "id": "banana",
     "name": "موز",
-    "price": 1500,
+    "price": 1750,
     "cat": "fruit",
     "emoji": "🍌",
     "image": "images/banana-1785118460886.jpg",
@@ -249,7 +227,7 @@
   {
     "id": "figw",
     "name": "تين ابيض",
-    "price": 2500,
+    "price": 2000,
     "cat": "fruit",
     "emoji": "⚪",
     "image": "images/figw-1785118481332.jpg",
@@ -260,7 +238,7 @@
   {
     "id": "figb",
     "name": "تين اسود",
-    "price": 2500,
+    "price": 2000,
     "cat": "fruit",
     "emoji": "⚫",
     "image": "images/figb-1785118505537.jpg",
@@ -271,7 +249,7 @@
   {
     "id": "orange",
     "name": "برتقال",
-    "price": 1000,
+    "price": 1500,
     "cat": "fruit",
     "emoji": "🍊",
     "image": "images/orange-1785118528910.jpg",
@@ -316,7 +294,7 @@
   {
     "id": "cherry",
     "name": "كرز",
-    "price": 2000,
+    "price": 2500,
     "cat": "fruit",
     "emoji": "🍒",
     "image": "images/cherry-1785118574023.jpg",
@@ -338,7 +316,7 @@
   {
     "id": "peach_tini",
     "name": "خوخ تيني",
-    "price": 2000,
+    "price": 2500,
     "cat": "fruit",
     "emoji": "🍑",
     "image": "images/peach_tini-1785118608639.jpg",
@@ -371,7 +349,7 @@
   {
     "id": "lemon",
     "name": "ليمون",
-    "price": 2500,
+    "price": 2000,
     "cat": "fruit",
     "emoji": "🍋",
     "image": "images/lemon-1785118635914.jpg",
@@ -382,7 +360,7 @@
   {
     "id": "apricot",
     "name": "مشمش",
-    "price": 2000,
+    "price": 2500,
     "cat": "fruit",
     "emoji": "🟠",
     "image": "images/apricot-1785118658898.jpg",
@@ -415,7 +393,7 @@
   {
     "id": "watermelon",
     "name": "بطيخ",
-    "price": 1000,
+    "price": 750,
     "cat": "fruit",
     "emoji": "🍉",
     "image": "images/watermelon-1785118677255.jpg",
@@ -429,7 +407,7 @@
   {
     "id": "dates",
     "name": "تمر",
-    "price": 5000,
+    "price": 2500,
     "cat": "fruit",
     "emoji": "🌴",
     "image": null,
