@@ -102,36 +102,67 @@ function getStoreSettings() {
 }
 
 /**
- * جدول أسعار المنتجات { id: {price, name, unit} } من products.json.
- * هذا اللي يخلي السيرفر يقدر يتحقق من مجموع السلة بدل ما يصدّق المتصفح.
- * يرجع null إذا تعذّر الجلب — وقتها نقبل رقم العميل مع تنبيه.
+ * أسعار المنتجات من products.json.
+ * يرجع { map, stale, reason } — أو null إذا ما فيه أي أسعار إطلاقاً.
+ * stale=true معناه الجلب فشل واستعملنا نسخة احتياطية، ووقتها ما ننبّه
+ * على فروق المجموع لأن أسعارنا نفسها ممكن تكون قديمة.
  */
 function getProductPrices() {
   const cache = CacheService.getScriptCache();
+  const props = PropertiesService.getScriptProperties();
+
   const cached = cache.get("product-prices");
   if (cached) {
-    try { return JSON.parse(cached); } catch (e) { /* نجيبها من جديد */ }
+    try { return { map: JSON.parse(cached), stale: false, reason: "" }; } catch (e) { }
   }
+
+  let reason = "";
   try {
-    const res = UrlFetchApp.fetch(PRODUCTS_URL + "?t=" + Date.now(), { muteHttpExceptions: true });
-    if (res.getResponseCode() !== 200) return null;
-    const arr = JSON.parse(res.getContentText());
-    if (!Array.isArray(arr)) return null;
-    const map = {};
-    arr.forEach(function (p) {
-      if (p && p.id) {
-        map[String(p.id)] = {
-          price: Number(p.price) || 0,
-          name: String(p.name || ""),
-          unit: String(p.unit || "كغم")
-        };
-      }
+    const res = UrlFetchApp.fetch(PRODUCTS_URL + "?t=" + Date.now(), {
+      muteHttpExceptions: true,
+      followRedirects: true
     });
-    cache.put("product-prices", JSON.stringify(map), 300); // 5 دقائق
-    return map;
+    const code = res.getResponseCode();
+    if (code === 200) {
+      const body = res.getContentText();
+      const arr = JSON.parse(body);
+      if (Array.isArray(arr) && arr.length) {
+        const map = {};
+        arr.forEach(function (p) {
+          if (p && p.id) {
+            map[String(p.id)] = {
+              price: Number(p.price) || 0,
+              name: String(p.name || ""),
+              unit: String(p.unit || "كغم")
+            };
+          }
+        });
+        const json = JSON.stringify(map);
+        try { cache.put("product-prices", json, 300); } catch (e) { }
+        // نسخة احتياطية دائمة — تنقذنا لو فشل الجلب مرة جاية
+        try { props.setProperty("prices-backup", json); } catch (e) { }
+        try { props.deleteProperty("prices-last-error"); } catch (e) { }
+        return { map: map, stale: false, reason: "" };
+      }
+      reason = "الرد مو قائمة منتجات (طوله " + body.length + " حرف)";
+    } else {
+      reason = "HTTP " + code;
+    }
   } catch (e) {
-    return null;
+    reason = String(e);
   }
+
+  // فشل الجلب — نسجّل السبب ونستعمل آخر نسخة ناجحة بدل ما نعطّل التحقق كلياً
+  try { props.setProperty("prices-last-error", reason + " · " + new Date()); } catch (e) { }
+  try {
+    const backup = props.getProperty("prices-backup");
+    if (backup) {
+      Logger.log("⚠️ استعملنا الأسعار الاحتياطية — سبب الفشل: " + reason);
+      return { map: JSON.parse(backup), stale: true, reason: reason };
+    }
+  } catch (e) { }
+
+  return null;
 }
 
 /**
@@ -141,12 +172,14 @@ function getProductPrices() {
  */
 function computeSubtotalFromLines(lines) {
   if (!Array.isArray(lines) || lines.length === 0) {
-    return { ok: false, subtotal: 0, issues: ["ما وصلت تفاصيل السلة"] };
+    return { ok: false, stale: false, subtotal: 0, issues: ["ما وصلت تفاصيل السلة"] };
   }
-  const prices = getProductPrices();
-  if (!prices) {
-    return { ok: false, subtotal: 0, issues: ["تعذّر جلب قائمة الأسعار"] };
+  const pr = getProductPrices();
+  if (!pr || !pr.map) {
+    return { ok: false, stale: false, subtotal: 0,
+             issues: ["تعذّر جلب قائمة الأسعار" + (pr && pr.reason ? ": " + pr.reason : "")] };
   }
+  const prices = pr.map;
   let sum = 0;
   const issues = [];
   lines.forEach(function (l) {
@@ -157,7 +190,12 @@ function computeSubtotalFromLines(lines) {
     if (!(qty > 0) || qty > 500) { issues.push("كمية غير منطقية لـ " + id + ": " + qty); return; }
     sum += p.price * qty;
   });
-  return { ok: issues.length === 0, subtotal: Math.round(sum), issues: issues };
+  return {
+    ok: issues.length === 0,
+    stale: !!pr.stale,          // أسعار احتياطية — ما ننبّه على فروق المجموع
+    subtotal: Math.round(sum),
+    issues: issues
+  };
 }
 
 function computeDeliveryFee(subtotal, isFirstOrder) {
@@ -291,6 +329,32 @@ function forceTextColumn(sheet, col) {
 function jsonOut(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ═══════════════════ حماية العمليات الإدارية ═══════════════════
+/**
+ * الرابط مكشوف للعالم بطبيعته (لازم يكون، حتى الزبون يقدر يسجّل طلب).
+ * بدون قفل، أي أحد يعرف الرابط يشوف أسماء الزبائن وأرقامهم وإحداثيات
+ * بيوتهم، ويقدر يرسل إشعارات باسم المتجر ويأكّد تسليم طلبات وهمية.
+ *
+ * ⚠️ بتصميم آمن: إذا ADMIN_KEY مو مضبوط بـ Script Properties، كلشي
+ * يشتغل زي قبل بالضبط — فما فيه احتمال تقفل نفسك برّا لوحتك.
+ * القفل يشتغل لحظة ما تضبط المفتاح، ولا لحظة قبلها.
+ */
+function isAuthorized(providedKey) {
+  let key = "";
+  try { key = PropertiesService.getScriptProperties().getProperty("ADMIN_KEY") || ""; }
+  catch (e) { return true; }
+  if (!key) return true;                       // ما انضبط مفتاح = مفتوح
+  return String(providedKey || "") === key;
+}
+
+function denied() {
+  return jsonOut({
+    status: "error",
+    unauthorized: true,
+    message: "مفتاح الإدارة غلط أو ناقص"
+  });
 }
 
 // ═══════════════════ أجهزة الزبائن ═══════════════════
@@ -642,6 +706,7 @@ function doPost(e) {
 
     // تسجيل رمز جهاز الأدمن (من صفحة التحكم عند تفعيل الإشعارات)
     if (data.action === "registerDeviceToken" && data.token) {
+      if (!isAuthorized(data.adminKey)) return denied();
       const devicesSheet = getDevicesSheet();
       const lastRow = devicesSheet.getLastRow();
       let exists = false;
@@ -655,6 +720,7 @@ function doPost(e) {
 
     // زر "إرسال إشعار تجريبي" بصفحة التحكم
     if (data.action === "sendTestNotification") {
+      if (!isAuthorized(data.adminKey)) return denied();
       const result = sendPushToAllDevices(
         data.title || "🔔 إشعار تجريبي",
         data.body || "هذا اختبار للتأكد إن الإشعارات تشتغل"
@@ -670,6 +736,7 @@ function doPost(e) {
 
     // إرسال إشعار جماعي لكل الزبائن المسجّلين (زر بصفحة التحكم)
     if (data.action === "sendCustomerBroadcast") {
+      if (!isAuthorized(data.adminKey)) return denied();
       const result = sendPushToAllCustomerDevices(
         data.title || "🌿 جنة الفواكه والخضار",
         data.body || ""
@@ -679,6 +746,7 @@ function doPost(e) {
 
     // زر "تأكيد الاستلام" بصفحة التقارير
     if (data.action === "confirmDelivery" && data.orderId) {
+      if (!isAuthorized(data.adminKey)) return denied();
       const lock = LockService.getScriptLock();
       try { lock.waitLock(LOCK_TIMEOUT_MS); }
       catch (lockErr) { return jsonOut({ status: "error", message: "busy" }); }
@@ -705,6 +773,7 @@ function doPost(e) {
 
     // إلغاء طلب — يرجّع النقاط المحجوزة لصاحبها
     if (data.action === "cancelOrder" && data.orderId) {
+      if (!isAuthorized(data.adminKey)) return denied();
       const lock = LockService.getScriptLock();
       try { lock.waitLock(LOCK_TIMEOUT_MS); }
       catch (lockErr) { return jsonOut({ status: "error", message: "busy" }); }
@@ -790,11 +859,14 @@ function doPost(e) {
 
         if (calc.ok) {
           subtotal = calc.subtotal;
-          if (Math.abs(clientSubtotal - subtotal) > 1) {
-            flags.push("مجموع فرعي مختلف: أرسل " + clientSubtotal + " / الصحيح " + subtotal);
+          // ننبّه بس إذا الزبون أرسل رقم أقل من الحقيقي (محاولة يدفع أقل).
+          // لو أرسل أكثر أو مساوي، السيرفر صحّحه وما فيه ضرر — سكوت.
+          // لو أسعارنا احتياطية (الجلب فشل) ما ننبّه — ممكن نحن القدامى
+          if (!calc.stale && clientSubtotal > 0 && clientSubtotal < subtotal - 1) {
+            flags.push("مجموع فرعي أقل: أرسل " + clientSubtotal + " / الصحيح " + subtotal);
           }
         } else {
-          // نسخة قديمة من الواجهة، أو منتج انحذف — نقبل رقم العميل وننبّه
+          // منتج مجهول أو قائمة أسعار ما وصلت — هذي تستاهل تنبيه فعلاً
           subtotal = clientSubtotal;
           flags.push("ما انتحقق من المجموع (" + calc.issues.join("، ") + ")");
         }
@@ -813,11 +885,16 @@ function doPost(e) {
       // ═══ رسوم التوصيل والمجموع النهائي ═══
       const serverFee = computeDeliveryFee(subtotal, isGenuinelyFirstOrder);
       const total = Math.max(0, subtotal + serverFee - discount);
-      if (clientFee !== serverFee) {
-        flags.push("رسوم مختلفة: أرسل " + clientFee + " / الصحيح " + serverFee);
+
+      // الواجهة تعرف "أول طلب" من checkPhone اللي ينتظر 600ms بعد ما يكتب
+      // رقمه — لو ضغط تأكيد بسرعة، تحسب رسوم والسيرفر يعرف إنها مجانية.
+      // هذا اختلاف مشروع، والسيرفر هو المرجع. ننبّه بس لو الزبون حاول
+      // يدفع أقل من الصحيح.
+      if (clientFee > 0 && serverFee > clientFee) {
+        flags.push("رسوم أقل: أرسل " + clientFee + " / الصحيح " + serverFee);
       }
-      if (Math.abs(clientTotal - total) > 1 && !hasCustomRequest) {
-        flags.push("مجموع مختلف: أرسل " + clientTotal + " / الصحيح " + total);
+      if (!hasCustomRequest && clientTotal > 0 && clientTotal < total - 1) {
+        flags.push("مجموع أقل: أرسل " + clientTotal + " / الصحيح " + total);
       }
 
       // ═══ الحد الأدنى للطلب (طلبات المنتجات بس) ═══
@@ -967,7 +1044,10 @@ function onEdit(e) {
 
 // ═══════════════════ قراءة البيانات ═══════════════════
 function doGet(e) {
+  const adminKey = e.parameter.key;
+
   if (e.parameter.customersList) {
+    if (!isAuthorized(adminKey)) return denied();
     const customersSheet = getCustomersSheet();
     const lastRow = customersSheet.getLastRow();
     if (lastRow < 2) return jsonOut([]);
@@ -980,6 +1060,7 @@ function doGet(e) {
 
   // ═══ قائمة النشطين — مين فاتح التطبيق الحين ومين دخل مؤخراً ═══
   if (e.parameter.activeUsers) {
+    if (!isAuthorized(adminKey)) return denied();
     const vSheet = getVisitorsSheet();
     const lastRow = vSheet.getLastRow();
     if (lastRow < 2) return jsonOut({ onlineNow: 0, today: 0, active7d: 0, users: [] });
@@ -1025,6 +1106,7 @@ function doGet(e) {
 
   // ملخّص الاستخدام — يجي من ورقة Visitors الجاهزة (سريع)
   if (e.parameter.analyticsSummary) {
+    if (!isAuthorized(adminKey)) return denied();
     const vSheet = getVisitorsSheet();
     const vLast = vSheet.getLastRow();
     let uniqueVisitors = 0, activeVisitors7d = 0, installs = 0,
@@ -1118,6 +1200,9 @@ function doGet(e) {
     });
     return jsonOut({ hasOrdered: found });
   }
+
+  // القائمة الكاملة = كل بيانات زبائنك ومواقعهم — أخطر شي بالرابط
+  if (!isAuthorized(adminKey)) return denied();
 
   const orders = rows.map(function (row) {
     return {
@@ -1306,8 +1391,10 @@ function testFirebaseSetup() {
   Logger.log("الزبائن بالجدول: " + Math.max(0, getCustomersSheet().getLastRow() - 1));
   Logger.log("الزوار المتتبَّعين: " + Math.max(0, getVisitorsSheet().getLastRow() - 1));
   Logger.log("إعدادات المتجر: " + JSON.stringify(getStoreSettings()));
-  const prices = getProductPrices();
-  Logger.log("قائمة الأسعار: " + (prices ? "✅ " + Object.keys(prices).length + " منتج" : "❌ تعذّر الجلب"));
+  const pr = getProductPrices();
+  if (!pr) Logger.log("قائمة الأسعار: ❌ تعذّر الجلب ولا فيه نسخة احتياطية");
+  else Logger.log("قائمة الأسعار: " + (pr.stale ? "⚠️ احتياطية (" + pr.reason + ") — " : "✅ ") +
+                  Object.keys(pr.map).length + " منتج");
 }
 
 // فحص شامل: يتأكد إن التوحيد والحساب يشتغلون صح
@@ -1319,8 +1406,10 @@ function testCalculations() {
   });
 
   Logger.log("═══ حساب السلة ═══");
-  const prices = getProductPrices();
-  if (!prices) { Logger.log("❌ ما وصلت قائمة الأسعار"); return; }
+  const pr = getProductPrices();
+  if (!pr) { Logger.log("❌ ما وصلت قائمة الأسعار"); return; }
+  if (pr.stale) Logger.log("⚠️ أسعار احتياطية — سبب فشل الجلب: " + pr.reason);
+  const prices = pr.map;
   const ids = Object.keys(prices).slice(0, 2);
   const lines = ids.map(function (id) { return { id: id, qty: 2 }; });
   const calc = computeSubtotalFromLines(lines);
@@ -1349,3 +1438,32 @@ function testCustomerBroadcast() {
  * 5. Event type: On edit
  * 6. احفظ ووافق على الصلاحيات إذا طلبت منك
  */
+
+/**
+ * تشخيص جلب الأسعار — شغّلها لو طلع تنبيه "تعذّر جلب قائمة الأسعار".
+ * تبيّن بالضبط شنو يرجّع الرابط للسيرفر.
+ */
+function testProductFetch() {
+  const url = PRODUCTS_URL + "?t=" + Date.now();
+  Logger.log("الرابط: " + url);
+  try {
+    const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true, followRedirects: true });
+    const code = res.getResponseCode();
+    const body = res.getContentText();
+    Logger.log("رمز الرد: " + code + (code === 200 ? " ✅" : " ❌"));
+    Logger.log("طول الرد: " + body.length + " حرف");
+    Logger.log("أول 200 حرف: " + body.substring(0, 200));
+    if (code === 200) {
+      try {
+        const arr = JSON.parse(body);
+        Logger.log(Array.isArray(arr) ? "✅ قائمة صحيحة — " + arr.length + " منتج"
+                                      : "❌ الرد مو مصفوفة");
+      } catch (e) { Logger.log("❌ الرد مو JSON صحيح: " + e); }
+    }
+  } catch (e) {
+    Logger.log("❌ فشل الاتصال كلياً: " + e);
+  }
+  const props = PropertiesService.getScriptProperties();
+  Logger.log("آخر خطأ مسجّل: " + (props.getProperty("prices-last-error") || "ما فيه"));
+  Logger.log("نسخة احتياطية محفوظة: " + (props.getProperty("prices-backup") ? "✅ موجودة" : "❌ ما موجودة"));
+}
