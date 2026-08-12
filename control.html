@@ -1019,12 +1019,48 @@
   }
   document.getElementById("customerSearch").addEventListener("input",(e)=>{ renderCustomersTable(allCustomers, e.target.value); });
 
+  // يجيب ويحلّل الرد، ويرمي خطأ فيه التفاصيل الحقيقية بدل ما يفشل بصمت
+  async function fetchJson(url, label){
+    let res;
+    try{ res = await fetch(url, { cache:"no-store" }); }
+    catch(netErr){ throw new Error(`${label}: ما وصلنا السيرفر (نت مقطوع؟)`); }
+    const text = await res.text();
+    if(!res.ok) throw new Error(`${label}: السيرفر رد ${res.status}`);
+    try{ return JSON.parse(text); }
+    catch(parseErr){
+      // Apps Script يرجّع صفحة HTML وقت الخطأ أو لو النشر قديم/محذوف
+      const peek = text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+      throw new Error(`${label}: الرد مو JSON — ${peek || "رد فاضي"}`);
+    }
+  }
+
+  function showLoadError(msg){
+    const bar = document.getElementById("statusBar");
+    bar.className = "status-bar error";
+    bar.textContent = "⚠️ " + msg;
+    const list = document.getElementById("ordersList");
+    if(list && !allOrders.length){
+      list.innerHTML = `<div class="empty" style="text-align:right; line-height:2;">
+        <div style="font-size:2rem; text-align:center; margin-bottom:10px;">⚠️</div>
+        <b style="color:var(--pomegranate);">تعذّر جلب البيانات من السيرفر</b><br>
+        <span style="font-size:.8rem; color:#666;">${msg}</span>
+        <div style="margin-top:14px; font-size:.76rem; color:#888; line-height:1.9;">
+          • تأكد إنك سويت <b>Deploy ← New version</b> بعد آخر تعديل للكود<br>
+          • إذا ضبطت <b>ADMIN_KEY</b>، اكتبه ببوابة المفتاح<br>
+          • جرّب تفتح رابط السيرفر بالمتصفح وشوف شنو يرد
+        </div>
+      </div>`;
+    }
+  }
+
   async function loadOrdersData(){
     try{
-      const res = await fetch(adminUrl(), { cache:"no-store" });
-      const orders = await res.json();
+      const orders = await fetchJson(adminUrl(), "الطلبات");
       if(!checkAuth(orders)) return;
-      if(!Array.isArray(orders)) return;
+      if(!Array.isArray(orders)){
+        showLoadError("الطلبات: الرد مو قائمة — " + JSON.stringify(orders).slice(0,120));
+        return;
+      }
       if(lastOrderCount !== null && orders.length > lastOrderCount){
         playBeep();
         const activeView = document.querySelector(".nav-btn.active")?.dataset.view;
@@ -1034,23 +1070,26 @@
       allOrders = orders;
       renderStats(orders); renderWeekChart(orders); renderOrdersList(orders);
 
-      const res2 = await fetch(adminUrl("?analyticsSummary=1"), { cache:"no-store" });
-      const summary = await res2.json();
+      const summary = await fetchJson(adminUrl("?analyticsSummary=1"), "الإحصائيات");
       if(checkAuth(summary)) renderAppStats(summary);
 
       // قائمة النشطين — لو السيرفر لسه ما انحدّث، نتجاهلها بهدوء
       try{
-        const resLive = await fetch(adminUrl("?activeUsers=1"), { cache:"no-store" });
-        const live = await resLive.json();
+        const live = await fetchJson(adminUrl("?activeUsers=1"), "النشطين");
         if(live && Array.isArray(live.users)) renderActiveUsers(live);
-      }catch(liveErr){ /* نسخة سيرفر قديمة */ }
+      }catch(liveErr){ console.warn(liveErr.message); /* نسخة سيرفر قديمة */ }
 
-      const res3 = await fetch(adminUrl("?customersList=1"), { cache:"no-store" });
-      const custData = await res3.json();
+      const custData = await fetchJson(adminUrl("?customersList=1"), "الزبائن");
       if(!checkAuth(custData) || !Array.isArray(custData)) return;
       allCustomers = custData;
       renderCustomersTable(allCustomers, document.getElementById("customerSearch").value);
-    }catch(e){ console.error(e); }
+
+      const bar = document.getElementById("statusBar");
+      if(bar.classList.contains("error")) bar.className = "status-bar hidden";
+    }catch(e){
+      console.error(e);
+      showLoadError(e && e.message ? e.message : String(e));
+    }
   }
 
   // ================= PUSH NOTIFICATIONS =================
