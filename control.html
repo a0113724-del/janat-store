@@ -1023,7 +1023,13 @@
   async function fetchJson(url, label){
     let res;
     try{ res = await fetch(url, { cache:"no-store" }); }
-    catch(netErr){ throw new Error(`${label}: ما وصلنا السيرفر (نت مقطوع؟)`); }
+    catch(netErr){
+      // navigator.onLine يفرّق: لو النت شغّال والاتصال انرفض، المشكلة
+      // برابط النشر (انحذف أو صار جديد) مو بالإنترنت
+      throw new Error(navigator.onLine
+        ? `${label}: النت شغّال بس السيرفر ما رد — على الأغلب رابط النشر ما عاد صالح`
+        : `${label}: ما في اتصال بالإنترنت`);
+    }
     const text = await res.text();
     if(!res.ok) throw new Error(`${label}: السيرفر رد ${res.status}`);
     try{ return JSON.parse(text); }
@@ -1045,10 +1051,14 @@
         <b style="color:var(--pomegranate);">تعذّر جلب البيانات من السيرفر</b><br>
         <span style="font-size:.8rem; color:#666;">${msg}</span>
         <div style="margin-top:14px; font-size:.76rem; color:#888; line-height:1.9;">
-          • تأكد إنك سويت <b>Deploy ← New version</b> بعد آخر تعديل للكود<br>
-          • إذا ضبطت <b>ADMIN_KEY</b>، اكتبه ببوابة المفتاح<br>
-          • جرّب تفتح رابط السيرفر بالمتصفح وشوف شنو يرد
+          • بمحرر Apps Script استعمل <b>Deploy ← Manage deployments ← ✏️ ← New version</b><br>
+          &nbsp;&nbsp;<b style="color:var(--pomegranate);">لا تستعمل "New deployment"</b> — يعطي رابط جديد والقديم يموت<br>
+          • إذا ضبطت <b>ADMIN_KEY</b>، اكتبه ببوابة المفتاح
         </div>
+        <button id="openScriptBtn" style="margin-top:14px; background:var(--forest); color:var(--gold-light);
+          border:none; padding:11px 20px; border-radius:10px; font-weight:800; font-size:.8rem; cursor:pointer;">
+          🔗 افتح رابط السيرفر وشوف شنو يرد
+        </button>
       </div>`;
     }
   }
@@ -1090,6 +1100,8 @@
       console.error(e);
       showLoadError(e && e.message ? e.message : String(e));
     }
+    const ob = document.getElementById("openScriptBtn");
+    if(ob) ob.onclick = ()=> window.open(adminUrl(), "_blank");
   }
 
   // ================= PUSH NOTIFICATIONS =================
