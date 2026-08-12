@@ -5,7 +5,7 @@
   "firstOrderFreeDelivery": true,
   "openHour": 8,
   "closeHour": 18,
-  "manualClosed": true,
+  "manualClosed": false,
   "closedMessage": "مغلق للصيانه",
   "pointsPerOrder": 2,
   "promoText": "🚴 التوصيل الأول مجاني لكل زبون جديد!",
