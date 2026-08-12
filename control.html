@@ -219,6 +219,33 @@
 
   .empty-note, .empty{ text-align:center; color:#888; padding:36px 20px; }
 
+  /* ---------- بوابة مفتاح الإدارة ---------- */
+  #keyGate{
+    position:fixed; inset:0; z-index:200; display:none;
+    align-items:center; justify-content:center; padding:20px;
+    background:rgba(21,49,34,.82); backdrop-filter:blur(3px);
+  }
+  #keyGate.show{ display:flex; }
+  .kg-box{
+    background:#fff; border-radius:20px; padding:28px 24px; max-width:400px; width:100%;
+    text-align:center; box-shadow:0 24px 60px rgba(0,0,0,.4);
+  }
+  .kg-ic{ font-size:2.4rem; margin-bottom:8px; }
+  .kg-box h3{ color:var(--forest); font-size:1.15rem; margin-bottom:8px; }
+  .kg-box p{ font-size:.82rem; color:#777; line-height:1.8; margin-bottom:16px; }
+  .kg-box input{
+    width:100%; border:1.5px solid var(--line); border-radius:12px; padding:12px;
+    font-family:monospace; font-size:.85rem; margin-bottom:12px; text-align:center;
+  }
+  .kg-box button{
+    width:100%; background:var(--leaf); color:#fff; border:none; padding:13px;
+    border-radius:12px; font-weight:800; font-size:.92rem; cursor:pointer;
+  }
+  .kg-err{ color:var(--pomegranate); font-size:.78rem; margin-bottom:10px; display:none; }
+  .kg-err.show{ display:block; }
+  .kg-hint{ margin-top:16px; font-size:.72rem; color:#999; line-height:1.8; text-align:right; }
+  .kg-hint b{ color:var(--forest); }
+
   /* ---------- LIVE / ACTIVE USERS ---------- */
   .live-dot{
     display:inline-block; width:8px; height:8px; border-radius:50%;
@@ -363,6 +390,19 @@
     </div>
   </div>
 
+  <!-- ========= بوابة المفتاح: تطلع لو السيرفر رفض، بدل ما تنقفل الصفحة ========= -->
+  <div id="keyGate">
+    <div class="kg-box">
+      <div class="kg-ic">🔒</div>
+      <h3>مفتاح الإدارة مطلوب</h3>
+      <p>ضبطت <b>ADMIN_KEY</b> بـ Apps Script، فالسيرفر صار يطلبه قبل ما يعطي بيانات الزبائن. اكتبه هنا مرة وحدة وينحفظ بجهازك.</p>
+      <input type="password" id="keyGateInput" placeholder="اكتب مفتاح الإدارة" autocomplete="off">
+      <div class="kg-err" id="keyGateErr">المفتاح غلط — تأكد إنه نفس اللي بـ Script Properties</div>
+      <button id="keyGateSave">حفظ ومتابعة</button>
+      <div class="kg-hint">نسيته؟ افتح Apps Script ← ⚙️ Project Settings ← Script Properties وشوف قيمة <b>ADMIN_KEY</b>، أو غيّرها لقيمة جديدة.</div>
+    </div>
+  </div>
+
   <!-- ================= BOTTOM NAV ================= -->
   <div class="bottom-nav" id="bottomNav">
     <button class="nav-btn active" data-view="products"><span class="ic">📦</span>منتجات</button>
@@ -433,14 +473,40 @@
     const k = getAdminKey();
     return JSON.stringify(k ? Object.assign({}, obj, { adminKey: k }) : obj);
   }
-  // يكشف رد "مفتاحك غلط" ويطلب منك تعيد الدخول
+  // يكشف رد "مفتاحك غلط" ويفتح بوابة المفتاح بدل ما تبقى الصفحة فاضية
+  // بلا تفسير. ما نخلي الأدمن يسجّل خروج — التوكن يضيع ويدور عليه من جديد.
   function checkAuth(data){
-    if(data && data.unauthorized){
-      setStatus("error", "🔒 مفتاح الإدارة غلط — اضغط خروج وادخل بالمفتاح الصحيح");
-      return false;
-    }
+    if(data && data.unauthorized){ openKeyGate(getAdminKey() !== ""); return false; }
     return true;
   }
+
+  function openKeyGate(wasWrong){
+    const gate = document.getElementById("keyGate");
+    if(!gate || gate.classList.contains("show")) return;   // مفتوحة أصلاً
+    gate.classList.add("show");
+    document.getElementById("keyGateErr").classList.toggle("show", !!wasWrong);
+    const inp = document.getElementById("keyGateInput");
+    inp.value = "";
+    setTimeout(()=>inp.focus(), 100);
+  }
+
+  function saveKeyFromGate(){
+    const val = document.getElementById("keyGateInput").value.trim();
+    if(!val) return;
+    storeAdminKey(val);
+    document.getElementById("keyGate").classList.remove("show");
+    setStatus("saving", "⏳ جاري التحقق من المفتاح...");
+    loadOrdersData().then(()=>{
+      // لو المفتاح غلط، checkAuth راح يفتح البوابة من جديد بنفسه
+      if(!document.getElementById("keyGate").classList.contains("show")){
+        setStatus("saved", "✅ المفتاح صحيح — البيانات رجعت");
+      }
+    });
+  }
+  document.getElementById("keyGateSave").addEventListener("click", saveKeyFromGate);
+  document.getElementById("keyGateInput").addEventListener("keydown",(e)=>{
+    if(e.key === "Enter") saveKeyFromGate();
+  });
 
   async function ghFetch(path, options={}){
     return fetch(`${API}${path}`, {
