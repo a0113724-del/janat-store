@@ -21,8 +21,8 @@ messaging.onBackgroundMessage((payload) => {
   const title = payload.notification?.title || "طلب جديد 🛒";
   const options = {
     body: payload.notification?.body || "وصلك طلب جديد من الزبون",
-    icon: "/icon-192.png", // غيّرها لمسار شعار متجرك إذا موجود
-    badge: "/icon-192.png",
+    icon: "icon-192.png", // غيّرها لمسار شعار متجرك إذا موجود
+    badge: "icon-192.png",
     vibrate: [200, 100, 200, 100, 200], // اهتزاز قوي يلفت الانتباه
     requireInteraction: true // يضل الإشعار ظاهر لين يضغط عليه المستخدم
   };

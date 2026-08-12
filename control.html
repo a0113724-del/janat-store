@@ -486,6 +486,18 @@
     loadOrdersData();
     setInterval(loadOrdersData, REFRESH_INTERVAL);
     checkPushStatus();
+
+    // إشعار يوصل واللوحة مفتوحة قدامك. كان مربوط بضغطة زر التفعيل،
+    // فما يشتغل إلا بنفس الجلسة اللي ضغطت بيها — الحين يشتغل دائماً.
+    try{
+      onMessage(messaging, (payload)=>{
+        const n = payload.notification || {};
+        setStatus("saved", "🛒 " + (n.title || "طلب جديد") + " — " + (n.body || ""));
+        playBeep(10, true);                       // صفارة حتى لو الصوت مطفي
+        document.getElementById("ordersDot").classList.add("show");
+        loadOrdersData();                          // يجيب الطلب فوراً بدون انتظار
+      });
+    }catch(e){ console.warn("onMessage ما اشتغل", e); }
   }
 
   // ================= TAB NAVIGATION =================
@@ -1001,25 +1013,33 @@
         btn.disabled = false; btn.textContent = "تفعيل إشعارات هذا الجهاز";
         return;
       }
-      const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+      // مسار نسبي — الموقع بمجلد فرعي (/janat-store/)، والمسار المطلق
+      // كان يدوّر على جذر الدومين فيفشل التسجيل بصمت وما يوصل ولا إشعار
+      const registration = await navigator.serviceWorker.register("firebase-messaging-sw.js");
+      await navigator.serviceWorker.ready;
       const tk = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
-      // يرسل رمز الجهاز لجدول Devices بـ Google Sheets عشان تصله إشعارات حقيقية
-      try {
-        await fetch(GOOGLE_SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain" },
-          body: adminBody({ action: "registerDeviceToken", token: tk })
-        });
-      } catch (regErr) { /* لو فشل التسجيل، الإشعارات بالمقدمة (foreground) تبقى تشتغل */ }
+      if(!tk) throw new Error("فايربيس ما أعطى رمز للجهاز");
+
+      // يرسل رمز الجهاز لجدول Devices — نقرأ الرد حتى نتأكد إنه انحفظ فعلاً
+      const regRes = await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: adminBody({ action: "registerDeviceToken", token: tk })
+      });
+      const regData = await regRes.json();
+      if(regData.unauthorized) throw new Error("مفتاح الإدارة غلط — الرمز ما انحفظ");
+      if(regData.status !== "ok") throw new Error("السيرفر ما حفظ الرمز: " + (regData.message || ""));
+
       const s = document.getElementById("pushStatus");
       s.textContent = "✅ مفعّلة على هذا الجهاز"; s.className = "notif-status on";
       const box = document.getElementById("tokenBox");
       box.style.display = "block"; box.textContent = tk;
-      onMessage(messaging, (payload)=>{ alert("طلب جديد: " + (payload.notification?.body || "")); });
     }catch(err){
       console.error(err);
-      alert("تعذّر تفعيل الإشعارات — تأكد إن المتصفح يدعمها");
+      const s = document.getElementById("pushStatus");
+      s.textContent = "❌ " + (err && err.message ? err.message : "تعذّر التفعيل");
+      s.className = "notif-status off";
+      alert("تعذّر تفعيل الإشعارات:\n\n" + (err && err.message ? err.message : err));
     }
     btn.disabled = false; btn.textContent = "إعادة تحديث الرمز";
   });
