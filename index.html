@@ -1842,6 +1842,17 @@
     sendBtn.disabled = true;
     sendBtn.textContent = "⏳ جاري حفظ الطلب...";
 
+    // عدّاد يطمّن الزبون إن الطلب ماشي — بدون شي متحرك، الانتظار
+    // الصامت يخليه يظن إن الضغطة ما وصلت فيضغط مرة ثانية
+    let waited = 0;
+    const waitTimer = setInterval(()=>{
+      waited++;
+      sendBtn.textContent = waited < 4
+        ? `⏳ جاري حفظ الطلب... ${waited}`
+        : `⏳ لحظات، جاري التأكيد... ${waited}`;
+    }, 1000);
+    const stopTimer = ()=>{ clearInterval(waitTimer); };
+
     let seqNo = 0;
     let saveState = "fail";   // ok | unknown | fail
     let serverMsg = "";       // سبب الرفض لو السيرفر رفض الطلب
@@ -1920,6 +1931,8 @@
     }else{
       saveState = "unknown";
     }
+
+    stopTimer();
 
     const openWhatsappWithOrder = ()=>{
       const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
