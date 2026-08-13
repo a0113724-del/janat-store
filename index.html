@@ -1846,12 +1846,32 @@
     let saveState = "fail";   // ok | unknown | fail
     let serverMsg = "";       // سبب الرفض لو السيرفر رفض الطلب
     let serverTotals = null;  // الأرقام المعتمدة من السيرفر (هي الصحيحة)
+    // إعادة المحاولة آمنة لأن السيرفر يكشف التكرار بـ orderRef ويرجّع
+    // نفس الطلب بدل ما يسجّله مرتين — فطلب ما يضيع بسبب 404 عابر.
+    async function postOrder(body, attempt){
+      attempt = attempt || 1;
+      const TRANSIENT = [404, 429, 500, 502, 503, 504];
+      try{
+        const r = await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST", headers: { "Content-Type": "text/plain" }, body: body
+        });
+        if(!r.ok && TRANSIENT.indexOf(r.status) !== -1 && attempt < 3){
+          await new Promise(s=>setTimeout(s, attempt * 800));
+          return postOrder(body, attempt + 1);
+        }
+        return r;
+      }catch(netErr){
+        if(attempt < 3){
+          await new Promise(s=>setTimeout(s, attempt * 800));
+          return postOrder(body, attempt + 1);
+        }
+        throw netErr;
+      }
+    }
+
     if(GOOGLE_SCRIPT_URL){
       try{
-        const res = await fetch(GOOGLE_SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({
+        const res = await postOrder(JSON.stringify({
             name, phone, address,
             approxLocation: gpsCoords
               ? `دقيق${usedSavedLocation ? " (محفوظ)" : ""}: https://maps.google.com/?q=${gpsCoords.lat},${gpsCoords.lng}`
@@ -1872,8 +1892,7 @@
             notes,
             firstOrder: isFirstOrder,
             referralPhone: referredByPhone
-          })
-        });
+        }));
         try{
           const data = await res.json();
           if(data.status === "error"){
