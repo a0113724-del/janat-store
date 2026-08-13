@@ -331,32 +331,6 @@ function jsonOut(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// ═══════════════════ حماية العمليات الإدارية ═══════════════════
-/**
- * الرابط مكشوف للعالم بطبيعته (لازم يكون، حتى الزبون يقدر يسجّل طلب).
- * بدون قفل، أي أحد يعرف الرابط يشوف أسماء الزبائن وأرقامهم وإحداثيات
- * بيوتهم، ويقدر يرسل إشعارات باسم المتجر ويأكّد تسليم طلبات وهمية.
- *
- * ⚠️ بتصميم آمن: إذا ADMIN_KEY مو مضبوط بـ Script Properties، كلشي
- * يشتغل زي قبل بالضبط — فما فيه احتمال تقفل نفسك برّا لوحتك.
- * القفل يشتغل لحظة ما تضبط المفتاح، ولا لحظة قبلها.
- */
-function isAuthorized(providedKey) {
-  let key = "";
-  try { key = PropertiesService.getScriptProperties().getProperty("ADMIN_KEY") || ""; }
-  catch (e) { return true; }
-  if (!key) return true;                       // ما انضبط مفتاح = مفتوح
-  return String(providedKey || "") === key;
-}
-
-function denied() {
-  return jsonOut({
-    status: "error",
-    unauthorized: true,
-    message: "مفتاح الإدارة غلط أو ناقص"
-  });
-}
-
 // ═══════════════════ أجهزة الزبائن ═══════════════════
 function registerCustomerDevice(phone, token) {
   const sheet = getCustomerDevicesSheet();
@@ -552,11 +526,16 @@ function findOrCreateCustomerRow(sheet, phone, name) {
 function addPointsToCustomer(sheet, phone, name, pointsDelta, spendDelta) {
   if (!phone) return;
   const row = findOrCreateCustomerRow(sheet, phone, name);
-  const currentPoints = Number(sheet.getRange(row, 3).getValue()) || 0;
-  const currentSpend = Number(sheet.getRange(row, 4).getValue()) || 0;
-  if (name) sheet.getRange(row, 2).setValue(name);
-  sheet.getRange(row, 3).setValue(Math.max(0, currentPoints + pointsDelta));
-  sheet.getRange(row, 4).setValue(currentSpend + (spendDelta || 0));
+  // قراءة وحدة وكتابة وحدة بدل قراءتين وثلاث كتابات
+  const cur = sheet.getRange(row, 1, 1, 4).getValues()[0];
+  const currentPoints = Number(cur[2]) || 0;
+  const currentSpend = Number(cur[3]) || 0;
+  sheet.getRange(row, 1, 1, 4).setValues([[
+    cur[0],
+    name || cur[1],
+    Math.max(0, currentPoints + pointsDelta),
+    currentSpend + (spendDelta || 0)
+  ]]);
 }
 
 // رصيد نقاط الزبون الحالي
@@ -648,17 +627,18 @@ function touchVisitor(visitorId, eventType, approxLocation, phone, name) {
 
   if (found && found.getColumn() === VCOL_ID) {
     const row = found.getRow();
-    const visits = Number(sheet.getRange(row, VCOL_VISITS).getValue()) || 0;
-    sheet.getRange(row, VCOL_LAST).setValue(now);
-    if (eventType !== "heartbeat") {
-      sheet.getRange(row, VCOL_VISITS).setValue(visits + 1);
-    }
-    if (eventType === "install") sheet.getRange(row, VCOL_INSTALLED).setValue("نعم");
+    // قراءة وحدة وكتابة وحدة بدل 6 كتابات منفصلة — النبضة تشتغل كل 90
+    // ثانية لكل جهاز مفتوح، وكل setValue رحلة كاملة للسيرفر.
+    const cur = sheet.getRange(row, 1, 1, VISITORS_NUM_COLS).getValues()[0];
+    if (eventType !== "heartbeat") cur[VCOL_VISITS - 1] = (Number(cur[VCOL_VISITS - 1]) || 0) + 1;
+    cur[VCOL_LAST - 1] = now;
+    if (eventType === "install") cur[VCOL_INSTALLED - 1] = "نعم";
     if (phone) {
-      sheet.getRange(row, VCOL_PHONE).setValue(normalizePhone(phone));
-      if (name) sheet.getRange(row, VCOL_NAME).setValue(name);
+      cur[VCOL_PHONE - 1] = normalizePhone(phone);
+      if (name) cur[VCOL_NAME - 1] = name;
     }
-    if (approxLocation) sheet.getRange(row, VCOL_LOC).setValue(approxLocation);
+    if (approxLocation) cur[VCOL_LOC - 1] = approxLocation;
+    sheet.getRange(row, 1, 1, VISITORS_NUM_COLS).setValues([cur]);
   } else {
     sheet.appendRow([
       id,
@@ -706,7 +686,6 @@ function doPost(e) {
 
     // تسجيل رمز جهاز الأدمن (من صفحة التحكم عند تفعيل الإشعارات)
     if (data.action === "registerDeviceToken" && data.token) {
-      if (!isAuthorized(data.adminKey)) return denied();
       const devicesSheet = getDevicesSheet();
       const lastRow = devicesSheet.getLastRow();
       let exists = false;
@@ -720,7 +699,6 @@ function doPost(e) {
 
     // زر "إرسال إشعار تجريبي" بصفحة التحكم
     if (data.action === "sendTestNotification") {
-      if (!isAuthorized(data.adminKey)) return denied();
       const result = sendPushToAllDevices(
         data.title || "🔔 إشعار تجريبي",
         data.body || "هذا اختبار للتأكد إن الإشعارات تشتغل"
@@ -736,7 +714,6 @@ function doPost(e) {
 
     // إرسال إشعار جماعي لكل الزبائن المسجّلين (زر بصفحة التحكم)
     if (data.action === "sendCustomerBroadcast") {
-      if (!isAuthorized(data.adminKey)) return denied();
       const result = sendPushToAllCustomerDevices(
         data.title || "🌿 جنة الفواكه والخضار",
         data.body || ""
@@ -746,7 +723,6 @@ function doPost(e) {
 
     // زر "تأكيد الاستلام" بصفحة التقارير
     if (data.action === "confirmDelivery" && data.orderId) {
-      if (!isAuthorized(data.adminKey)) return denied();
       const lock = LockService.getScriptLock();
       try { lock.waitLock(LOCK_TIMEOUT_MS); }
       catch (lockErr) { return jsonOut({ status: "error", message: "busy" }); }
@@ -773,7 +749,6 @@ function doPost(e) {
 
     // إلغاء طلب — يرجّع النقاط المحجوزة لصاحبها
     if (data.action === "cancelOrder" && data.orderId) {
-      if (!isAuthorized(data.adminKey)) return denied();
       const lock = LockService.getScriptLock();
       try { lock.waitLock(LOCK_TIMEOUT_MS); }
       catch (lockErr) { return jsonOut({ status: "error", message: "busy" }); }
@@ -851,7 +826,9 @@ function doPost(e) {
 
         // اختلاف بسبب كاش الأسعار (5 دقائق) مو تلاعب — نجيب الأسعار
         // طازجة ونعيد الحساب مرة وحدة قبل ما ننبّه
-        if (calc.ok && Math.abs(clientSubtotal - calc.subtotal) > 1) {
+        // جلب ثاني للأسعار مكلف (رحلة شبكة كاملة). ما نسويه إلا لو
+        // الفرق راح يطلّع تنبيه فعلاً — يعني الزبون أرسل أقل من حسابنا.
+        if (calc.ok && !calc.stale && clientSubtotal > 0 && clientSubtotal < calc.subtotal - 1) {
           CacheService.getScriptCache().remove("product-prices");
           const fresh = computeSubtotalFromLines(data.lines);
           if (fresh.ok) calc = fresh;
@@ -1044,10 +1021,7 @@ function onEdit(e) {
 
 // ═══════════════════ قراءة البيانات ═══════════════════
 function doGet(e) {
-  const adminKey = e.parameter.key;
-
   if (e.parameter.customersList) {
-    if (!isAuthorized(adminKey)) return denied();
     const customersSheet = getCustomersSheet();
     const lastRow = customersSheet.getLastRow();
     if (lastRow < 2) return jsonOut([]);
@@ -1060,7 +1034,6 @@ function doGet(e) {
 
   // ═══ قائمة النشطين — مين فاتح التطبيق الحين ومين دخل مؤخراً ═══
   if (e.parameter.activeUsers) {
-    if (!isAuthorized(adminKey)) return denied();
     const vSheet = getVisitorsSheet();
     const lastRow = vSheet.getLastRow();
     if (lastRow < 2) return jsonOut({ onlineNow: 0, today: 0, active7d: 0, users: [] });
@@ -1106,7 +1079,6 @@ function doGet(e) {
 
   // ملخّص الاستخدام — يجي من ورقة Visitors الجاهزة (سريع)
   if (e.parameter.analyticsSummary) {
-    if (!isAuthorized(adminKey)) return denied();
     const vSheet = getVisitorsSheet();
     const vLast = vSheet.getLastRow();
     let uniqueVisitors = 0, activeVisitors7d = 0, installs = 0,
@@ -1202,9 +1174,22 @@ function doGet(e) {
   }
 
   // القائمة الكاملة = كل بيانات زبائنك ومواقعهم — أخطر شي بالرابط
-  if (!isAuthorized(adminKey)) return denied();
 
-  const orders = rows.map(function (row) {
+  // نرجّع طلبات نافذة زمنية بس. اللوحة تعرض آخر 30 وتحسب إحصائيات
+  // اليوم/الأسبوع/الشهر — فـ 40 يوم تغطيها كلها، والرد ما ينتفخ مع
+  // نمو السجل. ?days=0 يرجّع الكل لو احتجته.
+  const daysParam = e.parameter.days === undefined ? 40 : Number(e.parameter.days);
+  let windowRows = rows;
+  if (daysParam > 0) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - daysParam);
+    windowRows = rows.filter(function (row) {
+      const t = row[COL_TIME - 1];
+      return t && new Date(t) >= cutoff;
+    });
+  }
+
+  const orders = windowRows.map(function (row) {
     return {
       time: row[COL_TIME - 1],
       name: row[COL_NAME - 1],

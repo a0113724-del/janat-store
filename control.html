@@ -1065,12 +1065,21 @@
 
   async function loadOrdersData(){
     try{
-      const orders = await fetchJson(adminUrl(), "الطلبات");
+      // النداءات الأربعة بالتوازي بدل التسلسل — كانت كل وحدة تنتظر اللي
+      // قبلها، فوقت الدورة = مجموع الأربعة. الحين = أبطأ وحدة بس.
+      const [orders, summary, live, custData] = await Promise.all([
+        fetchJson(adminUrl(), "الطلبات"),
+        fetchJson(adminUrl("?analyticsSummary=1"), "الإحصائيات").catch(e => ({ _err: e })),
+        fetchJson(adminUrl("?activeUsers=1"), "النشطين").catch(e => ({ _err: e })),
+        fetchJson(adminUrl("?customersList=1"), "الزبائن").catch(e => ({ _err: e }))
+      ]);
+
       if(!checkAuth(orders)) return;
       if(!Array.isArray(orders)){
         showLoadError("الطلبات: الرد مو قائمة — " + JSON.stringify(orders).slice(0,120));
         return;
       }
+
       if(lastOrderCount !== null && orders.length > lastOrderCount){
         playBeep();
         const activeView = document.querySelector(".nav-btn.active")?.dataset.view;
@@ -1080,19 +1089,13 @@
       allOrders = orders;
       renderStats(orders); renderWeekChart(orders); renderOrdersList(orders);
 
-      const summary = await fetchJson(adminUrl("?analyticsSummary=1"), "الإحصائيات");
-      if(checkAuth(summary)) renderAppStats(summary);
-
-      // قائمة النشطين — لو السيرفر لسه ما انحدّث، نتجاهلها بهدوء
-      try{
-        const live = await fetchJson(adminUrl("?activeUsers=1"), "النشطين");
-        if(live && Array.isArray(live.users)) renderActiveUsers(live);
-      }catch(liveErr){ console.warn(liveErr.message); /* نسخة سيرفر قديمة */ }
-
-      const custData = await fetchJson(adminUrl("?customersList=1"), "الزبائن");
-      if(!checkAuth(custData) || !Array.isArray(custData)) return;
-      allCustomers = custData;
-      renderCustomersTable(allCustomers, document.getElementById("customerSearch").value);
+      // الثلاثة الباقية ثانوية — فشل أي وحدة ما يمنع عرض الطلبات
+      if(summary && !summary._err && checkAuth(summary)) renderAppStats(summary);
+      if(live && !live._err && Array.isArray(live.users)) renderActiveUsers(live);
+      if(custData && !custData._err && Array.isArray(custData)){
+        allCustomers = custData;
+        renderCustomersTable(allCustomers, document.getElementById("customerSearch").value);
+      }
 
       const bar = document.getElementById("statusBar");
       if(bar.classList.contains("error")) bar.className = "status-bar hidden";
