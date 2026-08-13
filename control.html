@@ -1019,25 +1019,43 @@
   }
   document.getElementById("customerSearch").addEventListener("input",(e)=>{ renderCustomersTable(allCustomers, e.target.value); });
 
-  // يجيب ويحلّل الرد، ويرمي خطأ فيه التفاصيل الحقيقية بدل ما يفشل بصمت
-  async function fetchJson(url, label){
-    let res;
+  // Apps Script يرجّع 404 أو 5xx متقطع وقت الضغط أو أثناء إعادة النشر.
+  // محاولة وحدة إضافية تبلع أغلبها بدل ما تفرّغ الشاشة.
+  const TRANSIENT = [404, 429, 500, 502, 503, 504];
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  async function fetchJson(url, label, attempt){
+    attempt = attempt || 1;
+    const MAX = 3;
+    let res, transient = false, err = "";
+
     try{ res = await fetch(url, { cache:"no-store" }); }
     catch(netErr){
-      // navigator.onLine يفرّق: لو النت شغّال والاتصال انرفض، المشكلة
-      // برابط النشر (انحذف أو صار جديد) مو بالإنترنت
-      throw new Error(navigator.onLine
+      transient = true;
+      err = navigator.onLine
         ? `${label}: النت شغّال بس السيرفر ما رد — على الأغلب رابط النشر ما عاد صالح`
-        : `${label}: ما في اتصال بالإنترنت`);
+        : `${label}: ما في اتصال بالإنترنت`;
     }
-    const text = await res.text();
-    if(!res.ok) throw new Error(`${label}: السيرفر رد ${res.status}`);
-    try{ return JSON.parse(text); }
-    catch(parseErr){
-      // Apps Script يرجّع صفحة HTML وقت الخطأ أو لو النشر قديم/محذوف
-      const peek = text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
-      throw new Error(`${label}: الرد مو JSON — ${peek || "رد فاضي"}`);
+
+    if(!err){
+      const text = await res.text();
+      if(!res.ok){
+        transient = TRANSIENT.indexOf(res.status) !== -1;
+        err = `${label}: السيرفر رد ${res.status}`;
+      }else{
+        try{ return JSON.parse(text); }
+        catch(parseErr){
+          const peek = text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+          err = `${label}: الرد مو JSON — ${peek || "رد فاضي"}`;
+        }
+      }
     }
+
+    if(transient && attempt < MAX){
+      await sleep(attempt * 700);              // 700ms ثم 1400ms
+      return fetchJson(url, label, attempt + 1);
+    }
+    throw new Error(err + (attempt > 1 ? ` (بعد ${attempt} محاولات)` : ""));
   }
 
   function showLoadError(msg){
