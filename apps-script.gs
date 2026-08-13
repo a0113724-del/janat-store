@@ -206,8 +206,16 @@ function computeDeliveryFee(subtotal, isFirstOrder) {
 }
 
 // ═══════════════════ أوراق الجداول ═══════════════════
+// SpreadsheetApp.openById مكلف، وكان ينتنادى 6 مرات بالطلب الواحد.
+// نفتحه مرة ونعيد استعماله طول تنفيذ الطلب.
+let _ssCache = null;
+function ss_() {
+  if (!_ssCache) _ssCache = SpreadsheetApp.openById(SHEET_ID);
+  return _ssCache;
+}
+
 function getOrdersSheet() {
-  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const ss = ss_();
   let sheet = ss.getSheetByName(ORDERS_SHEET_NAME);
   if (!sheet) sheet = ss.insertSheet(ORDERS_SHEET_NAME);
   if (sheet.getLastRow() === 0) {
@@ -228,7 +236,7 @@ function getOrdersSheet() {
 }
 
 function getCustomersSheet() {
-  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const ss = ss_();
   let sheet = ss.getSheetByName(CUSTOMERS_SHEET_NAME);
   if (!sheet) sheet = ss.insertSheet(CUSTOMERS_SHEET_NAME);
   if (sheet.getLastRow() === 0) {
@@ -239,7 +247,7 @@ function getCustomersSheet() {
 }
 
 function getAnalyticsSheet() {
-  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const ss = ss_();
   let sheet = ss.getSheetByName("Analytics");
   if (!sheet) sheet = ss.insertSheet("Analytics");
   if (sheet.getLastRow() === 0) {
@@ -253,7 +261,7 @@ function getAnalyticsSheet() {
  * هي اللي تغذّي قائمة النشطين، وتخلي doGet سريع بدل ما يقرأ كل سجل Analytics.
  */
 function getVisitorsSheet() {
-  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const ss = ss_();
   let sheet = ss.getSheetByName("Visitors");
   if (!sheet) sheet = ss.insertSheet("Visitors");
   if (sheet.getLastRow() === 0) {
@@ -269,7 +277,7 @@ const VCOL_ID = 1, VCOL_PHONE = 2, VCOL_NAME = 3, VCOL_FIRST = 4,
 const VISITORS_NUM_COLS = 8;
 
 function getDevicesSheet() {
-  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const ss = ss_();
   let sheet = ss.getSheetByName("Devices");
   if (!sheet) sheet = ss.insertSheet("Devices");
   if (sheet.getLastRow() === 0) {
@@ -279,7 +287,7 @@ function getDevicesSheet() {
 }
 
 function getCustomerDevicesSheet() {
-  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const ss = ss_();
   let sheet = ss.getSheetByName("CustomerDevices");
   if (!sheet) sheet = ss.insertSheet("CustomerDevices");
   if (sheet.getLastRow() === 0) {
@@ -923,17 +931,17 @@ function doPost(e) {
       ]);
 
       // نربط جهاز الزائر بالزبون حتى تظهر أسماء بقائمة النشطين
-      linkVisitorToCustomer(data.visitorId, phone, data.name);
+      // ما نربط الزائر هنا — النبضة ترسل رقم الزبون كل 90 ثانية وتربطه
+      // لحالها، فهذا كان TextFinder + قراءة + كتابة زيادة بمسار الطلب.
 
       if (data.customerDeviceToken) {
         registerCustomerDevice(phone, data.customerDeviceToken);
       }
 
       // تأكيد فوري للزبون على أجهزته
-      try {
-        notifyCustomer(phone, "🌿 استلمنا طلبك #" + seqNo,
-          "مجموع طلبك " + total + " د.ع — نجهّزه ونتواصل وياك قريباً");
-      } catch (nErr) { /* ثانوي */ }
+      // ما نرسل إشعار "استلمنا طلبك" — الزبون قاعد يشوف شاشة النجاح
+      // بنفس اللحظة. كان يكلّف قراءة جدول + اتصال FCM يستنى عليهم.
+      // إشعار التسليم (وهو المفيد) يبقى شغّال بـ creditOrderPoints.
 
       lastOrderSummary = {
         name: data.name || "زبون",
@@ -954,7 +962,7 @@ function doPost(e) {
         discount: discount,
         total: total,
         firstOrder: isGenuinelyFirstOrder,
-        pointsBalance: getCustomerPointsBalance(phone)
+        pointsBalance: Math.max(0, balance - pointsUsed + pointsEarned)
       });
     } finally {
       lock.releaseLock();
