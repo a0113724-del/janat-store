@@ -421,6 +421,72 @@ function notifyCustomer(phone, title, body) {
   return { sent: sent, failed: failed };
 }
 
+// ═══════════════════ إشعار تلغرام ═══════════════════
+/**
+ * يرسل الطلب لتلغرام مباشرة من السيرفر — بعكس واتساب اللي يحتاج
+ * الزبون يضغط زر. لو الإعدادات مو مضبوطة، يتخطّى بصمت.
+ *
+ * الإعداد (مرة وحدة بـ Script Properties):
+ *   TELEGRAM_BOT_TOKEN  ← من @BotFather بتلغرام
+ *   TELEGRAM_CHAT_ID    ← رقم محادثتك أو قناتك
+ */
+function sendTelegram(text) {
+  const props = PropertiesService.getScriptProperties();
+  const token = props.getProperty("TELEGRAM_BOT_TOKEN");
+  const chatId = props.getProperty("TELEGRAM_CHAT_ID");
+  if (!token || !chatId) return { ok: false, reason: "إعدادات تلغرام مو مضبوطة" };
+  try {
+    const res = UrlFetchApp.fetch("https://api.telegram.org/bot" + token + "/sendMessage", {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify({
+        chat_id: chatId,
+        text: text,
+        parse_mode: "HTML",
+        disable_web_page_preview: true
+      }),
+      muteHttpExceptions: true
+    });
+    if (res.getResponseCode() === 200) return { ok: true };
+    return { ok: false, reason: "HTTP " + res.getResponseCode() + " — " + res.getContentText().slice(0, 200) };
+  } catch (e) {
+    return { ok: false, reason: String(e) };
+  }
+}
+
+/** يهرّب النص عشان parse_mode: HTML ما ينكسر باسم فيه < أو & */
+function tgEsc(v) {
+  return String(v == null ? "" : v)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/** يبني رسالة الطلب بشكل مقروء */
+function telegramOrderText(o) {
+  const items = String(o.items || "")
+    .replace(/\s*⟨ref:[^⟩]*⟩/, "")
+    .split("|").map(function (x) { return x.trim(); })
+    .filter(function (x) { return x; })
+    .map(function (x) { return "• " + tgEsc(x); })
+    .join("\n");
+
+  const L = [];
+  L.push((o.flagged ? "⚠️ <b>طلب جديد فيه تنبيه</b>" : "🛒 <b>طلب جديد</b>") + " #" + tgEsc(o.seqNo));
+  L.push("");
+  L.push("👤 " + tgEsc(o.name || "بدون اسم"));
+  L.push("📞 <code>" + tgEsc(o.phone) + "</code>");
+  if (o.address) L.push("📍 " + tgEsc(o.address));
+  if (o.mapsUrl) L.push('🗺️ <a href="' + tgEsc(o.mapsUrl) + '">افتح الموقع على الخرائط</a>');
+  if (items) { L.push(""); L.push("🧺 <b>الطلب:</b>"); L.push(items); }
+  L.push("");
+  L.push("المجموع الفرعي: " + o.subtotal + " د.ع");
+  L.push("رسوم التوصيل: " + (Number(o.fee) === 0 ? "مجاني 🎁" : o.fee + " د.ع"));
+  L.push("<b>الإجمالي: " + o.total + " د.ع</b>");
+  if (o.firstOrder) { L.push(""); L.push("🎁 أول طلب لهذا الزبون"); }
+  if (o.notes) { L.push(""); L.push("📝 " + tgEsc(o.notes)); }
+  if (o.flagged) { L.push(""); L.push("⚠️ <b>تنبيه:</b> " + tgEsc(o.flags)); }
+  return L.join("\n");
+}
+
 // ═══════════ إشعارات Firebase Cloud Messaging ═══════════
 // يبني ويوقّع JWT يدوياً من مفتاح حساب الخدمة، ويستبدله برمز دخول مؤقت من
 // Google. الرمز يُخزَّن بالكاش 55 دقيقة — هذا اللي يخلي الإرسال الجماعي
@@ -976,12 +1042,24 @@ function doPost(e) {
       // بنفس اللحظة. كان يكلّف قراءة جدول + اتصال FCM يستنى عليهم.
       // إشعار التسليم (وهو المفيد) يبقى شغّال بـ creditOrderPoints.
 
+      let mapsUrl = "";
+      const locMatch = String(data.approxLocation || "").match(/https?:\/\/\S+/);
+      if (locMatch) mapsUrl = locMatch[0];
+
       lastOrderSummary = {
         name: data.name || "زبون",
         phone: phone,
+        address: data.address || "",
+        mapsUrl: mapsUrl,
+        items: data.items || "",
+        notes: data.notes || "",
+        subtotal: subtotal,
+        fee: serverFee,
         total: total,
         seqNo: seqNo,
-        flagged: flags.length > 0
+        firstOrder: isGenuinelyFirstOrder,
+        flagged: flags.length > 0,
+        flags: flags.join(" | ")
       };
 
       return jsonOut({
@@ -1005,6 +1083,11 @@ function doPost(e) {
     return jsonOut({ status: "error", message: String(err) });
   } finally {
     // إشعار فوري لأجهزة الأدمن — فقط إذا الطلب انسجل فعلاً بالجدول
+    if (lastOrderSummary) {
+      // تلغرام أول — ما يحتاج تسجيل أجهزة ولا موافقة متصفح
+      try { sendTelegram(telegramOrderText(lastOrderSummary)); }
+      catch (tgErr) { /* فشل تلغرام ما يوقف شي */ }
+    }
     try {
       if (lastOrderSummary) {
         sendPushToAllDevices(
@@ -1500,4 +1583,23 @@ function testProductFetch() {
   const props = PropertiesService.getScriptProperties();
   Logger.log("آخر خطأ مسجّل: " + (props.getProperty("prices-last-error") || "ما فيه"));
   Logger.log("نسخة احتياطية محفوظة: " + (props.getProperty("prices-backup") ? "✅ موجودة" : "❌ ما موجودة"));
+}
+
+/** تجربة تلغرام — شغّلها بعد ما تضبط TELEGRAM_BOT_TOKEN و TELEGRAM_CHAT_ID */
+function testTelegram() {
+  const props = PropertiesService.getScriptProperties();
+  const token = props.getProperty("TELEGRAM_BOT_TOKEN");
+  const chatId = props.getProperty("TELEGRAM_CHAT_ID");
+  Logger.log("BOT_TOKEN: " + (token ? "✅ موجود" : "❌ ناقص"));
+  Logger.log("CHAT_ID:   " + (chatId ? "✅ " + chatId : "❌ ناقص"));
+  if (!token || !chatId) { Logger.log("⛔ كمّل الناقص أول"); return; }
+
+  const r = sendTelegram(telegramOrderText({
+    seqNo: 999, name: "تجربة", phone: "07801234567",
+    address: "عنوان تجريبي", mapsUrl: "https://maps.google.com/?q=31.9,44.4",
+    items: "طماطة × 2 كغم | خيار × 1 كغم",
+    subtotal: 2000, fee: 1000, total: 3000,
+    firstOrder: true, notes: "هذي رسالة تجريبية", flagged: false, flags: ""
+  }));
+  Logger.log(r.ok ? "✅ انرسلت — شوف تلغرام" : "❌ فشل: " + r.reason);
 }
