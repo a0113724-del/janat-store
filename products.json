@@ -19,7 +19,6 @@
     "image": "images/cucumber-1785117845595.jpg",
     "unit": "كغم",
     "onSale": false,
-    "oldPrice": 700,
     "visible": true,
     "order": 1
   },
@@ -400,7 +399,6 @@
     "featured": true,
     "unit": "كغم",
     "onSale": false,
-    "oldPrice": 1400,
     "visible": true,
     "order": 37
   },
