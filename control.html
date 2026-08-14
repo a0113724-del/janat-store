@@ -148,6 +148,13 @@
   .toggle-row label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
   .toggle-row .sale-fields{ display:flex; gap:6px; align-items:center; }
   .toggle-row .sale-fields input{ width:64px; }
+  .fields .fld{ display:flex; flex-direction:column; gap:3px; flex:1; min-width:64px; }
+  .fields .fld .lbl{ font-size:.62rem; color:#888; font-weight:700; }
+  .fields .fld input{ width:100%; }
+  .sale-warn{ font-size:.7rem; line-height:1.6; color:var(--pomegranate); }
+  .sale-warn:empty{ display:none; }
+  .sale-warn .ok{ color:var(--leaf); }
+  .sale-warn s{ opacity:.7; }
   .row-actions{ display:flex; flex-direction:column; gap:6px; flex:0 0 auto; }
   .row-actions button{ width:30px; height:30px; border-radius:8px; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:.85rem; }
   .row-actions .del{ color:var(--pomegranate); border-color:rgba(161,58,46,.3); }
@@ -589,6 +596,25 @@
   // ================= PRODUCTS: RENDER =================
   function findProduct(id){ return products.find(p=>p.id===id); }
 
+  // يكشف الخطأ الشائع: الأدمن يأشّر "عرض خاص" ويكتب سعر العرض بحقل
+  // "قبل العرض" ويخلي "السعر" فاضي — فالمنتج ما يعرض سعر أبداً للزبون.
+  function saleWarning(p){
+    const price = Number(p.price) || 0;
+    const old   = Number(p.oldPrice) || 0;
+    if(!(price > 0)) return `<b>⚠️ ما فيه سعر</b> — المنتج ما راح يظهر له سعر عند الزبون. اكتب السعر بأول حقل.`;
+    if(!p.onSale) return "";
+    if(!(old > 0)) return `⚠️ اكتب <b>السعر قبل العرض</b> حتى يبان الخصم للزبون`;
+    if(old <= price) return `⚠️ <b>الأرقام مقلوبة</b> — "قبل العرض" (${old}) لازم يكون <b>أكبر</b> من سعر العرض (${price})`;
+    const pct = Math.round((1 - price/old) * 100);
+    return `<span class="ok">✅ الزبون يشوف: <s>${old}</s> ${price} د.ع — خصم ${pct}%</span>`;
+  }
+
+  function refreshSaleWarning(id){
+    const p = findProduct(id);
+    const box = document.querySelector(`[data-warn="${id}"]`);
+    if(p && box) box.innerHTML = saleWarning(p);
+  }
+
   function productRow(p){
     const thumb = p.image ? `<img class="thumb" src="${p.image}" alt="">` : `<div class="thumb">${p.emoji||"🥬"}</div>`;
     return `
@@ -606,17 +632,24 @@
           </select>
         </div>
         <div class="row2">
-          <input type="number" class="f-price" data-id="${p.id}" value="${p.price||0}" placeholder="السعر">
-          <input type="text" class="f-unit" data-id="${p.id}" value="${p.unit||'كغم'}" placeholder="الوحدة">
+          <label class="fld">
+            <span class="lbl">${p.onSale ? "سعر العرض (اللي يدفعه)" : "السعر"}</span>
+            <input type="number" class="f-price" data-id="${p.id}" value="${p.price||0}" placeholder="السعر">
+          </label>
+          <label class="fld">
+            <span class="lbl">الوحدة</span>
+            <input type="text" class="f-unit" data-id="${p.id}" value="${p.unit||'كغم'}" placeholder="الوحدة">
+          </label>
         </div>
         <input type="text" class="desc f-desc" data-id="${p.id}" value="${(p.description||"").replace(/"/g,'&quot;')}" placeholder="وصف مختصر (اختياري)">
         <div class="toggle-row">
           <label><input type="checkbox" class="f-visible" data-id="${p.id}" ${p.visible!==false?'checked':''}> ظاهر للزبون</label>
           <label><input type="checkbox" class="f-onsale" data-id="${p.id}" ${p.onSale?'checked':''}> عرض خاص</label>
           <span class="sale-fields" style="${p.onSale?'':'display:none'}" data-oldprice-wrap="${p.id}">
-            قبل الخصم: <input type="number" class="f-oldprice" data-id="${p.id}" value="${p.oldPrice||''}">
+            السعر قبل العرض: <input type="number" class="f-oldprice" data-id="${p.id}" value="${p.oldPrice||''}">
           </span>
         </div>
+        <div class="sale-warn" data-warn="${p.id}">${saleWarning(p)}</div>
       </div>
       <div class="row-actions">
         <button class="move-up" data-id="${p.id}">▲</button>
@@ -646,6 +679,9 @@
     if(e.target.classList.contains("f-unit")) p.unit = e.target.value;
     if(e.target.classList.contains("f-desc")) p.description = e.target.value;
     if(e.target.classList.contains("f-oldprice")) p.oldPrice = Number(e.target.value)||0;
+    if(e.target.classList.contains("f-price") || e.target.classList.contains("f-oldprice")){
+      refreshSaleWarning(id);
+    }
     markDirty();
   });
 
@@ -662,6 +698,10 @@
       p.onSale = e.target.checked;
       const wrap = document.querySelector(`[data-oldprice-wrap="${id}"]`);
       if(wrap) wrap.style.display = p.onSale ? "flex" : "none";
+      // تسمية حقل السعر تتغيّر حسب الحالة حتى ما يلتبس على الأدمن
+      const lbl = e.target.closest(".product-row")?.querySelector(".row2 .lbl");
+      if(lbl) lbl.textContent = p.onSale ? "سعر العرض (اللي يدفعه)" : "السعر";
+      refreshSaleWarning(id);
       markDirty();
     }
     if(e.target.classList.contains("img-input") && e.target.files[0]) uploadImage(id, e.target.files[0]);
@@ -807,6 +847,15 @@
   });
 
   // ================= ORDERS / REPORTS / CUSTOMERS =================
+  // ⚠️ بيانات الزبون (الاسم، العنوان، الطلب الخاص) تنعرض هنا عبر
+  // innerHTML. بدون تهريب، زبون يقدر يكتب كود بدل طلب وينفّذ بمتصفح
+  // الأدمن — وتوكن GitHub محفوظ بنفس الصفحة. كل نص جاي من برّا يمر بـ esc.
+  function esc(v){
+    return String(v == null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
   function money(n){ return Math.round(n||0).toLocaleString('en-US') + " د.ع"; }
 
   // نفس منطق التوحيد الموجود بـ index.html — عشان البحث يلاقي الزبون
@@ -875,8 +924,8 @@
       body.innerHTML = users.map(u=>{
         // الزائر اللي ما كتب رقمه مجهول — ما نقدر نعرف اسمه
         const who = u.known
-          ? `${u.name || "بدون اسم"}<span class="u-phone">${showPhone(u.phone)}</span>`
-          : `<span class="u-anon">${u.label}</span>`;
+          ? `${esc(u.name || "بدون اسم")}<span class="u-phone">${showPhone(u.phone)}</span>`
+          : `<span class="u-anon">${esc(u.label)}</span>`;
         return `<tr class="${u.online ? 'is-online' : ''}">
           <td>${who}</td>
           <td>${u.online ? '<span class="live-dot"></span>متصل' : '—'}</td>
@@ -955,10 +1004,10 @@
         if(m) mapsUrl = m[0];
       }
       const locationLine = mapsUrl
-        ? `<div class="oc-phone"><a href="${mapsUrl}" target="_blank" style="color:var(--pomegranate); font-weight:800; text-decoration:underline;">📍 فتح الموقع الدقيق على الخرائط</a></div>`
-        : (o.address ? `<div class="oc-phone" style="color:#555;">📍 ${o.address}</div>` : (o.approxLocation && o.approxLocation !== "غير معروف" ? `<div class="oc-phone" style="color:#888;">🌐 ${o.approxLocation}</div>` : ""));
+        ? `<div class="oc-phone"><a href="${esc(mapsUrl)}" target="_blank" style="color:var(--pomegranate); font-weight:800; text-decoration:underline;">📍 فتح الموقع الدقيق على الخرائط</a></div>`
+        : (o.address ? `<div class="oc-phone" style="color:#555;">📍 ${esc(o.address)}</div>` : (o.approxLocation && o.approxLocation !== "غير معروف" ? `<div class="oc-phone" style="color:#888;">🌐 ${esc(o.approxLocation)}</div>` : ""));
       const badges = `
-        <span class="badge badge-status ${isDelivered?'delivered':''}">${o.status || "قيد المراجعة"}</span>
+        <span class="badge badge-status ${isDelivered?'delivered':''}">${esc(o.status || "قيد المراجعة")}</span>
         <span class="badge badge-points">⭐ ${o.pointsEarned||0} نقطة</span>
         ${o.firstOrder === "نعم" ? '<span class="badge badge-first">🎁 أول طلب</span>' : ''}
         ${isGps ? '<span class="badge badge-gps">📍 دقيق</span>' : ''}`;
@@ -969,7 +1018,7 @@
       // تنبيه التلاعب — flag فاضي يعني الطلب سليم، ما نعرض أي علامة
       const flag = (o.flag ?? "").toString().trim();
       const isFlagged = !!flag;
-      const flagLine = isFlagged ? `<div class="oc-flag">⚠️ ${flag}</div>` : "";
+      const flagLine = isFlagged ? `<div class="oc-flag">⚠️ ${esc(flag)}</div>` : "";
 
       // تفكيك السعر — الطلبات القديمة بدون هالحقول ترجع لعرض الإجمالي لحاله
       const subtotalNum = Number(o.subtotal);
@@ -988,12 +1037,12 @@
       return `<div class="order-card ${isDelivered?'delivered':''} ${isFlagged?'flagged':''}">
         ${flagLine}
         <div class="oc-top">
-          <div class="oc-name">${o.name || "بدون اسم"} <span style="color:var(--gold); font-weight:900; font-size:.85rem;">#${o.seqNo || "—"}</span></div>
+          <div class="oc-name">${esc(o.name || "بدون اسم")} <span style="color:var(--gold); font-weight:900; font-size:.85rem;">#${esc(o.seqNo || "—")}</span></div>
           <div class="oc-time">${timeStr}</div>
         </div>
         <div class="oc-phone">📞 ${showPhone(o.phone)}</div>
         ${locationLine}
-        <div class="oc-items">${(o.items||"").replace(/\|/g,"\n")}</div>
+        <div class="oc-items">${esc(o.items).replace(/\|/g,"\n")}</div>
         <div class="oc-bottom">${totalBlock}<div class="oc-badges">${badges}</div></div>
         ${btn}
       </div>`;
@@ -1015,7 +1064,7 @@
     const sorted = [...filtered].sort((a,b)=> Number(b.points||0) - Number(a.points||0));
     const body = document.getElementById("customersBody");
     if(sorted.length===0){ body.innerHTML = `<tr><td colspan="4" class="empty">لا يوجد زبائن مسجّلين بعد</td></tr>`; return; }
-    body.innerHTML = sorted.map(c=>`<tr><td>${c.name || "—"}</td><td style="direction:ltr; text-align:left;">${showPhone(c.phone)}</td><td class="pts-cell">${c.points || 0}</td><td>${money(c.totalSpend)}</td></tr>`).join("");
+    body.innerHTML = sorted.map(c=>`<tr><td>${esc(c.name || "—")}</td><td style="direction:ltr; text-align:left;">${showPhone(c.phone)}</td><td class="pts-cell">${c.points || 0}</td><td>${money(c.totalSpend)}</td></tr>`).join("");
   }
   document.getElementById("customerSearch").addEventListener("input",(e)=>{ renderCustomersTable(allCustomers, e.target.value); });
 
