@@ -339,6 +339,34 @@ function jsonOut(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+// ═══════════════════ حماية بيانات الزبائن ═══════════════════
+/**
+ * الرابط مكشوف بطبيعته — مكتوب داخل index.html اللي ينزل على جهاز كل
+ * زبون، والمستودع عام على GitHub. فقفل صفحة الأدمن ما يحمي شي: أي أحد
+ * ينادي الرابط مباشرة ويسحب أسماء الزبائن وأرقامهم وإحداثيات بيوتهم،
+ * ويرسل إشعارات باسم المتجر، ويأكّد تسليم طلبات وهمية.
+ *
+ * ⚠️ آمن بالتصميم: إذا ADMIN_KEY مو مضبوط بـ Script Properties، كلشي
+ * يشتغل مفتوح زي قبل — ما فيه احتمال تنقفل اللوحة عليك. القفل يشتغل
+ * لحظة ما تضبط المفتاح، ولا لحظة قبلها. ولو المفتاح ناقص باللوحة،
+ * تطلع بوابة تطلبه بدل ما تنفرغ الشاشة.
+ */
+function isAuthorized(providedKey) {
+  let key = "";
+  try { key = PropertiesService.getScriptProperties().getProperty("ADMIN_KEY") || ""; }
+  catch (e) { return true; }          // تعذّر القراءة = ما نقفل على أحد
+  if (!key) return true;              // ما انضبط مفتاح = مفتوح
+  return String(providedKey || "") === key;
+}
+
+function denied() {
+  return jsonOut({
+    status: "error",
+    unauthorized: true,
+    message: "مفتاح الإدارة غلط أو ناقص"
+  });
+}
+
 // ═══════════════════ أجهزة الزبائن ═══════════════════
 function registerCustomerDevice(phone, token) {
   const sheet = getCustomerDevicesSheet();
@@ -694,6 +722,7 @@ function doPost(e) {
 
     // تسجيل رمز جهاز الأدمن (من صفحة التحكم عند تفعيل الإشعارات)
     if (data.action === "registerDeviceToken" && data.token) {
+      if (!isAuthorized(data.adminKey)) return denied();
       const devicesSheet = getDevicesSheet();
       const lastRow = devicesSheet.getLastRow();
       let exists = false;
@@ -707,6 +736,7 @@ function doPost(e) {
 
     // زر "إرسال إشعار تجريبي" بصفحة التحكم
     if (data.action === "sendTestNotification") {
+      if (!isAuthorized(data.adminKey)) return denied();
       const result = sendPushToAllDevices(
         data.title || "🔔 إشعار تجريبي",
         data.body || "هذا اختبار للتأكد إن الإشعارات تشتغل"
@@ -722,6 +752,7 @@ function doPost(e) {
 
     // إرسال إشعار جماعي لكل الزبائن المسجّلين (زر بصفحة التحكم)
     if (data.action === "sendCustomerBroadcast") {
+      if (!isAuthorized(data.adminKey)) return denied();
       const result = sendPushToAllCustomerDevices(
         data.title || "🌿 جنة الفواكه والخضار",
         data.body || ""
@@ -731,6 +762,7 @@ function doPost(e) {
 
     // زر "تأكيد الاستلام" بصفحة التقارير
     if (data.action === "confirmDelivery" && data.orderId) {
+      if (!isAuthorized(data.adminKey)) return denied();
       const lock = LockService.getScriptLock();
       try { lock.waitLock(LOCK_TIMEOUT_MS); }
       catch (lockErr) { return jsonOut({ status: "error", message: "busy" }); }
@@ -757,6 +789,7 @@ function doPost(e) {
 
     // إلغاء طلب — يرجّع النقاط المحجوزة لصاحبها
     if (data.action === "cancelOrder" && data.orderId) {
+      if (!isAuthorized(data.adminKey)) return denied();
       const lock = LockService.getScriptLock();
       try { lock.waitLock(LOCK_TIMEOUT_MS); }
       catch (lockErr) { return jsonOut({ status: "error", message: "busy" }); }
@@ -1029,7 +1062,10 @@ function onEdit(e) {
 
 // ═══════════════════ قراءة البيانات ═══════════════════
 function doGet(e) {
+  const adminKey = e.parameter.key;
+
   if (e.parameter.customersList) {
+    if (!isAuthorized(adminKey)) return denied();
     const customersSheet = getCustomersSheet();
     const lastRow = customersSheet.getLastRow();
     if (lastRow < 2) return jsonOut([]);
@@ -1042,6 +1078,7 @@ function doGet(e) {
 
   // ═══ قائمة النشطين — مين فاتح التطبيق الحين ومين دخل مؤخراً ═══
   if (e.parameter.activeUsers) {
+    if (!isAuthorized(adminKey)) return denied();
     const vSheet = getVisitorsSheet();
     const lastRow = vSheet.getLastRow();
     if (lastRow < 2) return jsonOut({ onlineNow: 0, today: 0, active7d: 0, users: [] });
@@ -1087,6 +1124,7 @@ function doGet(e) {
 
   // ملخّص الاستخدام — يجي من ورقة Visitors الجاهزة (سريع)
   if (e.parameter.analyticsSummary) {
+    if (!isAuthorized(adminKey)) return denied();
     const vSheet = getVisitorsSheet();
     const vLast = vSheet.getLastRow();
     let uniqueVisitors = 0, activeVisitors7d = 0, installs = 0,
@@ -1196,6 +1234,9 @@ function doGet(e) {
       return t && new Date(t) >= cutoff;
     });
   }
+
+  // القائمة الكاملة = أسماء الزبائن وأرقامهم وإحداثيات بيوتهم
+  if (!isAuthorized(adminKey)) return denied();
 
   const orders = windowRows.map(function (row) {
     return {
