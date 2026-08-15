@@ -491,6 +491,46 @@ function telegramOrderText(o) {
 // يبني ويوقّع JWT يدوياً من مفتاح حساب الخدمة، ويستبدله برمز دخول مؤقت من
 // Google. الرمز يُخزَّن بالكاش 55 دقيقة — هذا اللي يخلي الإرسال الجماعي
 // يخلص بالوقت بدل ما يتوقف بالنص.
+/**
+ * يصلّح شكل مفتاح Firebase مهما انلصق غلط.
+ * أشكال اللصق الشائعة اللي تكسر computeRsaSha256Signature:
+ *   · أقواس " " ملزوقة بالقيمة (انلصقت من ملف JSON)
+ *   · \\n مزدوجة بدل \n
+ *   · \n نصّية بدل أسطر حقيقية
+ *   · مسافات بأطراف الأسطر
+ *   · سطر واحد طويل بلا فواصل
+ */
+function normalizePrivateKey(raw) {
+  var k = String(raw || "").trim();
+
+  // أقواس ملزوقة
+  if (k.length > 1 &&
+      ((k.charAt(0) === '"' && k.charAt(k.length - 1) === '"') ||
+       (k.charAt(0) === "'" && k.charAt(k.length - 1) === "'"))) {
+    k = k.substring(1, k.length - 1);
+  }
+
+  // \\n ثم \n → أسطر حقيقية
+  k = k.replace(/\\\\n/g, "\n").replace(/\\n/g, "\n").replace(/\r/g, "");
+
+  // مسافات أطراف الأسطر + أسطر فاضية
+  k = k.split("\n").map(function (l) { return l.trim(); })
+       .filter(function (l) { return l !== ""; }).join("\n");
+
+  // لو انلصق كسطر واحد، نعيد بناءه: العنوان + جسم مقسّم 64 حرف + الخاتمة
+  if (k.indexOf("\n") === -1 && k.indexOf("-----BEGIN") === 0) {
+    var body = k.replace(/-----BEGIN [^-]+-----/, "")
+                .replace(/-----END [^-]+-----/, "").replace(/\s+/g, "");
+    var head = (k.match(/-----BEGIN [^-]+-----/) || ["-----BEGIN PRIVATE KEY-----"])[0];
+    var tail = (k.match(/-----END [^-]+-----/) || ["-----END PRIVATE KEY-----"])[0];
+    var lines = [];
+    for (var i = 0; i < body.length; i += 64) lines.push(body.substr(i, 64));
+    k = head + "\n" + lines.join("\n") + "\n" + tail;
+  }
+
+  return k;
+}
+
 function getFcmAccessToken() {
   const cache = CacheService.getScriptCache();
   const cached = cache.get("fcm-token");
@@ -502,7 +542,7 @@ function getFcmAccessToken() {
   if (!clientEmail || !rawKey) {
     throw new Error("إعدادات Firebase ناقصة بـ Script Properties (CLIENT_EMAIL / PRIVATE_KEY)");
   }
-  const privateKey = rawKey.replace(/\\n/g, "\n");
+  const privateKey = normalizePrivateKey(rawKey);
 
   const header = { alg: "RS256", typ: "JWT" };
   const now = Math.floor(Date.now() / 1000);
@@ -1602,4 +1642,41 @@ function testTelegram() {
     firstOrder: true, notes: "هذي رسالة تجريبية", flagged: false, flags: ""
   }));
   Logger.log(r.ok ? "✅ انرسلت — شوف تلغرام" : "❌ فشل: " + r.reason);
+}
+
+/** تشخيص مفتاح Firebase — يبيّن شنو غلط بشكله بالضبط */
+function testPrivateKey() {
+  const raw = PropertiesService.getScriptProperties().getProperty("FIREBASE_PRIVATE_KEY");
+  if (!raw) { Logger.log("❌ FIREBASE_PRIVATE_KEY مو موجود إطلاقاً"); return; }
+
+  Logger.log("═══ الشكل الخام (كما انلصق) ═══");
+  Logger.log("الطول: " + raw.length + " حرف");
+  Logger.log("يبدأ بقوس \" ؟  " + (raw.trim().charAt(0) === '"' ? "❌ نعم — لازم ينشال" : "✅ لا"));
+  Logger.log("فيه \\n نصّية؟  " + (raw.indexOf("\\n") !== -1 ? "⚠️ نعم" : "لا"));
+  Logger.log("عدد الأسطر الحقيقية: " + raw.split("\n").length);
+
+  const k = normalizePrivateKey(raw);
+  Logger.log("");
+  Logger.log("═══ بعد التصليح ═══");
+  Logger.log("الطول: " + k.length);
+  Logger.log("عدد الأسطر: " + k.split("\n").length);
+  Logger.log("يبدأ صح؟  " + (k.indexOf("-----BEGIN") === 0 ? "✅" : "❌ ناقص -----BEGIN PRIVATE KEY-----"));
+  Logger.log("ينتهي صح؟ " + (/-----END [^-]+-----$/.test(k) ? "✅" : "❌ ناقص -----END PRIVATE KEY-----"));
+  Logger.log("أول سطر: " + k.split("\n")[0]);
+  Logger.log("آخر سطر: " + k.split("\n")[k.split("\n").length - 1]);
+
+  Logger.log("");
+  Logger.log("═══ تجربة التوقيع ═══");
+  try {
+    Utilities.computeRsaSha256Signature("test", k);
+    Logger.log("✅ المفتاح صالح — التوقيع نجح");
+    try {
+      const t = getFcmAccessToken();
+      Logger.log(t ? "✅ ورمز الدخول من Google نجح — الإشعارات جاهزة" : "❌ ما رجع رمز");
+    } catch (e2) { Logger.log("❌ رمز الدخول فشل: " + e2); }
+  } catch (e) {
+    Logger.log("❌ المفتاح مرفوض: " + e);
+    Logger.log("→ الأغلب انلصق ناقص. أعد نسخه من ملف JSON مال حساب الخدمة");
+    Logger.log("  (القيمة كاملة من -----BEGIN لين -----END بدون الأقواس)");
+  }
 }
