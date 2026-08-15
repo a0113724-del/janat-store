@@ -35,6 +35,11 @@
 const SHEET_ID = "1m6KUvBYW07IH-YgLLGUGuU7Lyi4nxvRb9xdHWcFW65k";
 const ORDERS_SHEET_NAME = "Orders";
 const CUSTOMERS_SHEET_NAME = "Customers";
+const POINTS_LOG_SHEET_NAME = "PointsLog";
+
+// سقف التعديل اليدوي على النقاط — يمنع غلطة كتابة (2000 بدل 20)
+// من تخريب رصيد زبون. إذا احتجت أكثر، عدّله من هنا.
+const MAX_MANUAL_POINTS = 1000;
 
 const POINTS_PER_ORDER = 2;
 const IQD_PER_10_POINTS = 1000;
@@ -244,6 +249,30 @@ function getCustomersSheet() {
   }
   forceTextColumn(sheet, 1);
   return sheet;
+}
+
+/**
+ * سجل حركة النقاط — كل زيادة أو نقصان تنكتب هنا بسببها.
+ * بدونه، إذا زبون سأل "وين راحت نقاطي؟" ما عندك جواب.
+ */
+function getPointsLogSheet() {
+  const ss = ss_();
+  let sheet = ss.getSheetByName(POINTS_LOG_SHEET_NAME);
+  if (!sheet) sheet = ss.insertSheet(POINTS_LOG_SHEET_NAME);
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["التاريخ", "الهاتف", "الاسم", "قبل", "التغيير", "بعد", "السبب"]);
+  }
+  forceTextColumn(sheet, 2);
+  return sheet;
+}
+
+function logPointsChange(phone, name, before, after, reason) {
+  try {
+    getPointsLogSheet().appendRow([
+      new Date(), normalizePhone(phone), name || "",
+      before, after - before, after, reason || "—"
+    ]);
+  } catch (e) { /* السجل ثانوي — فشله ما يوقف حركة النقاط نفسها */ }
 }
 
 function getAnalyticsSheet() {
@@ -665,19 +694,25 @@ function findOrCreateCustomerRow(sheet, phone, name) {
   return sheet.getLastRow();
 }
 
-function addPointsToCustomer(sheet, phone, name, pointsDelta, spendDelta) {
+function addPointsToCustomer(sheet, phone, name, pointsDelta, spendDelta, reason) {
   if (!phone) return;
   const row = findOrCreateCustomerRow(sheet, phone, name);
   // قراءة وحدة وكتابة وحدة بدل قراءتين وثلاث كتابات
   const cur = sheet.getRange(row, 1, 1, 4).getValues()[0];
   const currentPoints = Number(cur[2]) || 0;
   const currentSpend = Number(cur[3]) || 0;
+  const newPoints = Math.max(0, currentPoints + pointsDelta);
   sheet.getRange(row, 1, 1, 4).setValues([[
     cur[0],
     name || cur[1],
-    Math.max(0, currentPoints + pointsDelta),
+    newPoints,
     currentSpend + (spendDelta || 0)
   ]]);
+  // ما ننكتب سطر بالسجل إلا إذا الرصيد تحرّك فعلاً — يبقي السجل نظيف
+  // وما يضيف بطء على الطلبات اللي ما تستعمل نقاط (وهي الأغلبية)
+  if (newPoints !== currentPoints) {
+    logPointsChange(phone, name || cur[1], currentPoints, newPoints, reason);
+  }
 }
 
 // رصيد نقاط الزبون الحالي
@@ -718,11 +753,16 @@ function creditOrderPoints(ordersSheet, customersSheet, row) {
   const pointsEarned = Number(rowData[COL_POINTS_EARNED - 1]) || 0;
   const referredBy = rowData[COL_REFERRED_BY - 1];
 
+  const seqNo = rowData[COL_SEQ_NO - 1];
+  const orderTag = seqNo ? " #" + seqNo : "";
+
   if (phone) {
-    addPointsToCustomer(customersSheet, phone, name, pointsEarned, total);
+    addPointsToCustomer(customersSheet, phone, name, pointsEarned, total,
+      "تسليم طلب" + orderTag);
   }
   if (referredBy && total >= REFERRAL_MIN_ORDER_TOTAL) {
-    addPointsToCustomer(customersSheet, referredBy, "", REFERRAL_BONUS_POINTS, 0);
+    addPointsToCustomer(customersSheet, referredBy, "", REFERRAL_BONUS_POINTS, 0,
+      "مكافأة إحالة — صديقه استلم طلب" + orderTag);
     try {
       notifyCustomer(referredBy, "🎁 ربحت " + REFERRAL_BONUS_POINTS + " نقاط!",
         "صديقك اللي دعيته استلم أول طلب — نقاطك انضافت لرصيدك 🌿");
@@ -747,8 +787,10 @@ function refundOrderPoints(ordersSheet, customersSheet, row) {
   const rowData = ordersSheet.getRange(row, 1, 1, ORDERS_NUM_COLS).getValues()[0];
   const phone = rowData[COL_PHONE - 1];
   const pointsUsed = Number(rowData[COL_POINTS_USED - 1]) || 0;
+  const cancelSeq = rowData[COL_SEQ_NO - 1];
   if (phone && pointsUsed > 0) {
-    addPointsToCustomer(customersSheet, phone, "", pointsUsed, 0);
+    addPointsToCustomer(customersSheet, phone, "", pointsUsed, 0,
+      "إرجاع نقاط طلب ملغي" + (cancelSeq ? " #" + cancelSeq : ""));
   }
   ordersSheet.getRange(row, COL_POINTS_USED).setValue(0);
 }
@@ -864,6 +906,97 @@ function doPost(e) {
         data.body || ""
       );
       return jsonOut({ status: "ok", result: result });
+    }
+
+    // ═══ تعديل نقاط زبون يدوياً من صفحة التحكم ═══
+    // يقبل إما delta (زد/انقص) أو setTo (خلّي الرصيد يساوي).
+    if (data.action === "adjustCustomerPoints") {
+      if (!isAuthorized(data.adminKey)) return denied();
+
+      const phone = normalizePhone(data.phone);
+      if (!isValidPhone(phone)) {
+        return jsonOut({ status: "error", message: "رقم الهاتف غير صالح" });
+      }
+
+      const hasDelta = data.delta !== undefined && data.delta !== null && data.delta !== "";
+      const hasSetTo = data.setTo !== undefined && data.setTo !== null && data.setTo !== "";
+      if (!hasDelta && !hasSetTo) {
+        return jsonOut({ status: "error", message: "ما حدّدت التغيير" });
+      }
+
+      const delta = hasDelta ? Math.round(Number(data.delta)) : 0;
+      const setTo = hasSetTo ? Math.round(Number(data.setTo)) : 0;
+      if (hasDelta && !isFinite(delta)) {
+        return jsonOut({ status: "error", message: "رقم التغيير غير صالح" });
+      }
+      if (hasSetTo && (!isFinite(setTo) || setTo < 0)) {
+        return jsonOut({ status: "error", message: "الرصيد الجديد لازم يكون رقم موجب" });
+      }
+      // حاجز ضد غلطة الكتابة — 2000 بدل 20 تسوي فوضى بالرصيد
+      if (Math.abs(delta) > MAX_MANUAL_POINTS || setTo > MAX_MANUAL_POINTS) {
+        return jsonOut({
+          status: "error",
+          message: "أقصى تعديل يدوي " + MAX_MANUAL_POINTS + " نقطة — تأكد من الرقم"
+        });
+      }
+
+      const lock = LockService.getScriptLock();
+      try { lock.waitLock(LOCK_TIMEOUT_MS); }
+      catch (lockErr) { return jsonOut({ status: "error", message: "السيرفر مشغول، حاول مرة ثانية" }); }
+      try {
+        const sheet = getCustomersSheet();
+        const row = findOrCreateCustomerRow(sheet, phone, data.name || "");
+        const cur = sheet.getRange(row, 1, 1, 4).getValues()[0];
+        const before = Number(cur[2]) || 0;
+        const name = String(cur[1] || data.name || "");
+
+        // حماية من الكتابة فوق تغيير صار بنفس اللحظة (تسليم طلب مثلاً):
+        // الواجهة تدز الرصيد اللي شافته، وإذا اختلف نرفض بدل ما نمحيه.
+        if (data.expectedBefore !== undefined && data.expectedBefore !== null &&
+            data.expectedBefore !== "" && Number(data.expectedBefore) !== before) {
+          return jsonOut({
+            status: "error",
+            stale: true,
+            points: before,
+            message: "الرصيد تغيّر للتو وصار " + before + " — افتح الزبون من جديد"
+          });
+        }
+
+        const after = Math.max(0, hasSetTo ? setTo : before + delta);
+
+        if (after !== before) {
+          sheet.getRange(row, 3).setValue(after);
+          logPointsChange(phone, name, before, after,
+            "تعديل يدوي — " + (String(data.reason || "").trim() || "بلا سبب مكتوب"));
+        }
+
+        // إشعار اختياري للزبون — بس إذا الرصيد تحرّك فعلاً
+        let notified = null;
+        if (data.notify && after !== before) {
+          const diff = after - before;
+          try {
+            notified = notifyCustomer(
+              phone,
+              diff > 0 ? "⭐ انضافت لك نقاط!" : "⭐ تحديث رصيد نقاطك",
+              diff > 0
+                ? "انضافت لك " + diff + " نقطة — رصيدك صار " + after + " نقطة 🌿"
+                : "رصيدك صار " + after + " نقطة"
+            );
+          } catch (e) { /* فشل الإشعار ما يلغي التعديل */ }
+        }
+
+        return jsonOut({
+          status: "ok",
+          phone: phone,
+          name: name,
+          before: before,
+          points: after,
+          changed: after - before,
+          notified: notified
+        });
+      } finally {
+        lock.releaseLock();
+      }
     }
 
     // زر "تأكيد الاستلام" بصفحة التقارير
@@ -1044,7 +1177,8 @@ function doPost(e) {
       // نحجز النقاط فوراً — قبل، الرصيد كان ينقص بالتسليم بس، فطلبين
       // متتاليين ياخذون خصم من نفس الرصيد.
       if (pointsUsed > 0) {
-        addPointsToCustomer(customersSheet, phone, data.name || "", -pointsUsed, 0);
+        addPointsToCustomer(customersSheet, phone, data.name || "", -pointsUsed, 0,
+          "خصم نقاط على طلب #" + seqNo);
       }
 
       ordersSheet.appendRow([
@@ -1193,10 +1327,56 @@ function doGet(e) {
     const lastRow = customersSheet.getLastRow();
     if (lastRow < 2) return jsonOut([]);
     const rows = customersSheet.getRange(2, 1, lastRow - 1, 4).getValues();
+
+    // عدد الطلبات وآخر طلب لكل زبون — قراءة وحدة لعمودين بس
+    const stats = {};
+    try {
+      const os = getOrdersSheet();
+      const oLast = os.getLastRow();
+      if (oLast >= 2) {
+        const oRows = os.getRange(2, 1, oLast - 1, COL_PHONE).getValues();
+        for (let i = 0; i < oRows.length; i++) {
+          const p = normalizePhone(oRows[i][COL_PHONE - 1]);
+          if (!p) continue;
+          const when = oRows[i][COL_TIME - 1];
+          if (!stats[p]) stats[p] = { count: 0, last: null };
+          stats[p].count++;
+          if (when && (!stats[p].last || when > stats[p].last)) stats[p].last = when;
+        }
+      }
+    } catch (e) { /* الإحصائيات إضافة — فشلها ما يمنع قائمة الزبائن */ }
+
     const customers = rows.map(function (row) {
-      return { phone: row[0], name: row[1], points: row[2], totalSpend: row[3] };
+      const p = normalizePhone(row[0]);
+      const s = stats[p] || { count: 0, last: null };
+      return {
+        phone: row[0], name: row[1], points: row[2], totalSpend: row[3],
+        ordersCount: s.count, lastOrderAt: s.last
+      };
     }).filter(function (c) { return String(c.phone).trim() !== ""; });
     return jsonOut(customers);
+  }
+
+  // ═══ سجل حركة نقاط زبون واحد — آخر 20 حركة ═══
+  if (e.parameter.pointsLog) {
+    if (!isAuthorized(adminKey)) return denied();
+    const target = normalizePhone(e.parameter.pointsLog);
+    if (!target) return jsonOut([]);
+    const logSheet = getPointsLogSheet();
+    const logLast = logSheet.getLastRow();
+    if (logLast < 2) return jsonOut([]);
+    // ما نقرأ السجل كله — آخر 500 حركة تكفي وتبقى القراءة سريعة
+    const start = Math.max(2, logLast - 499);
+    const logRows = logSheet.getRange(start, 1, logLast - start + 1, 7).getValues();
+    const out = [];
+    for (let i = logRows.length - 1; i >= 0 && out.length < 20; i--) {
+      if (normalizePhone(logRows[i][1]) !== target) continue;
+      out.push({
+        date: logRows[i][0], before: logRows[i][3],
+        delta: logRows[i][4], after: logRows[i][5], reason: logRows[i][6]
+      });
+    }
+    return jsonOut(out);
   }
 
   // ═══ قائمة النشطين — مين فاتح التطبيق الحين ومين دخل مؤخراً ═══

@@ -212,6 +212,80 @@
   .scroll-x{ overflow-x:auto; }
   .pts-cell{ font-weight:900; color:var(--pomegranate); }
   .search-input{ width:100%; border:1.5px solid var(--line); border-radius:100px; padding:10px 16px; font-size:.85rem; margin-bottom:14px; background:#fff; }
+  .pts-btn{
+    background:#EFE7FB; color:#6b3fa0; border:none; padding:6px 12px; border-radius:100px;
+    font-family:inherit; font-weight:800; font-size:.7rem; cursor:pointer; white-space:nowrap;
+  }
+  .pts-btn:hover{ background:#e3d5f7; }
+  td.muted{ color:#999; font-size:.72rem; }
+
+  /* ---------- نافذة تعديل النقاط ---------- */
+  #ptsModal{
+    position:fixed; inset:0; z-index:210; display:none;
+    align-items:center; justify-content:center; padding:16px;
+    background:rgba(21,49,34,.82); backdrop-filter:blur(3px);
+  }
+  #ptsModal.show{ display:flex; }
+  .pm-box{
+    background:#fff; border-radius:20px; padding:22px 20px; max-width:420px; width:100%;
+    max-height:92vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,.4);
+  }
+  .pm-head{ text-align:center; margin-bottom:16px; }
+  .pm-head h3{ color:var(--forest); font-size:1.05rem; margin-bottom:2px; }
+  .pm-head .pm-phone{ font-size:.78rem; color:#888; direction:ltr; }
+  .pm-now{
+    background:#EFE7FB; border-radius:14px; padding:14px; text-align:center; margin-bottom:16px;
+  }
+  .pm-now .n{ font-size:1.9rem; font-weight:900; color:#6b3fa0; line-height:1.2; }
+  .pm-now .l{ font-size:.72rem; color:#6b3fa0; opacity:.85; }
+  .pm-chips{ display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-bottom:14px; }
+  .pm-chip{
+    background:#F6F1E1; border:1.5px solid var(--line); border-radius:100px; padding:7px 13px;
+    font-family:inherit; font-weight:800; font-size:.8rem; cursor:pointer; color:var(--forest);
+  }
+  .pm-chip:hover{ background:#efe6cc; }
+  .pm-chip.minus{ color:var(--pomegranate); }
+  .pm-label{ font-size:.76rem; font-weight:800; color:var(--forest); margin-bottom:5px; display:block; }
+  .pm-box input[type=number], .pm-box input[type=text]{
+    width:100%; border:1.5px solid var(--line); border-radius:12px; padding:11px;
+    font-family:inherit; font-size:.9rem; margin-bottom:12px;
+  }
+  .pm-box input[type=number]{ text-align:center; font-weight:900; font-size:1.3rem; color:#6b3fa0; }
+  .pm-preview{
+    text-align:center; font-size:.82rem; font-weight:800; padding:9px;
+    border-radius:10px; margin-bottom:12px; background:#F6F1E1; color:#777;
+  }
+  .pm-preview.up{ background:#DFF2E1; color:#1e6b2b; }
+  .pm-preview.down{ background:#FBE1DE; color:#8a2418; }
+  .pm-notify{
+    display:flex; align-items:center; gap:8px; font-size:.8rem; color:#555;
+    margin-bottom:14px; cursor:pointer;
+  }
+  .pm-notify input{ width:17px; height:17px; accent-color:var(--leaf); }
+  .pm-actions{ display:flex; gap:8px; }
+  .pm-actions button{
+    flex:1; border:none; padding:13px; border-radius:12px;
+    font-family:inherit; font-weight:800; font-size:.9rem; cursor:pointer;
+  }
+  #pmSave{ background:var(--leaf); color:#fff; }
+  #pmSave:disabled{ background:#ccc; cursor:not-allowed; }
+  #pmCancel{ background:#eee; color:#666; }
+  .pm-msg{ font-size:.78rem; font-weight:700; text-align:center; margin-bottom:10px; display:none; }
+  .pm-msg.show{ display:block; }
+  .pm-msg.err{ color:var(--pomegranate); }
+  .pm-msg.ok{ color:#1e6b2b; }
+  .pm-hist{ margin-top:18px; border-top:1px solid var(--line); padding-top:14px; }
+  .pm-hist h4{ font-size:.8rem; color:var(--forest); margin-bottom:8px; }
+  .pm-hist-row{
+    display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+    font-size:.72rem; padding:7px 0; border-bottom:1px dashed var(--line);
+  }
+  .pm-hist-row:last-child{ border-bottom:none; }
+  .pm-hist-row .d{ font-weight:900; white-space:nowrap; }
+  .pm-hist-row .d.up{ color:#1e6b2b; }
+  .pm-hist-row .d.down{ color:var(--pomegranate); }
+  .pm-hist-row .r{ color:#666; text-align:right; flex:1; }
+  .pm-hist-row .t{ color:#aaa; font-size:.66rem; white-space:nowrap; }
 
   /* ---------- NOTIFICATIONS TAB ---------- */
   .notif-card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; text-align:center; margin-bottom:16px; }
@@ -336,13 +410,21 @@
     <!-- ---------- CUSTOMERS VIEW ---------- -->
     <div class="view" id="view-customers">
       <div class="section-h">👥 الزبائن ونقاط الولاء</div>
+      <div class="stats-row" id="customerStatsRow"></div>
       <input type="text" class="search-input" id="customerSearch" placeholder="دوّر باسم أو رقم هاتف...">
       <div class="scroll-x">
         <table>
-          <thead><tr><th>الاسم</th><th>الهاتف</th><th>النقاط</th><th>إجمالي الصرف</th></tr></thead>
+          <thead><tr>
+            <th>الاسم</th><th>الهاتف</th><th>النقاط</th>
+            <th>الطلبات</th><th>إجمالي الصرف</th><th>تحكّم</th>
+          </tr></thead>
           <tbody id="customersBody"></tbody>
         </table>
       </div>
+      <p class="empty-note" style="font-size:.72rem; padding:12px 4px;">
+        اضغط <b>⭐ عدّل</b> عند أي زبون حتى تزيد أو تنقص نقاطه — كل تعديل ينحفظ بسجل
+        مع سببه، وتكدر تدز إشعار للزبون بنفس اللحظة.
+      </p>
     </div>
 
     <!-- ---------- REPORTS VIEW ---------- -->
@@ -407,6 +489,52 @@
       <div class="kg-err" id="keyGateErr">المفتاح غلط — تأكد إنه نفس اللي بـ Script Properties</div>
       <button id="keyGateSave">حفظ ومتابعة</button>
       <div class="kg-hint">نسيته؟ افتح Apps Script ← ⚙️ Project Settings ← Script Properties وشوف قيمة <b>ADMIN_KEY</b>، أو غيّرها لقيمة جديدة.</div>
+    </div>
+  </div>
+
+  <!-- ========= نافذة تعديل نقاط زبون ========= -->
+  <div id="ptsModal">
+    <div class="pm-box">
+      <div class="pm-head">
+        <h3 id="pmName">—</h3>
+        <div class="pm-phone" id="pmPhone">—</div>
+      </div>
+
+      <div class="pm-now">
+        <div class="n" id="pmCurrent">0</div>
+        <div class="l" id="pmCurrentValue">رصيده الحالي</div>
+      </div>
+
+      <span class="pm-label">الرصيد الجديد</span>
+      <div class="pm-chips">
+        <button type="button" class="pm-chip" data-step="1">+1</button>
+        <button type="button" class="pm-chip" data-step="5">+5</button>
+        <button type="button" class="pm-chip" data-step="10">+10</button>
+        <button type="button" class="pm-chip minus" data-step="-1">−1</button>
+        <button type="button" class="pm-chip minus" data-step="-5">−5</button>
+        <button type="button" class="pm-chip minus" data-step="-10">−10</button>
+      </div>
+      <input type="number" id="pmNew" min="0" step="1" inputmode="numeric">
+      <div class="pm-preview" id="pmPreview">ما تغيّر شي</div>
+
+      <span class="pm-label">السبب (يبقى بالسجل)</span>
+      <input type="text" id="pmReason" placeholder="مثلاً: تعويض عن طلب تأخر" maxlength="80">
+
+      <label class="pm-notify">
+        <input type="checkbox" id="pmNotify" checked>
+        <span>دز إشعار للزبون يخبره برصيده الجديد</span>
+      </label>
+
+      <div class="pm-msg" id="pmMsg"></div>
+      <div class="pm-actions">
+        <button id="pmCancel" type="button">إلغاء</button>
+        <button id="pmSave" type="button">حفظ</button>
+      </div>
+
+      <div class="pm-hist">
+        <h4>📜 آخر حركات النقاط</h4>
+        <div id="pmHist"><div class="pm-hist-row"><span class="r">جاري التحميل...</span></div></div>
+      </div>
     </div>
   </div>
 
@@ -1063,10 +1191,226 @@
     });
     const sorted = [...filtered].sort((a,b)=> Number(b.points||0) - Number(a.points||0));
     const body = document.getElementById("customersBody");
-    if(sorted.length===0){ body.innerHTML = `<tr><td colspan="4" class="empty">لا يوجد زبائن مسجّلين بعد</td></tr>`; return; }
-    body.innerHTML = sorted.map(c=>`<tr><td>${esc(c.name || "—")}</td><td style="direction:ltr; text-align:left;">${showPhone(c.phone)}</td><td class="pts-cell">${c.points || 0}</td><td>${money(c.totalSpend)}</td></tr>`).join("");
+    renderCustomerStats(customers);
+    if(sorted.length===0){ body.innerHTML = `<tr><td colspan="6" class="empty">لا يوجد زبائن مسجّلين بعد</td></tr>`; return; }
+    body.innerHTML = sorted.map(c=>{
+      const ph = showPhone(c.phone);
+      const last = c.lastOrderAt ? timeAgo(c.lastOrderAt) : "—";
+      return `<tr>
+        <td>${esc(c.name || "—")}</td>
+        <td style="direction:ltr; text-align:left;">${esc(ph)}</td>
+        <td class="pts-cell">${Number(c.points) || 0}</td>
+        <td>${Number(c.ordersCount) || 0}<div class="muted">${esc(last)}</div></td>
+        <td>${money(c.totalSpend)}</td>
+        <td><button class="pts-btn" data-edit-pts="${esc(ph)}">⭐ عدّل</button></td>
+      </tr>`;
+    }).join("");
+  }
+
+  function renderCustomerStats(customers){
+    const el = document.getElementById("customerStatsRow");
+    if(!el) return;
+    const totalPoints = customers.reduce((s,c)=> s + (Number(c.points)||0), 0);
+    const withPoints  = customers.filter(c => (Number(c.points)||0) > 0).length;
+    const spend       = customers.reduce((s,c)=> s + (Number(c.totalSpend)||0), 0);
+    const stats = [
+      { lbl:"عدد الزبائن", val: customers.length },
+      { lbl:"مجموع النقاط عند الكل", val: totalPoints },
+      { lbl:"زبائن عندهم نقاط", val: withPoints },
+      { lbl:"قيمة النقاط بالدينار", val: pointsToIqd(totalPoints).toLocaleString('en-US') },
+      { lbl:"إجمالي صرفهم", val: money(spend) },
+    ];
+    el.innerHTML = stats.map(s => `<div class="stat-card"><div class="lbl">${s.lbl}</div><div class="val">${s.val}</div></div>`).join("");
   }
   document.getElementById("customerSearch").addEventListener("input",(e)=>{ renderCustomersTable(allCustomers, e.target.value); });
+
+  // ================= تعديل نقاط زبون =================
+  // نفس معادلة index.html: كل 10 نقاط = 1000 دينار (الكسور ما تنصرف)
+  const IQD_PER_10_POINTS = 1000;
+  function pointsToIqd(pts){ return Math.floor((Number(pts)||0) / 10) * IQD_PER_10_POINTS; }
+
+  let pmCustomer = null;   // الزبون المفتوح حالياً بالنافذة
+
+  const pmEl = {
+    modal:   document.getElementById("ptsModal"),
+    name:    document.getElementById("pmName"),
+    phone:   document.getElementById("pmPhone"),
+    current: document.getElementById("pmCurrent"),
+    curVal:  document.getElementById("pmCurrentValue"),
+    input:   document.getElementById("pmNew"),
+    preview: document.getElementById("pmPreview"),
+    reason:  document.getElementById("pmReason"),
+    notify:  document.getElementById("pmNotify"),
+    msg:     document.getElementById("pmMsg"),
+    save:    document.getElementById("pmSave"),
+    hist:    document.getElementById("pmHist"),
+  };
+
+  function pmSetMsg(kind, text){
+    pmEl.msg.className = "pm-msg" + (text ? " show " + kind : "");
+    pmEl.msg.textContent = text || "";
+  }
+
+  function pmRefreshPreview(){
+    const before = Number(pmCustomer ? pmCustomer.points : 0) || 0;
+    const raw = pmEl.input.value.trim();
+    const after = raw === "" ? before : Math.max(0, Math.round(Number(raw)));
+    if(!Number.isFinite(after)){
+      pmEl.preview.className = "pm-preview";
+      pmEl.preview.textContent = "اكتب رقم صحيح";
+      return;
+    }
+    const diff = after - before;
+    if(diff === 0){
+      pmEl.preview.className = "pm-preview";
+      pmEl.preview.textContent = "ما تغيّر شي";
+    }else{
+      pmEl.preview.className = "pm-preview " + (diff > 0 ? "up" : "down");
+      pmEl.preview.textContent =
+        `${before} ← ${after} (${diff > 0 ? "+" : "−"}${Math.abs(diff)} نقطة) · تساوي ${pointsToIqd(after).toLocaleString('en-US')} د.ع`;
+    }
+  }
+
+  function openPointsModal(phone){
+    const c = allCustomers.find(x => normalizePhone(x.phone) === normalizePhone(phone));
+    if(!c) return;
+    pmCustomer = { phone: normalizePhone(c.phone), name: c.name || "", points: Number(c.points) || 0 };
+
+    pmEl.name.textContent  = pmCustomer.name || "زبون بلا اسم";
+    pmEl.phone.textContent = pmCustomer.phone;
+    pmEl.current.textContent = pmCustomer.points;
+    pmEl.curVal.textContent  = `رصيده الحالي · يساوي ${pointsToIqd(pmCustomer.points).toLocaleString('en-US')} د.ع`;
+    pmEl.input.value  = pmCustomer.points;
+    pmEl.reason.value = "";
+    pmEl.save.disabled = false;
+    pmEl.save.textContent = "حفظ";
+    pmSetMsg("", "");
+    pmRefreshPreview();
+    pmEl.modal.classList.add("show");
+    loadPointsHistory(pmCustomer.phone);
+  }
+
+  function closePointsModal(){
+    pmEl.modal.classList.remove("show");
+    pmCustomer = null;
+  }
+
+  async function loadPointsHistory(phone){
+    pmEl.hist.innerHTML = `<div class="pm-hist-row"><span class="r">جاري التحميل...</span></div>`;
+    try{
+      const rows = await fetchJson(adminUrl("?pointsLog=" + encodeURIComponent(phone)), "سجل النقاط");
+      if(!checkAuth(rows)) return;
+      if(!Array.isArray(rows) || rows.length === 0){
+        pmEl.hist.innerHTML = `<div class="pm-hist-row"><span class="r">ما بيه حركات مسجّلة بعد</span></div>`;
+        return;
+      }
+      pmEl.hist.innerHTML = rows.map(r=>{
+        const d = Number(r.delta) || 0;
+        return `<div class="pm-hist-row">
+          <span class="d ${d >= 0 ? "up" : "down"}">${d >= 0 ? "+" : "−"}${Math.abs(d)}</span>
+          <span class="r">${esc(r.reason || "—")}</span>
+          <span class="t">${esc(timeAgo(r.date))}</span>
+        </div>`;
+      }).join("");
+    }catch(err){
+      pmEl.hist.innerHTML = `<div class="pm-hist-row"><span class="r">تعذّر جلب السجل — ${esc(err.message)}</span></div>`;
+    }
+  }
+
+  async function savePointsChange(){
+    if(!pmCustomer) return;
+    const before = pmCustomer.points;
+    const raw = pmEl.input.value.trim();
+    const after = Math.max(0, Math.round(Number(raw)));
+    if(raw === "" || !Number.isFinite(after)){
+      pmSetMsg("err", "اكتب رصيد جديد صحيح"); return;
+    }
+    if(after === before){ pmSetMsg("err", "الرصيد نفسه — ما بيه شي ينحفظ"); return; }
+
+    pmEl.save.disabled = true;
+    pmEl.save.textContent = "⏳ جاري الحفظ...";
+    pmSetMsg("", "");
+
+    try{
+      const res = await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: adminBody({
+          action: "adjustCustomerPoints",
+          phone: pmCustomer.phone,
+          name: pmCustomer.name,
+          setTo: after,
+          expectedBefore: before,
+          reason: pmEl.reason.value.trim(),
+          notify: pmEl.notify.checked
+        })
+      });
+      const data = await res.json();
+      if(!checkAuth(data)){
+        // بوابة المفتاح انفتحت — نرجّع الزر شغّال حتى يعيد المحاولة بعدها
+        pmEl.save.disabled = false;
+        pmEl.save.textContent = "حفظ";
+        return;
+      }
+
+      if(data.status !== "ok"){
+        pmSetMsg("err", "⚠️ " + (data.message || "ما انحفظ"));
+        // لو الرصيد تغيّر بنفس اللحظة، نحدّث الأرقام حتى يقرر من جديد
+        if(data.stale && data.points !== undefined){
+          pmCustomer.points = Number(data.points) || 0;
+          pmEl.current.textContent = pmCustomer.points;
+          pmEl.input.value = pmCustomer.points;
+          pmRefreshPreview();
+        }
+        pmEl.save.disabled = false;
+        pmEl.save.textContent = "حفظ";
+        return;
+      }
+
+      // نحدّث النسخة المحلية بدل ما نعيد تحميل كل شي
+      const c = allCustomers.find(x => normalizePhone(x.phone) === pmCustomer.phone);
+      if(c) c.points = data.points;
+      else allCustomers.push({ phone: pmCustomer.phone, name: data.name, points: data.points, totalSpend: 0, ordersCount: 0 });
+      renderCustomersTable(allCustomers, document.getElementById("customerSearch").value);
+
+      pmCustomer.points = Number(data.points) || 0;
+      pmEl.current.textContent = pmCustomer.points;
+      pmEl.curVal.textContent  = `رصيده الحالي · يساوي ${pointsToIqd(pmCustomer.points).toLocaleString('en-US')} د.ع`;
+      pmEl.input.value = pmCustomer.points;
+      pmRefreshPreview();
+
+      const sent = data.notified && data.notified.sent;
+      pmSetMsg("ok", `✅ انحفظ — الرصيد صار ${data.points} نقطة` +
+        (pmEl.notify.checked ? (sent ? ` · وصل إشعار لـ ${sent} جهاز` : " · بس ما عنده جهاز مسجّل للإشعارات") : ""));
+      pmEl.save.disabled = false;
+      pmEl.save.textContent = "حفظ";
+      loadPointsHistory(pmCustomer.phone);
+    }catch(err){
+      pmSetMsg("err", "⚠️ ما وصل للسيرفر — " + err.message);
+      pmEl.save.disabled = false;
+      pmEl.save.textContent = "حفظ";
+    }
+  }
+
+  document.getElementById("customersBody").addEventListener("click",(e)=>{
+    const btn = e.target.closest("[data-edit-pts]");
+    if(btn) openPointsModal(btn.getAttribute("data-edit-pts"));
+  });
+  document.querySelectorAll(".pm-chip").forEach(chip=>{
+    chip.addEventListener("click",()=>{
+      const step = Number(chip.getAttribute("data-step")) || 0;
+      const base = pmEl.input.value.trim() === "" ? (pmCustomer ? pmCustomer.points : 0) : Number(pmEl.input.value);
+      pmEl.input.value = Math.max(0, Math.round((Number(base) || 0) + step));
+      pmRefreshPreview();
+    });
+  });
+  pmEl.input.addEventListener("input", pmRefreshPreview);
+  pmEl.save.addEventListener("click", savePointsChange);
+  document.getElementById("pmCancel").addEventListener("click", closePointsModal);
+  pmEl.modal.addEventListener("click",(e)=>{ if(e.target === pmEl.modal) closePointsModal(); });
+  document.addEventListener("keydown",(e)=>{
+    if(e.key === "Escape" && pmEl.modal.classList.contains("show")) closePointsModal();
+  });
 
   // Apps Script يرجّع 404 أو 5xx متقطع وقت الضغط أو أثناء إعادة النشر.
   // محاولة وحدة إضافية تبلع أغلبها بدل ما تفرّغ الشاشة.
