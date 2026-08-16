@@ -36,6 +36,7 @@ const SHEET_ID = "1m6KUvBYW07IH-YgLLGUGuU7Lyi4nxvRb9xdHWcFW65k";
 const ORDERS_SHEET_NAME = "Orders";
 const CUSTOMERS_SHEET_NAME = "Customers";
 const POINTS_LOG_SHEET_NAME = "PointsLog";
+const REVIEWS_SHEET_NAME = "Reviews";
 
 // سقف التعديل اليدوي على النقاط — يمنع غلطة كتابة (2000 بدل 20)
 // من تخريب رصيد زبون. إذا احتجت أكثر، عدّله من هنا.
@@ -263,6 +264,20 @@ function getPointsLogSheet() {
     sheet.appendRow(["التاريخ", "الهاتف", "الاسم", "قبل", "التغيير", "بعد", "السبب"]);
   }
   forceTextColumn(sheet, 2);
+  return sheet;
+}
+
+/**
+ * تقييمات الزبائن — خاصة بصاحب المحل، ما تنعرض بالموقع لأي زبون.
+ */
+function getReviewsSheet() {
+  const ss = ss_();
+  let sheet = ss.getSheetByName(REVIEWS_SHEET_NAME);
+  if (!sheet) sheet = ss.insertSheet(REVIEWS_SHEET_NAME);
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["التاريخ", "رقم الطلب", "معرّف الطلب", "الاسم", "الهاتف", "التقييم", "الملاحظة"]);
+  }
+  forceTextColumn(sheet, 5);
   return sheet;
 }
 
@@ -908,6 +923,63 @@ function doPost(e) {
       return jsonOut({ status: "ok", result: result });
     }
 
+    // ═══ تقييم الزبون لطلبه (من شاشة نجاح الطلب) ═══
+    // مفتوح للزبائن — بس مربوط بمعرّف طلب حقيقي، وتقييم واحد لكل طلب.
+    if (data.action === "submitReview") {
+      const orderId = String(data.orderId || "").trim();
+      const rating = Math.round(Number(data.rating));
+      if (!orderId) return jsonOut({ status: "error", message: "الطلب غير محدد" });
+      if (!isFinite(rating) || rating < 1 || rating > 5) {
+        return jsonOut({ status: "error", message: "التقييم لازم يكون من 1 لـ 5" });
+      }
+
+      const ordersSheet = getOrdersSheet();
+      const oLast = ordersSheet.getLastRow();
+      if (oLast < 2) return jsonOut({ status: "error", message: "الطلب غير موجود" });
+
+      // معرّف الطلب UUID — لازم يكون موجود فعلاً حتى ما ينكتب تقييم وهمي
+      const ids = ordersSheet.getRange(2, COL_ORDER_ID, oLast - 1, 1).getValues();
+      let orderRow = -1;
+      for (let i = 0; i < ids.length; i++) {
+        if (String(ids[i][0]) === orderId) { orderRow = i + 2; break; }
+      }
+      if (orderRow === -1) return jsonOut({ status: "error", message: "الطلب غير موجود" });
+
+      const reviewsSheet = getReviewsSheet();
+      const rLast = reviewsSheet.getLastRow();
+      if (rLast >= 2) {
+        const done = reviewsSheet.getRange(2, 3, rLast - 1, 1).getValues();
+        for (let i = 0; i < done.length; i++) {
+          if (String(done[i][0]) === orderId) {
+            return jsonOut({ status: "error", message: "هذا الطلب انقيّم قبل — شكراً!" });
+          }
+        }
+      }
+
+      // نأخذ الاسم والرقم من الجدول مو من المتصفح — الزبون ما يكدر ينتحل غيره
+      const orderData = ordersSheet.getRange(orderRow, 1, 1, ORDERS_NUM_COLS).getValues()[0];
+      const rName = String(orderData[COL_NAME - 1] || "");
+      const rPhone = normalizePhone(orderData[COL_PHONE - 1]);
+      const rSeq = orderData[COL_SEQ_NO - 1] || "";
+      // تنظيف الملاحظة: بلا أحرف تحكّم، وبحد 500 حرف
+      const note = String(data.note || "")
+        .replace(/[\x00-\x1F\x7F]/g, " ").replace(/\s+/g, " ").trim().slice(0, 500);
+
+      reviewsSheet.appendRow([new Date(), rSeq, orderId, rName, rPhone, rating, note]);
+
+      try {
+        sendTelegram(
+          "⭐ <b>تقييم جديد</b> — " + "★".repeat(rating) + "☆".repeat(5 - rating) +
+          " (" + rating + "/5)\n" +
+          "الطلب: #" + tgEsc(rSeq) + "\n" +
+          "الزبون: " + tgEsc(rName) + " — " + tgEsc(rPhone) +
+          (note ? "\n💬 " + tgEsc(note) : "")
+        );
+      } catch (e) { /* فشل تلغرام ما يضيّع التقييم */ }
+
+      return jsonOut({ status: "ok" });
+    }
+
     // ═══ تعديل نقاط زبون يدوياً من صفحة التحكم ═══
     // يقبل إما delta (زد/انقص) أو setTo (خلّي الرصيد يساوي).
     if (data.action === "adjustCustomerPoints") {
@@ -1355,6 +1427,37 @@ function doGet(e) {
       };
     }).filter(function (c) { return String(c.phone).trim() !== ""; });
     return jsonOut(customers);
+  }
+
+  // ═══ تقييمات الزبائن — لصاحب المحل بس ═══
+  if (e.parameter.reviews) {
+    if (!isAuthorized(adminKey)) return denied();
+    const rSheet = getReviewsSheet();
+    const rLast = rSheet.getLastRow();
+    if (rLast < 2) return jsonOut({ count: 0, avg: 0, dist: [0, 0, 0, 0, 0], items: [] });
+
+    const all = rSheet.getRange(2, 1, rLast - 1, 7).getValues();
+    const dist = [0, 0, 0, 0, 0];
+    let sum = 0;
+    for (let i = 0; i < all.length; i++) {
+      const r = Number(all[i][5]) || 0;
+      if (r >= 1 && r <= 5) { dist[r - 1]++; sum += r; }
+    }
+    // الأحدث أول — نرجّع آخر 100 بس حتى الصفحة ما تثقل
+    const items = [];
+    for (let i = all.length - 1; i >= 0 && items.length < 100; i--) {
+      items.push({
+        date: all[i][0], seqNo: all[i][1], orderId: all[i][2],
+        name: all[i][3], phone: all[i][4],
+        rating: Number(all[i][5]) || 0, note: all[i][6]
+      });
+    }
+    return jsonOut({
+      count: all.length,
+      avg: all.length ? Math.round((sum / all.length) * 10) / 10 : 0,
+      dist: dist,
+      items: items
+    });
   }
 
   // ═══ سجل حركة نقاط زبون واحد — آخر 20 حركة ═══
