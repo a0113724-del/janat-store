@@ -486,6 +486,43 @@
   html.dark .today-bar .inner{ color:var(--gold-light); }
   html.dark .today-bar .inner .sub{ color:#9a9a90; }
 
+  /* ---------- شريط تقييمات الزبائن ---------- */
+  #reviewStrip{ display:none; max-width:1080px; margin:14px auto 0; padding:0 16px; }
+  #reviewStrip.show{ display:block; }
+  .rstrip-head{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    font-size:.78rem; font-weight:800; color:var(--forest); margin-bottom:7px;
+  }
+  html.dark .rstrip-head{ color:var(--gold-light); }
+  .rstrip-head .avg{ color:#E8B923; font-size:.95rem; }
+  .rstrip-head .cnt{ color:#8a8a7c; font-weight:600; font-size:.72rem; }
+  .rstrip-window{
+    overflow:hidden; position:relative;
+    -webkit-mask-image:linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent);
+            mask-image:linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent);
+  }
+  .rstrip-track{
+    display:flex; gap:9px; width:max-content;
+    animation:rstrip-scroll 38s linear infinite;
+  }
+  .rstrip-window:hover .rstrip-track,
+  .rstrip-track.paused{ animation-play-state:paused; }
+  @keyframes rstrip-scroll{
+    from{ transform:translateX(0); }
+    to{ transform:translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .rstrip-track{ animation:none; }
+    .rstrip-window{ overflow-x:auto; }
+  }
+  .rstrip-item{
+    flex:0 0 auto; display:flex; align-items:center; gap:7px;
+    background:var(--card-bg); border:1px solid var(--card-border);
+    border-radius:100px; padding:7px 14px; white-space:nowrap;
+  }
+  .rstrip-item .nm{ font-size:.78rem; font-weight:800; color:var(--ink); }
+  .rstrip-item .st{ font-size:.78rem; color:#E8B923; letter-spacing:.5px; }
+
   /* ---------- تقييم الطلب (يطلع بعد نجاح الطلب) ---------- */
   #rateBox{
     margin-top:18px; padding-top:16px; border-top:1px dashed rgba(0,0,0,.12);
@@ -865,6 +902,18 @@
     <button class="theme-toggle" id="themeToggle" title="الوضع الليلي">🌙</button>
   </div>
 
+  <!-- ============ شريط تقييمات الزبائن (اسم أول + نجوم فقط) ============ -->
+  <div id="reviewStrip">
+    <div class="rstrip-head">
+      <span class="avg" id="rstripAvg">★ 0</span>
+      <span>رأي زبائننا</span>
+      <span class="cnt" id="rstripCount"></span>
+    </div>
+    <div class="rstrip-window">
+      <div class="rstrip-track" id="rstripTrack"></div>
+    </div>
+  </div>
+
   <!-- ============ أسعار اليوم — يبيّن للزبون إن الأسعار محدّثة ============ -->
   <div class="today-bar">
     <div class="inner">
@@ -1000,7 +1049,7 @@
     <div class="sheet-body">
       <div id="rsForm">
         <div class="rs-lead" id="rsLead">رأيك يساعدنا نتحسّن</div>
-        <div class="rs-private">🔒 تقييمك يوصل لصاحب المحل بس — ما ينعرض بالموقع ولا لأي زبون</div>
+        <div class="rs-private">🔒 ملاحظتك ورقمك يوصلون لصاحب المحل بس<br>اللي يظهر بشريط الموقع: <b>اسمك الأول ونجومك فقط</b></div>
 
         <div class="stars" id="rsStars">
           <button type="button" data-star="1" aria-label="نجمة">★</button>
@@ -1111,7 +1160,7 @@
         <!-- تقييم الطلب — يوصل لصاحب المحل بس، ما ينعرض بالموقع -->
         <div id="rateBox">
           <div class="rate-title">شلون كانت تجربتك؟</div>
-          <div class="rate-sub">تقييمك يوصل لصاحب المحل بس — ما ينعرض لأي زبون</div>
+          <div class="rate-sub">ملاحظتك تروح لصاحب المحل بس · بالموقع يظهر اسمك الأول ونجومك فقط</div>
           <div class="stars" id="rateStars">
             <button type="button" data-star="1" aria-label="نجمة">★</button>
             <button type="button" data-star="2" aria-label="نجمتين">★</button>
@@ -2564,6 +2613,47 @@
   });
 
   refreshRateToggle();
+
+  // ---------- (٣) شريط التقييمات بالصفحة الرئيسية ----------
+  // اسم أول + نجوم بس. الملاحظة والرقم ما يطلعون منه أبداً.
+  function escHtml(v){
+    return String(v == null ? "" : v)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  async function loadReviewStrip(){
+    if(!GOOGLE_SCRIPT_URL) return;
+    const strip = document.getElementById("reviewStrip");
+    const track = document.getElementById("rstripTrack");
+    if(!strip || !track) return;
+    try{
+      const res = await fetch(GOOGLE_SCRIPT_URL + "?publicReviews=1", { cache:"no-store" });
+      const d = await res.json();
+      if(!d || !Array.isArray(d.items) || d.items.length === 0) return;
+
+      document.getElementById("rstripAvg").textContent = "★ " + d.avg;
+      document.getElementById("rstripCount").textContent = `(${d.count} تقييم)`;
+
+      const one = d.items.map(r=>{
+        const rt = Math.max(1, Math.min(5, Number(r.rating) || 0));
+        return `<div class="rstrip-item">
+          <span class="nm">${escHtml(r.name)}</span>
+          <span class="st">${"★".repeat(rt)}</span>
+        </div>`;
+      }).join("");
+
+      // نكرر القائمة مرتين حتى الحركة تلف بلا فجوة (الأنيميشن يمشي لنص العرض)
+      track.innerHTML = one + one;
+      // شريط قصير يخلص بسرعة — نبطّئه حسب عدد العناصر
+      track.style.animationDuration = Math.max(18, d.items.length * 3.4) + "s";
+      strip.classList.add("show");
+
+      // باللمس ما بيه hover — ضغطة توقّف الحركة وضغطة ترجّعها
+      track.addEventListener("click", ()=> track.classList.toggle("paused"));
+    }catch(e){ /* الشريط تزيين — فشله ما يأثر على المتجر */ }
+  }
+  loadReviewStrip();
 
   // ---------- تاريخ اليوم بشريط الأسعار ----------
   // أسماء الأشهر العراقية (كانون/شباط/آذار...) مو الميلادية العربية العامة
