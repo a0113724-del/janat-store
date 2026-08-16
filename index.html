@@ -495,6 +495,74 @@
   html.dark .today-bar .inner{ color:var(--gold-light); }
   html.dark .today-bar .inner .sub{ color:#9a9a90; }
 
+  /* ---------- بوابة التثبيت ---------- */
+  #installGate{
+    position:fixed; inset:0; z-index:320; display:none;
+    align-items:center; justify-content:center; padding:20px;
+    background:linear-gradient(160deg, #153122 0%, #0d1f15 100%);
+  }
+  #installGate.show{ display:flex; }
+  .ig-box{
+    max-width:400px; width:100%; text-align:center; color:#fff;
+    max-height:96vh; overflow-y:auto;
+  }
+  .ig-logo{
+    font-size:3.4rem; line-height:1; margin-bottom:6px;
+    animation:ig-float 2.6s ease-in-out infinite;
+  }
+  @keyframes ig-float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-7px); } }
+  .ig-box h3{ font-size:1.5rem; color:var(--gold-light); margin-bottom:5px; }
+  .ig-tag{ font-size:.9rem; color:#B9CDBC; margin-bottom:26px; line-height:1.8; }
+
+  .ig-pane{ display:none; }
+  .ig-pane.show{ display:block; }
+
+  #igInstallBtn{
+    width:100%; background:var(--gold); color:#153122; border:none;
+    padding:18px; border-radius:16px; font-family:inherit;
+    font-weight:900; font-size:1.15rem; cursor:pointer;
+    box-shadow:0 10px 30px rgba(201,154,46,.4);
+    animation:ig-pulse 2s ease-in-out infinite;
+  }
+  @keyframes ig-pulse{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.035); }
+  }
+  #igInstallBtn:disabled{ background:#6b7d6e; color:#cfd8d0; animation:none; box-shadow:none; }
+  .ig-note{ font-size:.8rem; color:#9FB3A2; margin-top:14px; line-height:1.9; }
+
+  .ig-steps{ text-align:right; margin:4px 0 10px; }
+  .ig-step{
+    display:flex; align-items:center; gap:10px;
+    background:rgba(255,255,255,.07); border:1px solid rgba(233,205,134,.2);
+    border-radius:12px; padding:12px 14px; margin-bottom:8px;
+    font-size:.86rem; line-height:1.7; color:#DCE7DA;
+  }
+  .ig-step b{
+    flex:0 0 auto; width:24px; height:24px; border-radius:50%;
+    background:var(--gold); color:#153122; font-size:.8rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ig-hl{ color:var(--gold-light); font-weight:800; }
+  .ig-ic{ font-size:1.1rem; }
+  .ig-arrow{ font-size:1.6rem; animation:ig-bounce 1.4s ease-in-out infinite; }
+  @keyframes ig-bounce{ 0%,100%{ transform:translateY(0); opacity:.5; } 50%{ transform:translateY(6px); opacity:1; } }
+  .ig-warn{
+    background:rgba(161,58,46,.25); border:1px solid rgba(161,58,46,.5);
+    border-radius:12px; padding:11px; font-size:.85rem; font-weight:800;
+    color:#ffc9c1; margin-bottom:12px;
+  }
+  .ig-alt{
+    width:100%; background:none; border:1.5px solid rgba(233,205,134,.45);
+    color:var(--gold-light); padding:12px; border-radius:12px; margin-top:6px;
+    font-family:inherit; font-weight:700; font-size:.85rem; cursor:pointer;
+  }
+  #igSkip{
+    display:block; width:100%; background:none; border:none; margin-top:22px;
+    color:#7d8f80; font-family:inherit; font-size:.82rem; font-weight:700;
+    cursor:pointer; text-decoration:underline;
+  }
+
   /* ---------- بوابة الإشعارات ---------- */
   #notifGate{
     position:fixed; inset:0; z-index:300; display:none;
@@ -1088,6 +1156,50 @@
     <button class="go-btn" id="openCheckout" disabled>🧺 إتمام الطلب</button>
   </div>
 
+  <!-- ========= بوابة التثبيت (تطلع للي يدخل من الباركود) ========= -->
+  <div id="installGate">
+    <div class="ig-box">
+      <div class="ig-logo">🌿</div>
+      <h3>جنة الفواكه والخضار</h3>
+      <p class="ig-tag">ثبّت التطبيق على موبايلك وابدأ الطلب</p>
+
+      <!-- (أ) أندرويد — زر تثبيت حقيقي -->
+      <div class="ig-pane" id="igAndroid">
+        <button id="igInstallBtn">📲 ثبّت التطبيق</button>
+        <div class="ig-note">يتثبّت بثانية — بلا متجر تطبيقات وبلا حساب</div>
+      </div>
+
+      <!-- (ب) آيفون — ماكو API تثبيت، شرح بس -->
+      <div class="ig-pane" id="igIos">
+        <div class="ig-steps">
+          <div class="ig-step"><b>1</b> اضغط زر المشاركة <span class="ig-ic">⬆️</span> بالأسفل</div>
+          <div class="ig-step"><b>2</b> مرّر لتحت واختار <span class="ig-hl">«إضافة إلى الشاشة الرئيسية»</span></div>
+          <div class="ig-step"><b>3</b> اضغط <span class="ig-hl">«إضافة»</span> بالأعلى</div>
+        </div>
+        <div class="ig-arrow">⬇️</div>
+      </div>
+
+      <!-- (ج) متصفح داخل فيسبوك/انستا — لازم يفتحه بالمتصفح الحقيقي -->
+      <div class="ig-pane" id="igInApp">
+        <div class="ig-warn">⚠️ انته فاتح الرابط داخل تطبيق ثاني</div>
+        <div class="ig-note">حتى تثبّت التطبيق، لازم تفتح الرابط بمتصفح الموبايل:</div>
+        <div class="ig-steps">
+          <div class="ig-step"><b>1</b> اضغط <span class="ig-hl">⋮</span> أو <span class="ig-hl">•••</span> بالزاوية</div>
+          <div class="ig-step"><b>2</b> اختار <span class="ig-hl">«فتح بالمتصفح»</span> (Open in browser)</div>
+        </div>
+        <button id="igCopyLink" class="ig-alt">📋 أو انسخ الرابط وافتحه بنفسك</button>
+      </div>
+
+      <!-- (د) متصفح ما يدعم التثبيت -->
+      <div class="ig-pane" id="igManual">
+        <div class="ig-note">افتح قائمة المتصفح <span class="ig-hl">⋮</span> واختار
+          <span class="ig-hl">«تثبيت التطبيق»</span> أو <span class="ig-hl">«إضافة إلى الشاشة الرئيسية»</span></div>
+      </div>
+
+      <button id="igSkip">تصفّح بدون تثبيت</button>
+    </div>
+  </div>
+
   <!-- ========= بوابة الإشعارات (تشتغل لو requireNotifications = true) ========= -->
   <div id="notifGate">
     <div class="ng-box">
@@ -1273,13 +1385,14 @@
     closedMessage: "",          // نص يظهر وقت الإغلاق اليدوي
     roundTo: 250,               // تقريب الفلوس لأقرب مضاعف (أصغر ورقة بالعراق 250) — 0 يعطّله
     requireNotifications: false,// true = ما يدخل التطبيق إلا بعد ما يفعّل الإشعارات
+    requireInstall: false,      // true = شاشة التثبيت تطلع للكل، مو للجاي من الباركود بس
     promoText: "🚴 التوصيل الأول مجاني لكل زبون جديد!",
     announcement: ""            // إعلان يظهر بأعلى الصفحة (فاضي = مخفي)
   };
 
   // ---------- تحميل الإعدادات من settings.json ----------
   const SETTINGS_NUMBERS = ["deliveryFee","freeDeliveryOver","minOrderTotal","openHour","closeHour","quarterKgOverPrice","pointsPerOrder","roundTo"];
-  const SETTINGS_BOOLS   = ["firstOrderFreeDelivery","manualClosed","requireNotifications"];
+  const SETTINGS_BOOLS   = ["firstOrderFreeDelivery","manualClosed","requireNotifications","requireInstall"];
   const SETTINGS_TEXTS   = ["closedMessage","promoText","announcement"];
 
   const SETTINGS_CACHE_KEY = "janat-settings-cache";
@@ -3012,6 +3125,8 @@
     e.preventDefault();
     deferredInstallPrompt = e;
     installBtn.classList.add("show");
+    // لو البوابة مفتوحة وكانت تعرض "افتح قائمة المتصفح"، نبدّلها لزر حقيقي
+    refreshInstallGatePane();
   });
 
   installBtn.addEventListener("click", async () => {
@@ -3024,8 +3139,105 @@
 
   window.addEventListener("appinstalled", () => {
     installBtn.classList.remove("show");
+    closeInstallGate();
     logAnalyticsEvent("install");
   });
+
+  // ================= بوابة التثبيت =================
+  // تطلع للي يفتح الرابط من الباركود (?src=qr) وما مثبّت التطبيق.
+  //
+  // الحقيقة التقنية: ما بيه طريقة "نجبر" أحد يثبّت.
+  //  · أندرويد/كروم: عدنا زر حقيقي (beforeinstallprompt)
+  //  · آيفون: ماكو API أبداً — شرح خطوات بس
+  //  · متصفح داخل فيسبوك/انستا: التثبيت مستحيل، لازم يفتحه بالمتصفح
+  // فنعرض لكل حالة اللي ينفعها، ونخلي مخرج — الزبون اللي ما يكدر
+  // يثبّت لازم يشتري، مو ينحبس بشاشة.
+  const IG_SKIP_KEY = "janat-install-skipped";
+
+  function isStandalone(){
+    return window.matchMedia("(display-mode: standalone)").matches ||
+           window.navigator.standalone === true;
+  }
+  function isIOS(){
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+           (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  }
+  // متصفحات مدمجة داخل تطبيقات — التثبيت ما يشتغل بيها أبداً
+  function isInAppBrowser(){
+    const ua = navigator.userAgent || "";
+    return /FBAN|FBAV|FB_IAB|Instagram|Messenger|Line\/|Twitter|TikTok|Snapchat/i.test(ua);
+  }
+
+  function showIgPane(id){
+    ["igAndroid","igIos","igInApp","igManual"].forEach(p=>{
+      document.getElementById(p)?.classList.toggle("show", p === id);
+    });
+  }
+
+  function refreshInstallGatePane(){
+    const gate = document.getElementById("installGate");
+    if(!gate || !gate.classList.contains("show")) return;
+    if(isInAppBrowser())            showIgPane("igInApp");
+    else if(deferredInstallPrompt)  showIgPane("igAndroid");
+    else if(isIOS())                showIgPane("igIos");
+    else                            showIgPane("igManual");
+  }
+
+  function closeInstallGate(){
+    const gate = document.getElementById("installGate");
+    if(gate) gate.classList.remove("show");
+    document.body.style.overflow = "";
+  }
+
+  function maybeShowInstallGate(){
+    const gate = document.getElementById("installGate");
+    if(!gate || gate.classList.contains("show")) return;
+    if(isStandalone()) return;                       // مثبّت أصلاً
+    // تطلع للجاي من الباركود، أو لو شغّلتها للكل من الإعدادات
+    const fromQr = new URLSearchParams(location.search).get("src") === "qr";
+    if(!fromQr && !STORE.requireInstall) return;
+    try{ if(localStorage.getItem(IG_SKIP_KEY) === "1") return; }catch(e){}
+
+    gate.classList.add("show");
+    document.body.style.overflow = "hidden";
+    refreshInstallGatePane();
+  }
+
+  (function initInstallGate(){
+    const btn = document.getElementById("igInstallBtn");
+    btn?.addEventListener("click", async ()=>{
+      if(!deferredInstallPrompt){ refreshInstallGatePane(); return; }
+      btn.disabled = true;
+      btn.textContent = "⏳ جاري التثبيت...";
+      try{
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        if(outcome === "accepted"){
+          closeInstallGate();          // حدث appinstalled يسكّرها بعد
+          return;
+        }
+      }catch(e){ /* المتصفح رفض العرض */ }
+      btn.disabled = false;
+      btn.textContent = "📲 ثبّت التطبيق";
+      document.getElementById("igSkip").textContent = "تصفّح بدون تثبيت";
+    });
+
+    document.getElementById("igCopyLink")?.addEventListener("click", async (e)=>{
+      const url = location.origin + location.pathname;
+      try{
+        await navigator.clipboard.writeText(url);
+        e.target.textContent = "✅ انتنسخ — الصقه بالمتصفح";
+      }catch(err){
+        e.target.textContent = url;
+      }
+    });
+
+    document.getElementById("igSkip")?.addEventListener("click", ()=>{
+      try{ localStorage.setItem(IG_SKIP_KEY, "1"); }catch(e){}
+      closeInstallGate();
+    });
+  })();
 
   // ---------- PWA: SERVICE WORKER ----------
   if ("serviceWorker" in navigator) {
@@ -3041,6 +3253,7 @@
     // 1) نعرض الصفحة فوراً من آخر نسخة محفوظة بالجهاز
     applyCachedSettings();
     applySettingsToUI();
+    maybeShowInstallGate(); // الجاي من الباركود يشوف زر التثبيت أول شي
     maybeShowNotifGate();   // من الكاش — ما ننتظر الشبكة حتى تطلع البوابة
     if(!loadCachedProducts()) products = fallbackProducts;
     restoreCart();          // ترجع سلة الزبون لو سكّر التطبيق قبل ما يكمّل
