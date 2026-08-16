@@ -454,6 +454,64 @@
     background:var(--pomegranate); color:#fff; font-size:.66rem; font-weight:800;
     padding:3px 8px; border-radius:100px; box-shadow:0 3px 8px rgba(0,0,0,.2);
   }
+  /* المبلغ المتوفّر — أوقع من النسبة على البضاعة الرخيصة */
+  .card .save-line{
+    display:inline-block; background:#DFF2E1; color:#1e6b2b;
+    font-size:.66rem; font-weight:800; padding:2px 9px; border-radius:100px;
+    margin:-6px 0 9px;
+  }
+  html.dark .card .save-line{ background:rgba(30,107,43,.28); color:#9ede9f; }
+
+  /* ---------- شريط أسعار اليوم ---------- */
+  .today-bar{
+    max-width:1080px; margin:14px auto 0; padding:0 16px;
+  }
+  .today-bar .inner{
+    background:linear-gradient(90deg, rgba(201,154,46,.16), rgba(201,154,46,.06));
+    border:1px solid rgba(201,154,46,.4); border-radius:14px;
+    padding:11px 16px; text-align:center;
+    font-size:.86rem; font-weight:800; color:var(--forest);
+  }
+  .today-bar .inner .d{ color:var(--pomegranate); }
+  .today-bar .inner .sub{
+    display:block; font-size:.7rem; font-weight:600; color:#8a8a7c; margin-top:3px;
+  }
+  html.dark .today-bar .inner{ color:var(--gold-light); }
+  html.dark .today-bar .inner .sub{ color:#9a9a90; }
+
+  /* ---------- تقييم الطلب (يطلع بعد نجاح الطلب) ---------- */
+  #rateBox{
+    margin-top:18px; padding-top:16px; border-top:1px dashed rgba(0,0,0,.12);
+  }
+  html.dark #rateBox{ border-top-color:rgba(255,255,255,.14); }
+  #rateBox .rate-title{ font-weight:900; color:var(--forest); font-size:.95rem; margin-bottom:2px; }
+  html.dark #rateBox .rate-title{ color:var(--gold-light); }
+  #rateBox .rate-sub{ font-size:.74rem; color:#8a8a7c; margin-bottom:10px; }
+  .stars{ display:flex; justify-content:center; gap:4px; margin-bottom:6px; }
+  .stars button{
+    background:none; border:none; cursor:pointer; padding:2px 3px;
+    font-size:2rem; line-height:1; color:#d8d3c2; transition:transform .12s, color .12s;
+  }
+  .stars button:active{ transform:scale(.85); }
+  .stars button.on{ color:#E8B923; }
+  #rateHint{ font-size:.78rem; font-weight:800; color:#8a8a7c; min-height:18px; margin-bottom:10px; }
+  #rateNote{
+    width:100%; border:1.5px solid rgba(0,0,0,.12); border-radius:12px; padding:10px;
+    font-family:inherit; font-size:.85rem; resize:vertical; margin-bottom:10px;
+    background:var(--card,#fff); color:inherit;
+  }
+  #rateSend{
+    width:100%; background:var(--leaf); color:#fff; border:none; padding:12px;
+    border-radius:12px; font-family:inherit; font-weight:800; font-size:.9rem; cursor:pointer;
+  }
+  #rateSend:disabled{ background:#ccc; cursor:not-allowed; }
+  #rateMsg{ font-size:.8rem; font-weight:800; margin-top:10px; min-height:18px; }
+  #rateMsg.ok{ color:#1e6b2b; }
+  #rateMsg.err{ color:var(--pomegranate); }
+  #rateDone{ display:none; text-align:center; padding:14px 4px; }
+  #rateDone .ic{ font-size:2rem; margin-bottom:6px; }
+  #rateDone .tx{ font-weight:900; color:var(--forest); font-size:.95rem; }
+  html.dark #rateDone .tx{ color:var(--gold-light); }
 
   .qty-row{ display:flex; align-items:center; justify-content:space-between; gap:6px; }
   .qty-row button{
@@ -763,6 +821,14 @@
     <button class="theme-toggle" id="themeToggle" title="الوضع الليلي">🌙</button>
   </div>
 
+  <!-- ============ أسعار اليوم — يبيّن للزبون إن الأسعار محدّثة ============ -->
+  <div class="today-bar">
+    <div class="inner">
+      🗓️ أسعار اليوم • <span class="d" id="todayDate">—</span>
+      <span class="sub">نحدّث الأسعار كل يوم حسب سعر السوق</span>
+    </div>
+  </div>
+
   <!-- ================= VEGETABLES ================= -->
   <section class="section" id="veg">
     <div class="section-head">
@@ -956,6 +1022,29 @@
         <div style="font-weight:900; color:var(--forest); font-size:1.1rem; margin-bottom:4px;">تم استلام طلبك بنجاح!</div>
         <div style="font-size:.85rem; color:#777; margin-bottom:16px;">رقم طلبك: <b id="orderSeqNo" style="color:var(--pomegranate);">#0</b></div>
         <button class="send-btn" id="sendWhatsappBtn" style="margin:0;">📲 تواصل معنا عبر واتساب (اختياري)</button>
+
+        <!-- تقييم الطلب — يوصل لصاحب المحل بس، ما ينعرض بالموقع -->
+        <div id="rateBox">
+          <div class="rate-title">شلون كانت تجربتك؟</div>
+          <div class="rate-sub">تقييمك يوصل لصاحب المحل بس — ما ينعرض لأي زبون</div>
+          <div class="stars" id="rateStars">
+            <button type="button" data-star="1" aria-label="نجمة">★</button>
+            <button type="button" data-star="2" aria-label="نجمتين">★</button>
+            <button type="button" data-star="3" aria-label="3 نجوم">★</button>
+            <button type="button" data-star="4" aria-label="4 نجوم">★</button>
+            <button type="button" data-star="5" aria-label="5 نجوم">★</button>
+          </div>
+          <div id="rateHint">اضغط على النجوم</div>
+          <textarea id="rateNote" rows="2" maxlength="500"
+            placeholder="ملاحظتك أو اقتراحك (اختياري)"></textarea>
+          <button type="button" id="rateSend" disabled>أرسل التقييم</button>
+          <div id="rateMsg"></div>
+        </div>
+
+        <div id="rateDone">
+          <div class="ic">🌿</div>
+          <div class="tx">شكراً لتقييمك — وصلنا</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1348,10 +1437,13 @@
     let priceHtml = ready
       ? `${money(p.price)} <small>/ ${unit}</small>`
       : `<span style="color:#8a8a7c; font-weight:600;">جاري تحديث السعر…</span>`;
+    let saveLine = "";
     if(ready && isOffer && p.oldPrice && p.oldPrice > p.price){
       const pct = Math.round((1 - p.price/p.oldPrice) * 100);
       discountBadge = `<span class="discount-badge">خصم ${pct}%</span>`;
       priceHtml = `<span class="old">${money(p.oldPrice)}</span>${money(p.price)} <small>/ ${unit}</small>`;
+      // المبلغ المتوفّر بجنب النسبة — "توفّر 500 د.ع" أوقع من "خصم 33%"
+      saveLine = `<div class="save-line">توفّر ${money(p.oldPrice - p.price)}</div>`;
     }
     const cardClass = isOffer ? "offer-card" : (isFruit ? "fruit-card" : "");
     const step = qtyStep(p);
@@ -1361,6 +1453,7 @@
       <div class="body">
         <h3>${p.name}</h3>
         <div class="price">${priceHtml}</div>
+        ${saveLine}
         ${ready && step < 1 ? `<div class="step-hint">تقدر تطلب ${fmtQty(step)} ${unit}</div>` : ""}
         <div class="qty-row">
           <button class="minus" data-id="${p.id}" ${ready?"":"disabled"}>−</button>
@@ -1854,6 +1947,7 @@
     const stopTimer = ()=>{ clearInterval(waitTimer); };
 
     let seqNo = 0;
+    let savedOrderId = "";    // معرّف الطلب من السيرفر — نربط بيه التقييم
     let saveState = "fail";   // ok | unknown | fail
     let serverMsg = "";       // سبب الرفض لو السيرفر رفض الطلب
     let serverTotals = null;  // الأرقام المعتمدة من السيرفر (هي الصحيحة)
@@ -1912,6 +2006,7 @@
             saveState = "rejected";
           }else{
             seqNo = data.seqNo || 0;
+            savedOrderId = data.orderId || "";
             saveState = seqNo ? "ok" : "unknown";
             // الأرقام النهائية من السيرفر — لو اختلفت عن حساب الصفحة،
             // حساب السيرفر هو المعتمد
@@ -1950,18 +2045,23 @@
       document.getElementById("orderSuccessBox").style.display = "block";
       document.getElementById("sendWhatsappBtn").onclick = openWhatsappWithOrder;
       if(window.silentlyEnableCustomerNotifications) window.silentlyEnableCustomerNotifications(phone);
+      resetRateBox({ orderId: savedOrderId, seqNo: seqNo, name: name, phone: phone });
 
       // نعرض رقم السيرفر مو رقم الصفحة، وننبّه لو اختلفوا
       if(serverTotals){
         const box = document.getElementById("orderSuccessBox");
         const differs = Math.abs(Number(serverTotals.total) - finalTotal()) > 1;
-        const line = document.createElement("div");
-        line.style.cssText = "font-size:.85rem; color:#555; margin:-8px 0 14px; line-height:1.7;";
+        // نستبدل سطر المجموع بدل ما نضيف واحد جديد كل طلب
+        let line = document.getElementById("serverTotalLine");
+        if(!line){
+          line = document.createElement("div");
+          line.id = "serverTotalLine";
+          line.style.cssText = "font-size:.85rem; color:#555; margin:-8px 0 14px; line-height:1.7;";
+          box.insertBefore(line, document.getElementById("sendWhatsappBtn"));
+        }
         line.innerHTML =
           `المجموع المعتمد: <b style="color:var(--pomegranate)">${money(serverTotals.total)}</b>` +
           (differs ? `<br><span style="color:var(--pomegranate); font-size:.78rem;">⚠️ تعدّل عن المعروض — الأسعار تحدّثت</span>` : "");
-        const anchor = document.getElementById("sendWhatsappBtn");
-        box.insertBefore(line, anchor);
         if(typeof serverTotals.pointsBalance === "number"){
           currentPointsBalance = serverTotals.pointsBalance;
           currentRedeemableValue = Math.floor(currentPointsBalance / 10) * 1000;
@@ -2172,6 +2272,99 @@
     if(el) el.textContent = `${h}:${m}:${s}`;
   }
   setInterval(updateCountdown, 1000);
+
+  // ================= تقييم الطلب =================
+  // يطلع بشاشة النجاح بس. التقييم يروح للسيرفر مباشرة وما ينعرض لأي زبون.
+  const RATE_HINTS = ["", "ما عجبني 😞", "مو زين", "مقبول", "زين 👍", "ممتاز! 🌟"];
+  let rateOrder = null;     // الطلب اللي راح ينقيّم
+  let rateStars = 0;
+
+  const rateBoxEl  = document.getElementById("rateBox");
+  const rateDoneEl = document.getElementById("rateDone");
+  const rateHintEl = document.getElementById("rateHint");
+  const rateNoteEl = document.getElementById("rateNote");
+  const rateSendEl = document.getElementById("rateSend");
+  const rateMsgEl  = document.getElementById("rateMsg");
+  const starBtns   = Array.from(document.querySelectorAll("#rateStars button"));
+
+  function paintStars(n){
+    starBtns.forEach(b => b.classList.toggle("on", Number(b.dataset.star) <= n));
+    rateHintEl.textContent = RATE_HINTS[n] || "اضغط على النجوم";
+    rateSendEl.disabled = n < 1;
+  }
+
+  function resetRateBox(order){
+    rateOrder = order && order.orderId ? order : null;
+    rateStars = 0;
+    rateNoteEl.value = "";
+    rateMsgEl.textContent = "";
+    rateMsgEl.className = "";
+    rateSendEl.textContent = "أرسل التقييم";
+    paintStars(0);
+    rateDoneEl.style.display = "none";
+    // بدون معرّف طلب ما نكدر نربط التقييم بطلب — نخفي الصندوق بدل ما نعرض شي ما يشتغل
+    rateBoxEl.style.display = rateOrder ? "block" : "none";
+  }
+
+  starBtns.forEach(b=>{
+    b.addEventListener("click", ()=>{
+      rateStars = Number(b.dataset.star) || 0;
+      paintStars(rateStars);
+    });
+  });
+
+  rateSendEl.addEventListener("click", async ()=>{
+    if(!rateOrder || rateStars < 1) return;
+    rateSendEl.disabled = true;
+    rateSendEl.textContent = "⏳ جاري الإرسال...";
+    rateMsgEl.textContent = "";
+    rateMsgEl.className = "";
+    try{
+      const res = await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "submitReview",
+          orderId: rateOrder.orderId,
+          seqNo: rateOrder.seqNo,
+          name: rateOrder.name,
+          phone: rateOrder.phone,
+          rating: rateStars,
+          note: rateNoteEl.value.trim().slice(0, 500)
+        })
+      });
+      const data = await res.json();
+      if(data.status === "ok"){
+        rateBoxEl.style.display = "none";
+        rateDoneEl.style.display = "block";
+      }else{
+        rateMsgEl.className = "err";
+        rateMsgEl.textContent = "⚠️ " + (data.message || "ما انرسل التقييم");
+        rateSendEl.disabled = false;
+        rateSendEl.textContent = "حاول مرة ثانية";
+      }
+    }catch(err){
+      rateMsgEl.className = "err";
+      rateMsgEl.textContent = "⚠️ ما وصل للسيرفر — تأكد من الإنترنت";
+      rateSendEl.disabled = false;
+      rateSendEl.textContent = "حاول مرة ثانية";
+    }
+  });
+
+  // ---------- تاريخ اليوم بشريط الأسعار ----------
+  // أسماء الأشهر العراقية (كانون/شباط/آذار...) مو الميلادية العربية العامة
+  const AR_DAYS = ["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+  const AR_MONTHS = ["كانون الثاني","شباط","آذار","نيسان","أيار","حزيران",
+                     "تموز","آب","أيلول","تشرين الأول","تشرين الثاني","كانون الأول"];
+  function refreshTodayDate(){
+    const el = document.getElementById("todayDate");
+    if(!el) return;
+    const d = new Date();
+    el.textContent = `${AR_DAYS[d.getDay()]} ${d.getDate()} ${AR_MONTHS[d.getMonth()]}`;
+  }
+  refreshTodayDate();
+  // لو التطبيق ظل مفتوح ليلة كاملة، التاريخ ما يبقى تاريخ أمس
+  setInterval(refreshTodayDate, 60000);
 
   // ---------- HOW TO ORDER: STEP-BY-STEP TUTORIAL ----------
   const tutorialSteps = [

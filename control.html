@@ -89,11 +89,11 @@
     display:flex; padding:8px 6px calc(8px + env(safe-area-inset-bottom));
   }
   .nav-btn{
-    flex:1; background:none; border:none; color:#9FB3A2; cursor:pointer;
-    display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 2px;
-    font-size:.62rem; font-weight:700; border-radius:10px; position:relative;
+    flex:1; min-width:0; background:none; border:none; color:#9FB3A2; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 1px;
+    font-size:.58rem; font-weight:700; border-radius:10px; position:relative;
   }
-  .nav-btn .ic{ font-size:1.25rem; line-height:1; }
+  .nav-btn .ic{ font-size:1.15rem; line-height:1; }
   .nav-btn.active{ color:var(--gold-light); }
   .nav-btn.active::before{
     content:""; position:absolute; top:-8px; left:50%; transform:translateX(-50%);
@@ -300,6 +300,51 @@
 
   .empty-note, .empty{ text-align:center; color:#888; padding:36px 20px; }
 
+  /* ---------- تقييمات الزبائن ---------- */
+  .rv-summary{
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:18px; margin-bottom:16px; display:flex; gap:18px; align-items:center;
+  }
+  .rv-avg{ text-align:center; flex:0 0 auto; }
+  .rv-avg .n{ font-size:2.4rem; font-weight:900; color:#E8B923; line-height:1; }
+  .rv-avg .s{ font-size:.95rem; color:#E8B923; letter-spacing:1px; }
+  .rv-avg .c{ font-size:.7rem; color:#888; margin-top:3px; }
+  .rv-bars{ flex:1; min-width:0; }
+  .rv-bar-row{ display:flex; align-items:center; gap:7px; font-size:.7rem; margin-bottom:3px; }
+  .rv-bar-row .lbl{ color:#888; white-space:nowrap; width:26px; }
+  .rv-bar-row .track{ flex:1; height:7px; background:var(--line); border-radius:100px; overflow:hidden; }
+  .rv-bar-row .fill{ height:100%; background:#E8B923; border-radius:100px; }
+  .rv-bar-row .num{ width:20px; text-align:left; color:#888; }
+
+  .rv-filters{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+  .rv-filter{
+    background:var(--card); border:1.5px solid var(--line); border-radius:100px;
+    padding:7px 14px; font-family:inherit; font-weight:800; font-size:.74rem;
+    cursor:pointer; color:#777;
+  }
+  .rv-filter.active{ background:var(--forest); border-color:var(--forest); color:var(--gold-light); }
+
+  .rv-card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:14px; margin-bottom:10px; border-inline-start:4px solid var(--line);
+  }
+  .rv-card.low{ border-inline-start-color:var(--pomegranate); background:rgba(161,58,46,.04); }
+  .rv-card.high{ border-inline-start-color:var(--leaf); }
+  .rv-top{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:6px; }
+  .rv-stars{ color:#E8B923; font-size:.95rem; letter-spacing:1px; }
+  .rv-when{ font-size:.68rem; color:#aaa; white-space:nowrap; }
+  .rv-who{ font-size:.76rem; color:var(--forest); font-weight:800; margin-bottom:2px; }
+  .rv-who .ph{ color:#999; font-weight:600; direction:ltr; display:inline-block; }
+  .rv-note{
+    font-size:.82rem; color:#444; line-height:1.8; margin-top:8px;
+    background:#F6F1E1; border-radius:10px; padding:9px 11px; white-space:pre-wrap;
+  }
+  .rv-nonote{ font-size:.72rem; color:#bbb; margin-top:6px; }
+  .rv-wa{
+    display:inline-block; margin-top:9px; background:#25D366; color:#fff;
+    text-decoration:none; font-size:.7rem; font-weight:800; padding:6px 13px; border-radius:100px;
+  }
+
   /* ---------- بوابة مفتاح الإدارة ---------- */
   #keyGate{
     position:fixed; inset:0; z-index:200; display:none;
@@ -446,6 +491,22 @@
       <p class="empty-note" id="activeUsersNote" style="font-size:.72rem; padding:12px 4px;"></p>
     </div>
 
+    <!-- ---------- REVIEWS VIEW ---------- -->
+    <div class="view" id="view-reviews">
+      <div class="section-h">⭐ تقييمات وملاحظات الزبائن</div>
+      <div id="reviewsSummary"></div>
+      <div class="rv-filters" id="reviewFilters">
+        <button class="rv-filter active" data-rv="all">الكل</button>
+        <button class="rv-filter" data-rv="notes">اللي بيها ملاحظة</button>
+        <button class="rv-filter" data-rv="low">⚠️ 3 نجوم فأقل</button>
+        <button class="rv-filter" data-rv="high">4–5 نجوم</button>
+      </div>
+      <div id="reviewsList"></div>
+      <p class="empty-note" style="font-size:.72rem; padding:12px 4px;">
+        هاي الملاحظات تشوفها انته بس — ما تنعرض بالموقع ولا لأي زبون.
+      </p>
+    </div>
+
     <!-- ---------- NOTIFICATIONS VIEW ---------- -->
     <div class="view" id="view-notifications">
       <div class="notif-card">
@@ -543,6 +604,7 @@
     <button class="nav-btn active" data-view="products"><span class="ic">📦</span>منتجات</button>
     <button class="nav-btn" data-view="orders"><span class="ic">🧾</span>طلبات<span class="dot-alert" id="ordersDot"></span></button>
     <button class="nav-btn" data-view="customers"><span class="ic">👥</span>زبائن</button>
+    <button class="nav-btn" data-view="reviews"><span class="ic">⭐</span>تقييمات<span class="dot-alert" id="reviewsDot"></span></button>
     <button class="nav-btn" data-view="reports"><span class="ic">📊</span>تقارير</button>
     <button class="nav-btn" data-view="notifications"><span class="ic">🔔</span>إشعارات</button>
   </div>
@@ -709,6 +771,7 @@
       btn.classList.add("active");
       document.getElementById("view-"+btn.dataset.view).classList.add("active");
       if(btn.dataset.view === "orders") document.getElementById("ordersDot").classList.remove("show");
+      if(btn.dataset.view === "reviews") document.getElementById("reviewsDot").classList.remove("show");
     });
   });
 
@@ -1224,6 +1287,100 @@
   }
   document.getElementById("customerSearch").addEventListener("input",(e)=>{ renderCustomersTable(allCustomers, e.target.value); });
 
+  // ================= تقييمات وملاحظات الزبائن =================
+  let allReviews = { count:0, avg:0, dist:[0,0,0,0,0], items:[] };
+  let reviewFilter = "all";
+  let lastReviewCount = null;
+
+  function starsText(n){
+    const r = Math.max(0, Math.min(5, Number(n) || 0));
+    return "★".repeat(r) + "☆".repeat(5 - r);
+  }
+
+  function renderReviewSummary(d){
+    const el = document.getElementById("reviewsSummary");
+    if(!el) return;
+    if(!d.count){
+      el.innerHTML = `<div class="empty">ما وصل أي تقييم بعد — يطلع للزبون بعد ما يكمل طلبه</div>`;
+      return;
+    }
+    const max = Math.max(...d.dist, 1);
+    const bars = [5,4,3,2,1].map(n=>{
+      const c = d.dist[n-1] || 0;
+      return `<div class="rv-bar-row">
+        <span class="lbl">${n} ★</span>
+        <span class="track"><span class="fill" style="width:${Math.round(c/max*100)}%"></span></span>
+        <span class="num">${c}</span>
+      </div>`;
+    }).join("");
+    el.innerHTML = `<div class="rv-summary">
+      <div class="rv-avg">
+        <div class="n">${d.avg}</div>
+        <div class="s">${starsText(Math.round(d.avg))}</div>
+        <div class="c">${d.count} تقييم</div>
+      </div>
+      <div class="rv-bars">${bars}</div>
+    </div>`;
+  }
+
+  function renderReviewsList(){
+    const el = document.getElementById("reviewsList");
+    if(!el) return;
+    const items = (allReviews.items || []).filter(r=>{
+      const rt = Number(r.rating) || 0;
+      if(reviewFilter === "notes") return String(r.note || "").trim() !== "";
+      if(reviewFilter === "low")   return rt > 0 && rt <= 3;
+      if(reviewFilter === "high")  return rt >= 4;
+      return true;
+    });
+    if(!items.length){
+      el.innerHTML = `<div class="empty">ما بيه تقييمات بهذا الفلتر</div>`;
+      return;
+    }
+    el.innerHTML = items.map(r=>{
+      const rt = Number(r.rating) || 0;
+      const cls = rt <= 3 ? "low" : (rt >= 4 ? "high" : "");
+      const note = String(r.note || "").trim();
+      const ph = showPhone(r.phone);
+      const wa = /^07[0-9]{9}$/.test(ph)
+        ? `<a class="rv-wa" target="_blank" rel="noopener"
+             href="https://wa.me/964${ph.slice(1)}">📲 راسله بواتساب</a>` : "";
+      return `<div class="rv-card ${cls}">
+        <div class="rv-top">
+          <span class="rv-stars">${starsText(rt)}</span>
+          <span class="rv-when">${esc(timeAgo(r.date))}</span>
+        </div>
+        <div class="rv-who">${esc(r.name || "بدون اسم")}
+          <span class="ph">${esc(ph)}</span>
+          ${r.seqNo ? `· طلب #${esc(r.seqNo)}` : ""}</div>
+        ${note ? `<div class="rv-note">${esc(note)}</div>` : `<div class="rv-nonote">بلا ملاحظة مكتوبة</div>`}
+        ${rt <= 3 ? wa : ""}
+      </div>`;
+    }).join("");
+  }
+
+  function renderReviews(d){
+    if(!d || !Array.isArray(d.items)) return;
+    // تنبيه بالشريط السفلي لو وصل تقييم جديد وانته بتبويب ثاني
+    if(lastReviewCount !== null && d.count > lastReviewCount){
+      const activeView = document.querySelector(".nav-btn.active")?.dataset.view;
+      if(activeView !== "reviews") document.getElementById("reviewsDot").classList.add("show");
+    }
+    lastReviewCount = d.count;
+    allReviews = d;
+    renderReviewSummary(d);
+    renderReviewsList();
+  }
+
+  document.getElementById("reviewFilters").addEventListener("click",(e)=>{
+    const btn = e.target.closest(".rv-filter");
+    if(!btn) return;
+    document.querySelectorAll(".rv-filter").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    reviewFilter = btn.dataset.rv;
+    renderReviewsList();
+  });
+
   // ================= تعديل نقاط زبون =================
   // نفس معادلة index.html: كل 10 نقاط = 1000 دينار (الكسور ما تنصرف)
   const IQD_PER_10_POINTS = 1000;
@@ -1478,11 +1635,12 @@
     try{
       // النداءات الأربعة بالتوازي بدل التسلسل — كانت كل وحدة تنتظر اللي
       // قبلها، فوقت الدورة = مجموع الأربعة. الحين = أبطأ وحدة بس.
-      const [orders, summary, live, custData] = await Promise.all([
+      const [orders, summary, live, custData, revData] = await Promise.all([
         fetchJson(adminUrl(), "الطلبات"),
         fetchJson(adminUrl("?analyticsSummary=1"), "الإحصائيات").catch(e => ({ _err: e })),
         fetchJson(adminUrl("?activeUsers=1"), "النشطين").catch(e => ({ _err: e })),
-        fetchJson(adminUrl("?customersList=1"), "الزبائن").catch(e => ({ _err: e }))
+        fetchJson(adminUrl("?customersList=1"), "الزبائن").catch(e => ({ _err: e })),
+        fetchJson(adminUrl("?reviews=1"), "التقييمات").catch(e => ({ _err: e }))
       ]);
 
       if(!checkAuth(orders)) return;
@@ -1507,6 +1665,7 @@
         allCustomers = custData;
         renderCustomersTable(allCustomers, document.getElementById("customerSearch").value);
       }
+      if(revData && !revData._err && checkAuth(revData)) renderReviews(revData);
 
       const bar = document.getElementById("statusBar");
       if(bar.classList.contains("error")) bar.className = "status-bar hidden";
