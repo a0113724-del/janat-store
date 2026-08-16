@@ -237,7 +237,7 @@
     "image": "images/banana-1785118460886.jpg",
     "featured": true,
     "unit": "كغم",
-    "onSale": true,
+    "onSale": false,
     "oldPrice": 1500,
     "visible": true,
     "order": 21
