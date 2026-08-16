@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>باركود التطبيق — جنة الفواكه والخضار</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --forest:#153122; --leaf:#3E7A44; --gold:#C99A2E;
+    --gold-light:#E9CD86; --paper:#FBF8EF; --pom:#A13A2E;
+  }
+  body{
+    font-family:'Tajawal',sans-serif; background:#e8e4d8;
+    display:flex; flex-direction:column; align-items:center;
+    padding:24px 16px; gap:20px; color:var(--forest);
+  }
+
+  .toolbar{
+    display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
+    max-width:640px; width:100%;
+  }
+  .toolbar button{
+    background:var(--forest); color:var(--gold-light); border:none;
+    font-family:inherit; font-weight:700; font-size:.9rem;
+    padding:12px 22px; border-radius:100px; cursor:pointer;
+  }
+  .toolbar button.alt{ background:#fff; color:var(--forest); border:1.5px solid var(--forest); }
+  .toolbar .hint{
+    flex-basis:100%; text-align:center; font-size:.78rem; color:#6b6b5e; line-height:1.8;
+  }
+
+  /* ===== الملصق ===== */
+  .poster{
+    width:148mm; min-height:210mm;      /* A5 — نصف ورقة A4 */
+    background:var(--paper); position:relative; overflow:hidden;
+    display:flex; flex-direction:column; align-items:center;
+    padding:14mm 10mm 10mm; text-align:center;
+    box-shadow:0 12px 40px rgba(0,0,0,.18);
+  }
+  .poster::before{
+    content:""; position:absolute; inset:5mm; border:1.5px solid var(--gold);
+    border-radius:6mm; pointer-events:none;
+  }
+
+  .brand-mark{ font-size:34pt; line-height:1; margin-bottom:2mm; }
+  .brand{ font-size:21pt; font-weight:900; color:var(--forest); line-height:1.25; }
+  .brand small{ display:block; font-size:9.5pt; font-weight:500; color:var(--leaf); margin-top:1.5mm; }
+  .rule{ width:24mm; height:1.5pt; background:var(--gold); margin:4mm auto; }
+
+  .headline{ font-size:13.5pt; font-weight:900; color:var(--pom); line-height:1.5; }
+  .sub{ font-size:9.5pt; color:#6b6b5e; margin-top:1.5mm; line-height:1.7; }
+
+  .qr-frame{
+    background:#fff; padding:5mm; border-radius:4mm;
+    border:1.5pt solid var(--forest); margin:5mm 0 3mm;
+  }
+  .qr-frame svg{ width:52mm; height:52mm; display:block; }
+  .scan-cta{ font-size:11pt; font-weight:900; color:var(--forest); }
+  .url{
+    font-size:7.5pt; color:#8a8a7c; direction:ltr; margin-top:1.5mm;
+    font-family:monospace; word-break:break-all;
+  }
+
+  .steps{ display:flex; gap:3mm; width:100%; margin-top:5mm; }
+  .step{
+    flex:1; background:#fff; border:1pt solid rgba(62,122,68,.25);
+    border-radius:3mm; padding:3.5mm 2.5mm;
+  }
+  .step .os{ font-size:9pt; font-weight:900; color:var(--forest); margin-bottom:1.5mm; }
+  .step .os span{ font-size:12pt; }
+  .step p{ font-size:7.5pt; color:#6b6b5e; line-height:1.65; }
+  .step b{ color:var(--leaf); }
+
+  .perks{
+    display:flex; justify-content:center; gap:3mm; flex-wrap:wrap;
+    margin-top:auto; padding-top:5mm;
+  }
+  .perk{
+    background:rgba(201,154,46,.14); border:1pt solid rgba(201,154,46,.45);
+    border-radius:100px; padding:2mm 4mm; font-size:8pt; font-weight:700; color:var(--forest);
+  }
+  .foot{
+    margin-top:4mm; padding-top:3mm; border-top:1pt dashed rgba(21,49,34,.2);
+    width:100%; font-size:8.5pt; color:#6b6b5e; line-height:1.85;
+  }
+  .foot b{ color:var(--forest); font-size:10pt; direction:ltr; display:inline-block; }
+
+  /* ===== الطباعة ===== */
+  @page{ size:A4; margin:0; }
+  @media print{
+    body{ background:#fff; padding:0; display:block; }
+    .toolbar{ display:none; }
+    .poster{
+      box-shadow:none; margin:0 auto;
+      width:148mm; height:210mm;
+      page-break-after:always;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="toolbar">
+    <button onclick="window.print()">🖨️ اطبع الملصق</button>
+    <button class="alt" onclick="navigator.clipboard&&navigator.clipboard.writeText('https://a0113724-del.github.io/janat-store/').then(()=>alert('انتنسخ الرابط ✅'))">📋 انسخ الرابط</button>
+    <div class="hint">
+      الملصق بحجم <b>A5</b> — يعني نصف ورقة A4. اطبع ورقة وحدة وقصّها نصين وتطلعلك نسختين.
+    </div>
+  </div>
+
+  <div class="poster">
+    <div class="brand-mark">🌿</div>
+    <div class="brand">
+      جنة الفواكه والخضار
+      <small>📍 أبو صخير — قرب مستشفى المناذرة العام</small>
+    </div>
+    <div class="rule"></div>
+
+    <div class="headline">ثبّت تطبيقنا على موبايلك</div>
+    <div class="sub">اطلب خضارك وفواكهك من البيت — يوصلك لباب دارك</div>
+
+    <div class="qr-frame"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41 41" shape-rendering="crispEdges"><rect width="41" height="41" fill="#fff"/><path d="M2 2h7v1h-7zM10 2h1v1h-1zM12 2h1v1h-1zM14 2h1v1h-1zM18 2h2v1h-2zM24 2h1v1h-1zM28 2h1v1h-1zM32 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM11 3h1v1h-1zM16 3h1v1h-1zM19 3h2v1h-2zM22 3h1v1h-1zM25 3h2v1h-2zM32 3h1v1h-1zM38 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM10 4h1v1h-1zM12 4h3v1h-3zM18 4h3v1h-3zM23 4h1v1h-1zM25 4h1v1h-1zM28 4h3v1h-3zM32 4h1v1h-1zM34 4h3v1h-3zM38 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM11 5h1v1h-1zM13 5h1v1h-1zM15 5h1v1h-1zM17 5h4v1h-4zM23 5h3v1h-3zM27 5h1v1h-1zM30 5h1v1h-1zM32 5h1v1h-1zM34 5h3v1h-3zM38 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM24 6h1v1h-1zM32 6h1v1h-1zM34 6h3v1h-3zM38 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM11 7h1v1h-1zM16 7h2v1h-2zM20 7h1v1h-1zM25 7h3v1h-3zM30 7h1v1h-1zM32 7h1v1h-1zM38 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h1v1h-1zM26 8h1v1h-1zM28 8h1v1h-1zM30 8h1v1h-1zM32 8h7v1h-7zM10 9h2v1h-2zM14 9h1v1h-1zM16 9h1v1h-1zM18 9h1v1h-1zM23 9h2v1h-2zM26 9h1v1h-1zM29 9h2v1h-2zM7 10h2v1h-2zM11 10h1v1h-1zM14 10h1v1h-1zM17 10h2v1h-2zM20 10h2v1h-2zM25 10h4v1h-4zM30 10h1v1h-1zM32 10h1v1h-1zM34 10h1v1h-1zM36 10h1v1h-1zM38 10h1v1h-1zM3 11h3v1h-3zM9 11h1v1h-1zM12 11h5v1h-5zM18 11h1v1h-1zM20 11h10v1h-10zM31 11h1v1h-1zM33 11h3v1h-3zM5 12h1v1h-1zM7 12h2v1h-2zM12 12h4v1h-4zM17 12h1v1h-1zM21 12h1v1h-1zM23 12h3v1h-3zM27 12h4v1h-4zM32 12h2v1h-2zM35 12h4v1h-4zM2 13h1v1h-1zM4 13h1v1h-1zM6 13h2v1h-2zM9 13h2v1h-2zM13 13h2v1h-2zM17 13h1v1h-1zM20 13h1v1h-1zM22 13h2v1h-2zM25 13h2v1h-2zM28 13h3v1h-3zM32 13h4v1h-4zM37 13h1v1h-1zM4 14h2v1h-2zM8 14h3v1h-3zM15 14h3v1h-3zM19 14h2v1h-2zM23 14h2v1h-2zM26 14h1v1h-1zM30 14h1v1h-1zM32 14h1v1h-1zM35 14h1v1h-1zM38 14h1v1h-1zM2 15h1v1h-1zM4 15h1v1h-1zM7 15h1v1h-1zM10 15h1v1h-1zM12 15h1v1h-1zM15 15h1v1h-1zM17 15h5v1h-5zM25 15h2v1h-2zM29 15h3v1h-3zM33 15h1v1h-1zM36 15h2v1h-2zM2 16h4v1h-4zM7 16h2v1h-2zM10 16h1v1h-1zM12 16h1v1h-1zM17 16h1v1h-1zM20 16h1v1h-1zM25 16h2v1h-2zM28 16h2v1h-2zM32 16h1v1h-1zM35 16h1v1h-1zM38 16h1v1h-1zM3 17h1v1h-1zM5 17h3v1h-3zM9 17h1v1h-1zM11 17h1v1h-1zM13 17h1v1h-1zM15 17h2v1h-2zM18 17h4v1h-4zM23 17h1v1h-1zM25 17h1v1h-1zM29 17h1v1h-1zM35 17h4v1h-4zM3 18h4v1h-4zM8 18h1v1h-1zM12 18h1v1h-1zM15 18h1v1h-1zM19 18h1v1h-1zM23 18h6v1h-6zM32 18h3v1h-3zM36 18h1v1h-1zM38 18h1v1h-1zM6 19h1v1h-1zM9 19h1v1h-1zM11 19h2v1h-2zM14 19h2v1h-2zM17 19h2v1h-2zM20 19h2v1h-2zM26 19h2v1h-2zM29 19h3v1h-3zM5 20h2v1h-2zM8 20h1v1h-1zM11 20h1v1h-1zM16 20h4v1h-4zM22 20h1v1h-1zM24 20h2v1h-2zM29 20h1v1h-1zM32 20h1v1h-1zM36 20h1v1h-1zM38 20h1v1h-1zM3 21h1v1h-1zM5 21h2v1h-2zM10 21h1v1h-1zM15 21h2v1h-2zM18 21h6v1h-6zM28 21h1v1h-1zM30 21h4v1h-4zM37 21h1v1h-1zM2 22h5v1h-5zM8 22h1v1h-1zM11 22h2v1h-2zM14 22h2v1h-2zM17 22h6v1h-6zM25 22h3v1h-3zM31 22h4v1h-4zM36 22h1v1h-1zM2 23h1v1h-1zM6 23h1v1h-1zM11 23h1v1h-1zM13 23h1v1h-1zM15 23h1v1h-1zM20 23h2v1h-2zM23 23h2v1h-2zM28 23h3v1h-3zM33 23h2v1h-2zM7 24h4v1h-4zM16 24h2v1h-2zM22 24h2v1h-2zM25 24h1v1h-1zM28 24h2v1h-2zM32 24h1v1h-1zM37 24h2v1h-2zM3 25h2v1h-2zM6 25h1v1h-1zM9 25h4v1h-4zM14 25h2v1h-2zM18 25h1v1h-1zM21 25h3v1h-3zM25 25h2v1h-2zM28 25h2v1h-2zM31 25h1v1h-1zM33 25h1v1h-1zM35 25h1v1h-1zM37 25h2v1h-2zM4 26h2v1h-2zM8 26h1v1h-1zM10 26h1v1h-1zM13 26h1v1h-1zM16 26h2v1h-2zM19 26h1v1h-1zM21 26h4v1h-4zM26 26h1v1h-1zM28 26h1v1h-1zM30 26h1v1h-1zM32 26h2v1h-2zM37 26h2v1h-2zM2 27h2v1h-2zM5 27h1v1h-1zM10 27h1v1h-1zM16 27h1v1h-1zM22 27h2v1h-2zM29 27h3v1h-3zM2 28h1v1h-1zM4 28h2v1h-2zM8 28h1v1h-1zM11 28h2v1h-2zM14 28h1v1h-1zM16 28h1v1h-1zM18 28h4v1h-4zM25 28h2v1h-2zM29 28h1v1h-1zM32 28h1v1h-1zM37 28h2v1h-2zM2 29h1v1h-1zM5 29h2v1h-2zM9 29h1v1h-1zM11 29h2v1h-2zM15 29h1v1h-1zM19 29h1v1h-1zM22 29h2v1h-2zM25 29h1v1h-1zM31 29h1v1h-1zM33 29h4v1h-4zM2 30h1v1h-1zM5 30h1v1h-1zM7 30h2v1h-2zM14 30h1v1h-1zM21 30h2v1h-2zM25 30h3v1h-3zM29 30h6v1h-6zM36 30h2v1h-2zM10 31h3v1h-3zM14 31h2v1h-2zM17 31h5v1h-5zM24 31h2v1h-2zM27 31h2v1h-2zM30 31h1v1h-1zM34 31h2v1h-2zM37 31h1v1h-1zM2 32h7v1h-7zM11 32h1v1h-1zM13 32h1v1h-1zM22 32h1v1h-1zM25 32h3v1h-3zM30 32h1v1h-1zM32 32h1v1h-1zM34 32h5v1h-5zM2 33h1v1h-1zM8 33h1v1h-1zM10 33h1v1h-1zM12 33h1v1h-1zM17 33h2v1h-2zM20 33h1v1h-1zM22 33h1v1h-1zM24 33h3v1h-3zM30 33h1v1h-1zM34 33h2v1h-2zM38 33h1v1h-1zM2 34h1v1h-1zM4 34h3v1h-3zM8 34h1v1h-1zM11 34h3v1h-3zM15 34h1v1h-1zM17 34h1v1h-1zM20 34h1v1h-1zM22 34h1v1h-1zM24 34h4v1h-4zM29 34h6v1h-6zM36 34h1v1h-1zM38 34h1v1h-1zM2 35h1v1h-1zM4 35h3v1h-3zM8 35h1v1h-1zM12 35h1v1h-1zM17 35h1v1h-1zM19 35h3v1h-3zM24 35h1v1h-1zM26 35h3v1h-3zM32 35h1v1h-1zM36 35h1v1h-1zM2 36h1v1h-1zM4 36h3v1h-3zM8 36h1v1h-1zM12 36h3v1h-3zM16 36h1v1h-1zM18 36h1v1h-1zM20 36h1v1h-1zM22 36h1v1h-1zM24 36h1v1h-1zM27 36h3v1h-3zM31 36h1v1h-1zM33 36h1v1h-1zM36 36h1v1h-1zM38 36h1v1h-1zM2 37h1v1h-1zM8 37h1v1h-1zM13 37h1v1h-1zM15 37h1v1h-1zM17 37h1v1h-1zM19 37h1v1h-1zM23 37h3v1h-3zM28 37h1v1h-1zM30 37h3v1h-3zM38 37h1v1h-1zM2 38h7v1h-7zM12 38h1v1h-1zM14 38h3v1h-3zM18 38h2v1h-2zM21 38h1v1h-1zM26 38h1v1h-1zM29 38h4v1h-4zM34 38h1v1h-1zM38 38h1v1h-1z" fill="#153122"/></svg></div>
+    <div class="scan-cta">📷 صوّر الباركود بكاميرتك</div>
+    <div class="url">a0113724-del.github.io/janat-store</div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="os"><span>🤖</span> أندرويد</div>
+        <p>افتح الرابط، وتطلعلك رسالة <b>«تثبيت التطبيق»</b> — اضغطها وخلص.</p>
+      </div>
+      <div class="step">
+        <div class="os"><span>🍎</span> آيفون</div>
+        <p>افتح بـ<b>Safari</b>، اضغط زر المشاركة ⬆️، واختار <b>«إضافة إلى الشاشة الرئيسية»</b>.</p>
+      </div>
+    </div>
+
+    <div class="perks">
+      <span class="perk">🚴 التوصيل الأول مجاني</span>
+      <span class="perk">⭐ نقاط على كل طلب</span>
+      <span class="perk">🥬 أسعار تتجدد يومياً</span>
+    </div>
+
+    <div class="foot">
+      للاستفسار والطلب بالواتساب<br>
+      <b>0778 871 1942</b>
+    </div>
+  </div>
+
+</body>
+</html>
