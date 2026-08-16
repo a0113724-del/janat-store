@@ -12,7 +12,8 @@
     "bundle": {
       "qty": 3,
       "price": 2000
-    }
+    },
+    "onSale": true
   },
   {
     "id": "cucumber",
@@ -22,7 +23,7 @@
     "emoji": "🥒",
     "image": "images/cucumber-1785117845595.jpg",
     "unit": "كغم",
-    "onSale": false,
+    "onSale": true,
     "visible": true,
     "order": 1,
     "oldPrice": 0,
@@ -52,10 +53,7 @@
     "unit": "كغم",
     "visible": true,
     "order": 3,
-    "bundle": {
-      "qty": 3,
-      "price": 2000
-    }
+    "onSale": true
   },
   {
     "id": "zucchini",
