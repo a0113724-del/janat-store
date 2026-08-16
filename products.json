@@ -130,7 +130,11 @@
     "image": "images/onionw-1785118269464.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 10
+    "order": 10,
+    "bundle": {
+      "qty": 3,
+      "price": 2000
+    }
   },
   {
     "id": "oniony",
