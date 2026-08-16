@@ -340,6 +340,10 @@
     background:#F6F1E1; border-radius:10px; padding:9px 11px; white-space:pre-wrap;
   }
   .rv-nonote{ font-size:.72rem; color:#bbb; margin-top:6px; }
+  .rv-src{
+    font-size:.63rem; font-weight:800; color:#8a6a10; background:#FFF3D6;
+    padding:2px 8px; border-radius:100px; margin-inline-start:4px;
+  }
   .rv-wa{
     display:inline-block; margin-top:9px; background:#25D366; color:#fff;
     text-decoration:none; font-size:.7rem; font-weight:800; padding:6px 13px; border-radius:100px;
@@ -1351,8 +1355,10 @@
           <span class="rv-when">${esc(timeAgo(r.date))}</span>
         </div>
         <div class="rv-who">${esc(r.name || "بدون اسم")}
-          <span class="ph">${esc(ph)}</span>
-          ${r.seqNo ? `· طلب #${esc(r.seqNo)}` : ""}</div>
+          ${ph && ph !== "—" ? `<span class="ph">${esc(ph)}</span>` : ""}
+          ${r.seqNo
+            ? `· طلب #${esc(r.seqNo)}`
+            : `<span class="rv-src">من أيقونة التقييم</span>`}</div>
         ${note ? `<div class="rv-note">${esc(note)}</div>` : `<div class="rv-nonote">بلا ملاحظة مكتوبة</div>`}
         ${rt <= 3 ? wa : ""}
       </div>`;

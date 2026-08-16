@@ -264,6 +264,13 @@
     font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
   }
 
+  /* زر التقييم بشريط الأدوات — نفس شكل زر الوضع الليلي بس بلون ذهبي */
+  .rate-toggle{
+    border-color:rgba(232,185,35,.55); color:#E8B923;
+    background:linear-gradient(180deg, rgba(232,185,35,.14), var(--card-bg));
+  }
+  .rate-toggle.done{ color:#1e6b2b; border-color:rgba(30,107,43,.5); }
+
   /* ---------- FACEBOOK LINK ---------- */
   .fb-chip{
     display:inline-flex; align-items:center; gap:6px;
@@ -512,6 +519,42 @@
   #rateDone .ic{ font-size:2rem; margin-bottom:6px; }
   #rateDone .tx{ font-weight:900; color:var(--forest); font-size:.95rem; }
   html.dark #rateDone .tx{ color:var(--gold-light); }
+
+  /* ---------- ورقة التقييم المستقلة ---------- */
+  #reviewSheet .rs-lead{
+    text-align:center; font-weight:900; color:var(--forest); font-size:1.02rem; margin-bottom:6px;
+  }
+  html.dark #reviewSheet .rs-lead{ color:var(--gold-light); }
+  #reviewSheet .rs-private{
+    text-align:center; font-size:.72rem; color:#8a8a7c; line-height:1.7;
+    background:var(--card-bg); border:1px dashed var(--card-border);
+    border-radius:12px; padding:8px 10px; margin-bottom:14px;
+  }
+  #reviewSheet .stars{ margin-bottom:4px; }
+  #reviewSheet .stars button{ font-size:2.5rem; padding:2px 5px; }
+  .rs-hint{
+    text-align:center; font-size:.85rem; font-weight:800; color:#8a8a7c;
+    min-height:20px; margin-bottom:14px;
+  }
+  #reviewSheet textarea, #rsWho input{
+    width:100%; border:1.5px solid var(--card-border); border-radius:12px; padding:11px;
+    font-family:inherit; font-size:.88rem; background:var(--card-bg); color:inherit;
+    margin-bottom:10px;
+  }
+  #reviewSheet textarea{ resize:vertical; }
+  #rsWho input[type=tel]{ direction:ltr; text-align:right; }
+  #rsSend{
+    width:100%; background:var(--leaf); color:#fff; border:none; padding:14px;
+    border-radius:14px; font-family:inherit; font-weight:800; font-size:.95rem; cursor:pointer;
+  }
+  #rsSend:disabled{ background:#ccc; cursor:not-allowed; }
+  #rsMsg{ font-size:.82rem; font-weight:800; margin-top:10px; text-align:center; min-height:18px; }
+  #rsMsg.err{ color:var(--pomegranate); }
+  #rsDone{ display:none; text-align:center; padding:26px 10px; }
+  #rsDone .ic{ font-size:2.6rem; margin-bottom:8px; }
+  #rsDone .tx{ font-weight:900; color:var(--forest); font-size:1.1rem; }
+  #rsDone .sb{ font-size:.82rem; color:#8a8a7c; margin-top:5px; }
+  html.dark #rsDone .tx{ color:var(--gold-light); }
 
   .qty-row{ display:flex; align-items:center; justify-content:space-between; gap:6px; }
   .qty-row button{
@@ -818,6 +861,7 @@
       <input type="text" id="searchInput" placeholder="دوّر على منتج...">
       <span class="icon">🔍</span>
     </div>
+    <button class="theme-toggle rate-toggle" id="openRateBtn" title="قيّم المتجر">⭐</button>
     <button class="theme-toggle" id="themeToggle" title="الوضع الليلي">🌙</button>
   </div>
 
@@ -946,6 +990,47 @@
 
   <!-- ================= OVERLAY ================= -->
   <div class="overlay" id="overlay"></div>
+
+  <!-- ================= REVIEW SHEET (من أيقونة ⭐ بشريط الأدوات) ================= -->
+  <div class="sheet" id="reviewSheet">
+    <div class="sheet-head">
+      <h3>⭐ قيّم المتجر</h3>
+      <button id="closeReview">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div id="rsForm">
+        <div class="rs-lead" id="rsLead">رأيك يساعدنا نتحسّن</div>
+        <div class="rs-private">🔒 تقييمك يوصل لصاحب المحل بس — ما ينعرض بالموقع ولا لأي زبون</div>
+
+        <div class="stars" id="rsStars">
+          <button type="button" data-star="1" aria-label="نجمة">★</button>
+          <button type="button" data-star="2" aria-label="نجمتين">★</button>
+          <button type="button" data-star="3" aria-label="3 نجوم">★</button>
+          <button type="button" data-star="4" aria-label="4 نجوم">★</button>
+          <button type="button" data-star="5" aria-label="5 نجوم">★</button>
+        </div>
+        <div class="rs-hint" id="rsHint">اضغط على النجوم</div>
+
+        <textarea id="rsNote" rows="3" maxlength="500"
+          placeholder="اكتب ملاحظتك أو اقتراحك — شنو عجبك وشنو تريدنا نصلحه؟"></textarea>
+
+        <div id="rsWho">
+          <input type="text" id="rsName" maxlength="60" placeholder="اسمك (اختياري)">
+          <input type="tel" id="rsPhone" maxlength="15" inputmode="numeric"
+            placeholder="رقم هاتفك (اختياري — حتى نرد عليك)">
+        </div>
+
+        <button type="button" id="rsSend" disabled>أرسل التقييم</button>
+        <div id="rsMsg"></div>
+      </div>
+
+      <div id="rsDone">
+        <div class="ic">🌿</div>
+        <div class="tx">شكراً لتقييمك</div>
+        <div class="sb">وصل لصاحب المحل — يهمنا رأيك</div>
+      </div>
+    </div>
+  </div>
 
   <!-- ================= CHECKOUT SHEET ================= -->
   <div class="sheet" id="checkoutSheet">
@@ -1692,7 +1777,8 @@
 
   function openSheet(sheet){ sheet.classList.add("show"); overlay.classList.add("show"); }
   function closeSheets(){
-    checkoutSheet.classList.remove("show");
+    // كل الأوراق مو ورقة الطلب بس — صارت عدنا ورقة تقييم كذلك
+    document.querySelectorAll(".sheet").forEach(s => s.classList.remove("show"));
     overlay.classList.remove("show");
   }
   openCheckoutBtn.addEventListener("click", ()=>{
@@ -2273,83 +2359,211 @@
   }
   setInterval(updateCountdown, 1000);
 
-  // ================= تقييم الطلب =================
-  // يطلع بشاشة النجاح بس. التقييم يروح للسيرفر مباشرة وما ينعرض لأي زبون.
+  // ================= التقييمات =================
+  // مدخلان: صندوق داخل شاشة نجاح الطلب، وأيقونة ⭐ بشريط الأدوات.
+  // التقييم يروح للسيرفر مباشرة — ما ينعرض بالموقع ولا لأي زبون.
   const RATE_HINTS = ["", "ما عجبني 😞", "مو زين", "مقبول", "زين 👍", "ممتاز! 🌟"];
-  let rateOrder = null;     // الطلب اللي راح ينقيّم
-  let rateStars = 0;
+  const LAST_ORDER_KEY = "janat-last-order";      // آخر طلب — نربط بيه تقييم الأيقونة
+  const RATED_KEY      = "janat-rated-orders";    // الطلبات اللي انقيّمت من هذا الجهاز
 
+  function getLastOrder(){
+    try{ return JSON.parse(localStorage.getItem(LAST_ORDER_KEY) || "null"); }catch(e){ return null; }
+  }
+  function setLastOrder(o){
+    try{ localStorage.setItem(LAST_ORDER_KEY, JSON.stringify(o)); }catch(e){}
+  }
+  function ratedOrders(){
+    try{ return JSON.parse(localStorage.getItem(RATED_KEY) || "[]"); }catch(e){ return []; }
+  }
+  function markRated(orderId){
+    if(!orderId) return;
+    try{
+      const list = ratedOrders();
+      if(list.indexOf(orderId) === -1){
+        list.push(orderId);
+        localStorage.setItem(RATED_KEY, JSON.stringify(list.slice(-30)));
+      }
+    }catch(e){}
+  }
+
+  /**
+   * يربط صف نجوم بمؤشّر نصّي وزر إرسال.
+   * يرجّع { value(), reset() } — نفس المنطق للمدخلين بدل ما ينكتب مرتين.
+   */
+  function makeStarPicker(starsSel, hintEl, sendEl){
+    const btns = Array.from(document.querySelectorAll(starsSel + " button"));
+    let value = 0;
+    function paint(){
+      btns.forEach(b => b.classList.toggle("on", Number(b.dataset.star) <= value));
+      hintEl.textContent = RATE_HINTS[value] || "اضغط على النجوم";
+      sendEl.disabled = value < 1;
+    }
+    btns.forEach(b => b.addEventListener("click", ()=>{
+      value = Number(b.dataset.star) || 0;
+      paint();
+    }));
+    paint();
+    return {
+      value: ()=> value,
+      reset: ()=>{ value = 0; paint(); }
+    };
+  }
+
+  /** يدز التقييم للسيرفر. يرجّع { ok, message, reviewed, tooSoon } */
+  async function postReview(payload){
+    try{
+      const res = await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(Object.assign({ action: "submitReview" }, payload))
+      });
+      const data = await res.json();
+      if(data.status === "ok") return { ok:true };
+      return { ok:false, message: data.message || "ما انرسل التقييم",
+               reviewed: !!data.reviewed, tooSoon: !!data.tooSoon };
+    }catch(err){
+      return { ok:false, message: "ما وصل للسيرفر — تأكد من الإنترنت" };
+    }
+  }
+
+  // ---------- (١) الصندوق داخل شاشة نجاح الطلب ----------
   const rateBoxEl  = document.getElementById("rateBox");
   const rateDoneEl = document.getElementById("rateDone");
-  const rateHintEl = document.getElementById("rateHint");
   const rateNoteEl = document.getElementById("rateNote");
   const rateSendEl = document.getElementById("rateSend");
   const rateMsgEl  = document.getElementById("rateMsg");
-  const starBtns   = Array.from(document.querySelectorAll("#rateStars button"));
-
-  function paintStars(n){
-    starBtns.forEach(b => b.classList.toggle("on", Number(b.dataset.star) <= n));
-    rateHintEl.textContent = RATE_HINTS[n] || "اضغط على النجوم";
-    rateSendEl.disabled = n < 1;
-  }
+  const ratePicker = makeStarPicker("#rateStars", document.getElementById("rateHint"), rateSendEl);
+  let rateOrder = null;
 
   function resetRateBox(order){
     rateOrder = order && order.orderId ? order : null;
-    rateStars = 0;
+    if(rateOrder){
+      setLastOrder({ orderId: rateOrder.orderId, seqNo: rateOrder.seqNo, at: Date.now() });
+      refreshRateToggle();
+    }
     rateNoteEl.value = "";
     rateMsgEl.textContent = "";
     rateMsgEl.className = "";
     rateSendEl.textContent = "أرسل التقييم";
-    paintStars(0);
+    ratePicker.reset();
     rateDoneEl.style.display = "none";
     // بدون معرّف طلب ما نكدر نربط التقييم بطلب — نخفي الصندوق بدل ما نعرض شي ما يشتغل
     rateBoxEl.style.display = rateOrder ? "block" : "none";
   }
 
-  starBtns.forEach(b=>{
-    b.addEventListener("click", ()=>{
-      rateStars = Number(b.dataset.star) || 0;
-      paintStars(rateStars);
-    });
-  });
-
   rateSendEl.addEventListener("click", async ()=>{
-    if(!rateOrder || rateStars < 1) return;
+    if(!rateOrder || ratePicker.value() < 1) return;
     rateSendEl.disabled = true;
     rateSendEl.textContent = "⏳ جاري الإرسال...";
     rateMsgEl.textContent = "";
     rateMsgEl.className = "";
-    try{
-      const res = await fetch(GOOGLE_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "submitReview",
-          orderId: rateOrder.orderId,
-          seqNo: rateOrder.seqNo,
-          name: rateOrder.name,
-          phone: rateOrder.phone,
-          rating: rateStars,
-          note: rateNoteEl.value.trim().slice(0, 500)
-        })
-      });
-      const data = await res.json();
-      if(data.status === "ok"){
-        rateBoxEl.style.display = "none";
-        rateDoneEl.style.display = "block";
-      }else{
-        rateMsgEl.className = "err";
-        rateMsgEl.textContent = "⚠️ " + (data.message || "ما انرسل التقييم");
-        rateSendEl.disabled = false;
-        rateSendEl.textContent = "حاول مرة ثانية";
-      }
-    }catch(err){
+
+    const r = await postReview({
+      orderId: rateOrder.orderId,
+      seqNo: rateOrder.seqNo,
+      visitorId: getVisitorId(),
+      rating: ratePicker.value(),
+      note: rateNoteEl.value.trim().slice(0, 500)
+    });
+
+    if(r.ok || r.reviewed){
+      markRated(rateOrder.orderId);
+      refreshRateToggle();
+      rateBoxEl.style.display = "none";
+      rateDoneEl.style.display = "block";
+    }else{
       rateMsgEl.className = "err";
-      rateMsgEl.textContent = "⚠️ ما وصل للسيرفر — تأكد من الإنترنت";
+      rateMsgEl.textContent = "⚠️ " + r.message;
       rateSendEl.disabled = false;
       rateSendEl.textContent = "حاول مرة ثانية";
     }
   });
+
+  // ---------- (٢) أيقونة ⭐ بشريط الأدوات ----------
+  const rateToggleBtn = document.getElementById("openRateBtn");
+  const reviewSheet   = document.getElementById("reviewSheet");
+  const rsForm  = document.getElementById("rsForm");
+  const rsDone  = document.getElementById("rsDone");
+  const rsLead  = document.getElementById("rsLead");
+  const rsWho   = document.getElementById("rsWho");
+  const rsNote  = document.getElementById("rsNote");
+  const rsName  = document.getElementById("rsName");
+  const rsPhone = document.getElementById("rsPhone");
+  const rsSend  = document.getElementById("rsSend");
+  const rsMsg   = document.getElementById("rsMsg");
+  const rsPicker = makeStarPicker("#rsStars", document.getElementById("rsHint"), rsSend);
+  let rsAttachedOrder = null;   // الطلب اللي ينربط بيه التقييم، إذا موجود
+
+  // الأيقونة تصير خضراء لو الطلب الأخير انقيّم — إشارة بسيطة إنه انرسل
+  function refreshRateToggle(){
+    const last = getLastOrder();
+    const done = !!(last && last.orderId && ratedOrders().indexOf(last.orderId) !== -1);
+    rateToggleBtn.classList.toggle("done", done);
+    rateToggleBtn.title = done ? "شكراً لتقييمك" : "قيّم المتجر";
+  }
+
+  function openReviewSheet(){
+    // نربط التقييم بآخر طلب إذا كان خلال أسبوع وما انقيّم — غير هيك تقييم عام
+    const last = getLastOrder();
+    const fresh = last && last.orderId &&
+      (Date.now() - (Number(last.at) || 0)) < 7 * 24 * 60 * 60 * 1000 &&
+      ratedOrders().indexOf(last.orderId) === -1;
+    rsAttachedOrder = fresh ? last : null;
+
+    rsLead.textContent = rsAttachedOrder
+      ? `شلون كانت تجربتك بطلب #${rsAttachedOrder.seqNo}؟`
+      : "شلون تشوف المتجر؟";
+    // لو مربوط بطلب، الاسم والرقم يجون من جدول الطلبات — ما نسأله عنهم
+    rsWho.style.display = rsAttachedOrder ? "none" : "block";
+    if(!rsAttachedOrder){
+      try{ rsPhone.value = localStorage.getItem("janat-my-phone") || ""; }catch(e){}
+    }
+
+    rsNote.value = "";
+    rsMsg.textContent = "";
+    rsMsg.className = "";
+    rsSend.textContent = "أرسل التقييم";
+    rsPicker.reset();
+    rsForm.style.display = "block";
+    rsDone.style.display = "none";
+    openSheet(reviewSheet);
+  }
+
+  rateToggleBtn.addEventListener("click", openReviewSheet);
+  document.getElementById("closeReview").addEventListener("click", closeSheets);
+
+  rsSend.addEventListener("click", async ()=>{
+    if(rsPicker.value() < 1) return;
+    rsSend.disabled = true;
+    rsSend.textContent = "⏳ جاري الإرسال...";
+    rsMsg.textContent = "";
+    rsMsg.className = "";
+
+    const r = await postReview({
+      orderId: rsAttachedOrder ? rsAttachedOrder.orderId : "",
+      seqNo:   rsAttachedOrder ? rsAttachedOrder.seqNo : "",
+      visitorId: getVisitorId(),
+      name:  rsAttachedOrder ? "" : rsName.value.trim().slice(0, 60),
+      phone: rsAttachedOrder ? "" : rsPhone.value.trim(),
+      rating: rsPicker.value(),
+      note: rsNote.value.trim().slice(0, 500)
+    });
+
+    if(r.ok || r.reviewed){
+      if(rsAttachedOrder) markRated(rsAttachedOrder.orderId);
+      refreshRateToggle();
+      rsForm.style.display = "none";
+      rsDone.style.display = "block";
+    }else{
+      rsMsg.className = "err";
+      rsMsg.textContent = "⚠️ " + r.message;
+      rsSend.disabled = false;
+      rsSend.textContent = r.tooSoon ? "دزيت تقييم اليوم" : "حاول مرة ثانية";
+      rsSend.disabled = !!r.tooSoon;
+    }
+  });
+
+  refreshRateToggle();
 
   // ---------- تاريخ اليوم بشريط الأسعار ----------
   // أسماء الأشهر العراقية (كانون/شباط/آذار...) مو الميلادية العربية العامة
