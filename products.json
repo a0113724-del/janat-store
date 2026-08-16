@@ -2,18 +2,14 @@
   {
     "id": "tomato",
     "name": "طماطة",
-    "price": 750,
+    "price": 700,
     "cat": "veg",
     "emoji": "🍅",
     "image": "images/tomato-1785117823924.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 0,
-    "bundle": {
-      "qty": 3,
-      "price": 2000
-    },
-    "onSale": true
+    "onSale": false
   },
   {
     "id": "cucumber",
