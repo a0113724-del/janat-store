@@ -1824,6 +1824,49 @@
   document.getElementById("pointsBadge")?.addEventListener("click", ()=>{
     document.querySelector(".referral-box")?.scrollIntoView({behavior:"smooth", block:"center"});
   });
+  // ---------- هوية الزبون المحفوظة بالجهاز ----------
+  // بدونها الزبون لازم يكتب اسمه ورقمه كل مرة، وخصم النقاط ما يطلع
+  // إلا بعد ما يكتب الرقم — يعني أغلب الزبائن ما يشوفونه أصلاً.
+  function getMyIdentity(){
+    let phone = "", name = "";
+    try{
+      phone = localStorage.getItem("janat-my-phone") || "";
+      name  = localStorage.getItem("janat-my-name") || "";
+    }catch(e){}
+    return { phone, name };
+  }
+  function saveMyIdentity(phone, name){
+    try{
+      const p = normalizePhone(phone);
+      if(isValidPhone(p)) localStorage.setItem("janat-my-phone", p);
+      if(String(name || "").trim()) localStorage.setItem("janat-my-name", String(name).trim());
+    }catch(e){}
+  }
+
+  /**
+   * تعرض (أو تخفي) سطر "عندك N نقطة" وصف "استخدم نقاطي" حسب الرصيد
+   * المعروف حالياً — بلا ما تنتظر الزبون يكتب رقمه.
+   */
+  function applyPointsUI(){
+    const pointsInfo = document.getElementById("pointsInfo");
+    const redeemRow  = document.getElementById("pointsRedeemRow");
+    if(pointsInfo){
+      const show = currentPointsBalance > 0;
+      pointsInfo.style.display = show ? "flex" : "none";
+      if(show) pointsInfo.textContent = `⭐ عندك ${currentPointsBalance} نقطة`;
+    }
+    if(redeemRow){
+      const show = currentRedeemableValue > 0;
+      redeemRow.style.display = show ? "flex" : "none";
+      if(show){
+        document.getElementById("redeemableText").textContent = money(currentRedeemableValue);
+      }else{
+        const chk = document.getElementById("usePointsCheck");
+        if(chk) chk.checked = false;
+      }
+    }
+  }
+
   async function refreshPointsForPhone(phone){
     const p = normalizePhone(phone);
     if(!GOOGLE_SCRIPT_URL || !isValidPhone(p)) return;
@@ -1833,13 +1876,20 @@
       currentPointsBalance = pdata.points || 0;
       currentRedeemableValue = pdata.redeemableValue || 0;
       updateTopPointsBadge(currentPointsBalance);
+      applyPointsUI();          // الخصم يبين فوراً، بلا ما يكتب شي
+      updateCartUI();
     }catch(e){ /* silent */ }
   }
+
   (function initTopPointsBadge(){
     updateTopPointsBadge(0);   // تظهر دائماً — بصفر للزبون الجديد
-    let myPhone = "";
-    try{ myPhone = localStorage.getItem("janat-my-phone") || ""; }catch(e){}
-    if(myPhone) refreshPointsForPhone(myPhone);
+    const me = getMyIdentity();
+    // نملي الاسم والرقم من آخر طلب حتى ما يعيد كتابتهم
+    const nameEl = document.getElementById("custName");
+    const phoneEl = document.getElementById("custPhone");
+    if(nameEl && !nameEl.value && me.name) nameEl.value = me.name;
+    if(phoneEl && !phoneEl.value && me.phone) phoneEl.value = me.phone;
+    if(me.phone) refreshPointsForPhone(me.phone);
   })();
 
   // null = ما تحققنا بعد، true = جديد فعلاً بالسستم، false = عنده طلبات سابقة
@@ -1968,6 +2018,13 @@
   }
   openCheckoutBtn.addEventListener("click", ()=>{
     refreshSettings();   // ضمان إن أجرة التوصيل بصفحة الطلب هي الحالية
+    // الاسم والرقم من آخر طلب، وخصم النقاط يبين من أول ما تفتح الصفحة
+    const me = getMyIdentity();
+    const nameEl = document.getElementById("custName");
+    const phoneEl = document.getElementById("custPhone");
+    if(nameEl && !nameEl.value.trim() && me.name) nameEl.value = me.name;
+    if(phoneEl && !phoneEl.value.trim() && me.phone) phoneEl.value = me.phone;
+    applyPointsUI();
     document.getElementById("orderSuccessBox").style.display = "none";
     document.getElementById("orderFailBox").style.display = "none";
     sendBtn.style.display = "flex";
@@ -2337,9 +2394,12 @@
           currentPointsBalance = serverTotals.pointsBalance;
           currentRedeemableValue = Math.floor(currentPointsBalance / 10) * 1000;
           updateTopPointsBadge(currentPointsBalance);
+          applyPointsUI();     // الرصيد الجديد يبين للطلب الجاي بلا كتابة
         }
       }
 
+      // اسمه ورقمه ينحفظون — الطلب الجاي يجيهم جاهزين
+      saveMyIdentity(phone, name);
       try{ localStorage.setItem("janat-has-ordered", "1"); }catch(e){}
       pendingOrderRef = null;   // الطلب الجاي ياخذ مرجع جديد
       hideFirstOrderPromo();
@@ -2409,14 +2469,10 @@
       clearTimeout(phoneCheckTimer);
       // يُبحث ويُحفظ بالصيغة الموحّدة — الزبون يبقى يشوف اللي كتبه بالحقل
       const phone = normalizePhone(custPhoneInput.value);
-      if(isValidPhone(phone)){
-        try{ localStorage.setItem("janat-my-phone", phone); }catch(e){}
-      }
-      const pointsInfo = document.getElementById("pointsInfo");
-      const pointsRedeemRow = document.getElementById("pointsRedeemRow");
+      // نحفظه فوراً حتى المرة الجاية يطلع بلا كتابة
+      saveMyIdentity(phone, document.getElementById("custName")?.value || "");
       if(!GOOGLE_SCRIPT_URL || !isValidPhone(phone)){
-        if(pointsInfo) pointsInfo.style.display = "none";
-        if(pointsRedeemRow) pointsRedeemRow.style.display = "none";
+        // رقم ناقص — ما نخفي الرصيد المعروف من آخر طلب، بس ما نجيب جديد
         return;
       }
       phoneCheckTimer = setTimeout(async ()=>{
@@ -2436,25 +2492,8 @@
           const pdata = await res2.json();
           currentPointsBalance = pdata.points || 0;
           currentRedeemableValue = pdata.redeemableValue || 0;
-          if(pointsInfo){
-            if(currentPointsBalance > 0){
-              pointsInfo.style.display = "flex";
-              pointsInfo.textContent = `⭐ عندك ${currentPointsBalance} نقطة`;
-            }else{
-              pointsInfo.style.display = "none";
-            }
-          }
-          if(pointsRedeemRow){
-            if(currentRedeemableValue > 0){
-              pointsRedeemRow.style.display = "flex";
-              document.getElementById("redeemableText").textContent = money(currentRedeemableValue);
-            }else{
-              pointsRedeemRow.style.display = "none";
-              const chk = document.getElementById("usePointsCheck");
-              if(chk) chk.checked = false;
-            }
-          }
           updateTopPointsBadge(currentPointsBalance);
+          applyPointsUI();
           updateCartUI();
         }catch(e){ /* silent */ }
       }, 600);
