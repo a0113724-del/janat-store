@@ -22,6 +22,8 @@
     manualClosed: false,
     closedMessage: "",
     pointsPerOrder: 2,
+    roundTo: 250,
+    requireNotifications: false,
     promoText: "🚴 التوصيل الأول مجاني لكل زبون جديد!",
     announcement: ""
   };
@@ -125,6 +127,28 @@
           <input type="number" id="setPoints" min="0" step="1">
           <div class="sub">⚠️ لازم يطابق الرقم المكتوب بـ Google Apps Script.</div>
         </div>
+        <div class="set-field">
+          <label>تقريب المبالغ لأقرب</label>
+          <select id="setRoundTo">
+            <option value="250">250 دينار (مستحسن)</option>
+            <option value="500">500 دينار</option>
+            <option value="1000">1000 دينار</option>
+            <option value="0">بدون تقريب</option>
+          </select>
+          <div class="sub">أصغر ورقة بالعراق 250 — بدون التقريب يطلع مجموع مثل 1,375 ومحد يكدر يدفعه.
+            ⚠️ لازم يطابق <b>roundTo</b> بـ Google Apps Script.</div>
+        </div>
+      </div>
+
+      <div class="set-card">
+        <h3>🔔 الإشعارات</h3>
+        <label class="set-check">
+          <input type="checkbox" id="setRequireNotif">
+          <span>ما يدخل التطبيق إلا بعد ما يفعّل الإشعارات</span>
+        </label>
+        <div class="sub">تطلع للزبون شاشة تطلب منه يفعّل الإشعارات قبل ما يتصفّح.
+          ⚠️ لو ضغط "حظر" بالمتصفح، ما نكدر نطلبها مرة ثانية — وقتها نشرحله
+          شلون يفكّها ونخليه يدخل، حتى ما يضيع الزبون كلياً.</div>
       </div>
 
       <div class="set-card">
@@ -211,6 +235,8 @@
     document.getElementById("setFreeOver").value = settings.freeDeliveryOver;
     document.getElementById("setMinOrder").value = settings.minOrderTotal;
     document.getElementById("setPoints").value = settings.pointsPerOrder;
+    document.getElementById("setRoundTo").value = String(settings.roundTo ?? 250);
+    document.getElementById("setRequireNotif").checked = !!settings.requireNotifications;
     document.getElementById("setFirstFree").checked = !!settings.firstOrderFreeDelivery;
     document.getElementById("setManualClosed").checked = !!settings.manualClosed;
     document.getElementById("setOpenHour").value = settings.openHour;
@@ -234,6 +260,8 @@
     settings.freeDeliveryOver = num("setFreeOver");
     settings.minOrderTotal = num("setMinOrder");
     settings.pointsPerOrder = num("setPoints");
+    settings.roundTo = num("setRoundTo");
+    settings.requireNotifications = document.getElementById("setRequireNotif").checked;
     settings.firstOrderFreeDelivery = document.getElementById("setFirstFree").checked;
     settings.manualClosed = document.getElementById("setManualClosed").checked;
     settings.openHour = num("setOpenHour");

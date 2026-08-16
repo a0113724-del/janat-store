@@ -468,6 +468,15 @@
     margin:-6px 0 9px;
   }
   html.dark .card .save-line{ background:rgba(30,107,43,.28); color:#9ede9f; }
+  .card .save-line.bundle{ background:#EFE7FB; color:#6b3fa0; }
+  .card .save-line.bundle small{ font-weight:600; opacity:.8; }
+  html.dark .card .save-line.bundle{ background:rgba(107,63,160,.3); color:#d6bdf5; }
+  .bundle-badge{
+    position:absolute; top:8px; inset-inline-start:8px; z-index:2;
+    background:#6b3fa0; color:#fff; font-size:.66rem; font-weight:800;
+    padding:3px 9px; border-radius:100px; box-shadow:0 3px 8px rgba(0,0,0,.2);
+  }
+  .cart-line .cl-save{ font-size:.68rem; font-weight:800; color:#1e6b2b; margin-top:2px; }
 
   /* ---------- شريط أسعار اليوم ---------- */
   .today-bar{
@@ -485,6 +494,47 @@
   }
   html.dark .today-bar .inner{ color:var(--gold-light); }
   html.dark .today-bar .inner .sub{ color:#9a9a90; }
+
+  /* ---------- بوابة الإشعارات ---------- */
+  #notifGate{
+    position:fixed; inset:0; z-index:300; display:none;
+    align-items:center; justify-content:center; padding:20px;
+    background:rgba(21,49,34,.94); backdrop-filter:blur(4px);
+  }
+  #notifGate.show{ display:flex; }
+  .ng-box{
+    background:var(--paper); border-radius:22px; padding:30px 24px;
+    max-width:400px; width:100%; text-align:center;
+    box-shadow:0 24px 60px rgba(0,0,0,.45);
+  }
+  .ng-ic{ font-size:3rem; margin-bottom:10px; }
+  .ng-box h3{ color:var(--forest); font-size:1.25rem; margin-bottom:10px; }
+  html.dark .ng-box h3{ color:var(--gold-light); }
+  .ng-box p{ font-size:.86rem; color:#8a8a7c; line-height:1.9; margin-bottom:20px; }
+  #ngEnable{
+    width:100%; background:var(--leaf); color:#fff; border:none; padding:15px;
+    border-radius:14px; font-family:inherit; font-weight:800; font-size:1rem; cursor:pointer;
+  }
+  #ngEnable:disabled{ background:#ccc; cursor:not-allowed; }
+  .ng-err{
+    display:none; color:var(--pomegranate); font-size:.82rem;
+    font-weight:800; margin-top:12px; line-height:1.7;
+  }
+  .ng-err.show{ display:block; }
+  .ng-help{
+    display:none; margin-top:14px; background:var(--card-bg);
+    border:1px dashed var(--card-border); border-radius:12px; padding:12px;
+    font-size:.78rem; color:#8a8a7c; line-height:2; text-align:right;
+  }
+  .ng-help.show{ display:block; }
+  .ng-help b{ color:var(--forest); }
+  html.dark .ng-help b{ color:var(--gold-light); }
+  #ngSkip{
+    display:none; width:100%; background:none; border:none; margin-top:14px;
+    color:#8a8a7c; font-family:inherit; font-size:.8rem; font-weight:700;
+    cursor:pointer; text-decoration:underline;
+  }
+  #ngSkip.show{ display:block; }
 
   /* ---------- شريط تقييمات الزبائن ---------- */
   #reviewStrip{ display:none; max-width:1080px; margin:14px auto 0; padding:0 16px; }
@@ -813,10 +863,10 @@
   // إذن المتصفح إلا مرة وحدة إذا الزبون ما رفض قبل
   window.silentlyEnableCustomerNotifications = async function(phone){
     try{
-      if(!("Notification" in window)) return;
-      if(Notification.permission === "denied") return; // رفض قبل، ما نزعجه مرة ثانية
+      if(!("Notification" in window)) return false;
+      if(Notification.permission === "denied") return false; // رفض قبل، ما نزعجه مرة ثانية
       const permission = await Notification.requestPermission();
-      if(permission !== "granted") return;
+      if(permission !== "granted") return false;
       const registration = await navigator.serviceWorker.register("firebase-messaging-sw.js");
       const tk = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxs_MKe9t1O6ghLWA5G44OrB69A23m1RayxrfZ0HpblHHG2NRxRRkpljbHWTfYPWAHp/exec";
@@ -824,7 +874,8 @@
         method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ action: "registerCustomerDeviceToken", phone, token: tk })
       }).catch(()=>{});
-    }catch(err){ /* أي فشل صامت، ما يأثر على تجربة الزبون */ }
+      return true;
+    }catch(err){ return false; /* أي فشل صامت، ما يأثر على تجربة الزبون */ }
   };
 </script>
 </head>
@@ -1037,6 +1088,26 @@
     <button class="go-btn" id="openCheckout" disabled>🧺 إتمام الطلب</button>
   </div>
 
+  <!-- ========= بوابة الإشعارات (تشتغل لو requireNotifications = true) ========= -->
+  <div id="notifGate">
+    <div class="ng-box">
+      <div class="ng-ic">🔔</div>
+      <h3>فعّل الإشعارات حتى تدخل</h3>
+      <p id="ngWhy">
+        نستعملها نخبرك بحالة طلبك، وبالعروض والأسعار الجديدة أول بأول.
+        بدونها ما نكدر نوصلك أي خبر.
+      </p>
+      <button id="ngEnable">🔔 فعّل الإشعارات وادخل</button>
+      <div class="ng-err" id="ngErr"></div>
+      <div class="ng-help" id="ngHelp">
+        <b>متصفحك حاظر الإشعارات.</b> حتى ترجّعها:
+        اضغط على 🔒 أو ⓘ جنب عنوان الموقع بالأعلى ← <b>إعدادات الموقع</b>
+        ← <b>الإشعارات</b> ← اختار <b>سماح</b>، وبعدين حدّث الصفحة.
+      </div>
+      <button id="ngSkip">ادخل بدون إشعارات</button>
+    </div>
+  </div>
+
   <!-- ================= OVERLAY ================= -->
   <div class="overlay" id="overlay"></div>
 
@@ -1200,13 +1271,15 @@
     firstOrderFreeDelivery: true, // شعار "التوصيل الأول مجاني" — يُلغى تلقائياً لأي زبون موجود بالسستم
     manualClosed: false,        // إغلاق يدوي (عطلة/طارئ) يتجاوز أوقات العمل
     closedMessage: "",          // نص يظهر وقت الإغلاق اليدوي
+    roundTo: 250,               // تقريب الفلوس لأقرب مضاعف (أصغر ورقة بالعراق 250) — 0 يعطّله
+    requireNotifications: false,// true = ما يدخل التطبيق إلا بعد ما يفعّل الإشعارات
     promoText: "🚴 التوصيل الأول مجاني لكل زبون جديد!",
     announcement: ""            // إعلان يظهر بأعلى الصفحة (فاضي = مخفي)
   };
 
   // ---------- تحميل الإعدادات من settings.json ----------
-  const SETTINGS_NUMBERS = ["deliveryFee","freeDeliveryOver","minOrderTotal","openHour","closeHour","quarterKgOverPrice","pointsPerOrder"];
-  const SETTINGS_BOOLS   = ["firstOrderFreeDelivery","manualClosed"];
+  const SETTINGS_NUMBERS = ["deliveryFee","freeDeliveryOver","minOrderTotal","openHour","closeHour","quarterKgOverPrice","pointsPerOrder","roundTo"];
+  const SETTINGS_BOOLS   = ["firstOrderFreeDelivery","manualClosed","requireNotifications"];
   const SETTINGS_TEXTS   = ["closedMessage","promoText","announcement"];
 
   const SETTINGS_CACHE_KEY = "janat-settings-cache";
@@ -1244,6 +1317,8 @@
       applySettingsToUI();
       updateStoreStatus();
       updateCartUI();
+      // الإعدادات هي اللي تقرر إذا البوابة تشتغل — فننادي بعد ما توصل
+      if(typeof maybeShowNotifGate === "function") maybeShowNotifGate();
     }catch(e){
       console.warn("تعذّر تحديث settings.json — نكمل بآخر إعدادات معروفة.", e);
     }
@@ -1453,6 +1528,8 @@
 
   function qtyStep(p){
     if(!hasPrice(p)) return 1;
+    // عرض الحزمة (3 بـ 2000) ما يشتغل بكسور — نخلي الخطوة وحدة كاملة
+    if(bundleOf(p)) return 1;
     if(p.step) return p.step;                       // ممكن تحدد step لأي منتج بـ products.json
     if((p.unit || "كغم") !== "كغم") return 1;
     return Number(p.price) >= STORE.quarterKgOverPrice ? 0.25 : 0.5;
@@ -1579,11 +1656,20 @@
       // المبلغ المتوفّر بجنب النسبة — "توفّر 500 د.ع" أوقع من "خصم 33%"
       saveLine = `<div class="save-line">توفّر ${money(p.oldPrice - p.price)}</div>`;
     }
+    // عرض حزمة: "3 بـ 2,000 د.ع" — يبيّن بمكان بارز فوق الصورة
+    const bundle = ready ? bundleOf(p) : null;
+    const bundleBadge = bundle
+      ? `<span class="bundle-badge">${bundle.qty} بـ ${money(bundle.price)}</span>` : "";
+    if(bundle){
+      const per = bundle.price / bundle.qty;
+      saveLine = `<div class="save-line bundle">🎁 ${bundle.qty} ${unit} بـ ${money(bundle.price)}
+        <small>(${money(per)} للـ${unit})</small></div>`;
+    }
     const cardClass = isOffer ? "offer-card" : (isFruit ? "fruit-card" : "");
     const step = qtyStep(p);
     return `
     <div class="card ${cardClass} ${qty>0?'has-qty':''}" data-id="${p.id}">
-      <div class="img-wrap">${ribbon}${discountBadge}${imgHtml}</div>
+      <div class="img-wrap">${ribbon}${discountBadge}${bundleBadge}${imgHtml}</div>
       <div class="body">
         <h3>${p.name}</h3>
         <div class="price">${priceHtml}</div>
@@ -1668,9 +1754,58 @@
       if(!p){ broken.push(`${id}: منتج مفقود`); return; }
       if(!hasPrice(p)){ broken.push(`${p.name||id}: سعره ما وصل`); return; }
       if(!Number.isFinite(qty) || qty <= 0){ broken.push(`${p.name||id}: كمية غلط`); return; }
-      sum += Number(p.price) * qty;
+      sum += lineTotal(p, qty);
     });
     return { subtotal: Math.round(sum), broken };
+  }
+
+  /**
+   * تقريب المبلغ لأقرب مضاعف قابل للدفع.
+   * أصغر ورقة بالعراق 250 دينار — بدون التقريب يطلع مجموع مثل 1,375
+   * ومحد يكدر يدفعه ولا يرجّع باقيه.
+   * ⚠️ نفس المنطق موجود بـ apps-script.gs — إذا غيّرته بمكان، غيّره بالثنين.
+   */
+  function roundMoney(n){
+    const step = Number(STORE.roundTo) || 0;
+    const v = Number(n) || 0;
+    if(step < 1) return Math.round(v);
+    return Math.round(v / step) * step;
+  }
+
+  function bundleOf(p){
+    const b = p && p.bundle;
+    if(!b) return null;
+    const qty = Math.floor(Number(b.qty) || 0);
+    const price = Number(b.price) || 0;
+    return (qty >= 2 && price > 0) ? { qty, price } : null;
+  }
+
+  /**
+   * سعر سطر واحد بالسلة، بعد عرض الحزمة والتقريب.
+   * عرض "3 بـ 2000": كل 3 وحدات بـ 2000، والباقي بسعر الوحدة.
+   * مثال بسعر وحدة 800 وعرض 3 بـ 2000:
+   *   4 كغم = 2000 + 800 = 2,800  (بدل 3,200)
+   */
+  function lineTotal(p, qty){
+    const unit = Number(p.price) || 0;
+    const b = bundleOf(p);
+    let raw;
+    if(b){
+      const packs = Math.floor(qty / b.qty);
+      raw = packs * b.price + (qty - packs * b.qty) * unit;
+    }else{
+      raw = unit * qty;
+    }
+    return roundMoney(raw);
+  }
+
+  /** سطر "وفّرت X" داخل السلة — يطلع بس إذا عرض الحزمة اشتغل فعلاً */
+  function bundleSaving(p, qty){
+    const b = bundleOf(p);
+    if(!b || qty < b.qty) return "";
+    const saved = roundMoney(Number(p.price) * qty) - lineTotal(p, qty);
+    if(saved <= 0) return "";
+    return `<div class="cl-save">🎁 وفّرت ${money(saved)} بعرض ${b.qty} بـ ${money(b.price)}</div>`;
   }
 
   let currentPointsBalance = 0;
@@ -1803,7 +1938,8 @@
           ${thumb}
           <div class="info">
             <div class="n">${p.name}</div>
-            <div class="p">${money(p.price)} × ${fmtQty(qty)} ${unit} = ${money(p.price*qty)}</div>
+            <div class="p">${money(p.price)} × ${fmtQty(qty)} ${unit} = ${money(lineTotal(p, qty))}</div>
+            ${bundleSaving(p, qty)}
           </div>
           <div class="qty-row">
             <button class="d-minus" data-id="${id}">−</button>
@@ -2614,6 +2750,93 @@
 
   refreshRateToggle();
 
+  // ================= بوابة الإشعارات =================
+  // تشتغل بس إذا requireNotifications = true بـ settings.json.
+  // ملاحظة مهمة: ما بيه أي متصفح يخلّي الموقع "يجبر" الزبون يوافق —
+  // إذا ضغط "حظر" مرة وحدة، المتصفح يقفلها ولا يسأله مرة ثانية أبداً.
+  // فبدل ما نترك الزبون محبوس بشاشة ما تنفتح، نشرحله شلون يفكّ الحظر
+  // ونخلي مخرج — زبون محبوس = زبون ضايع للأبد.
+  const NG_SKIP_KEY = "janat-notif-skipped";
+
+  function notifGateEls(){
+    return {
+      gate:   document.getElementById("notifGate"),
+      enable: document.getElementById("ngEnable"),
+      skip:   document.getElementById("ngSkip"),
+      err:    document.getElementById("ngErr"),
+      help:   document.getElementById("ngHelp"),
+      why:    document.getElementById("ngWhy")
+    };
+  }
+
+  function closeNotifGate(){
+    const el = notifGateEls();
+    if(el.gate) el.gate.classList.remove("show");
+    document.body.style.overflow = "";
+  }
+
+  function showBlockedHelp(){
+    const el = notifGateEls();
+    el.err.textContent = "⚠️ متصفحك حاظر الإشعارات — ما نكدر نطلبها من جديد";
+    el.err.classList.add("show");
+    el.help.classList.add("show");
+    el.skip.classList.add("show");     // مخرج، حتى ما يبقى محبوس
+    el.enable.disabled = true;
+    el.enable.textContent = "الإشعارات محظورة بالمتصفح";
+  }
+
+  function maybeShowNotifGate(){
+    if(!STORE.requireNotifications) return;
+    // متصفح ما يدعم الإشعارات (سفاري بالآيفون قبل التثبيت) — ما نحبسه
+    if(!("Notification" in window)) return;
+    if(Notification.permission === "granted") return;
+    // اختار "ادخل بدون إشعارات" قبل — ما نرجّع نحبسه كل مرة
+    try{ if(localStorage.getItem(NG_SKIP_KEY) === "1") return; }catch(e){}
+
+    const el = notifGateEls();
+    if(!el.gate || el.gate.classList.contains("show")) return;
+    el.gate.classList.add("show");
+    document.body.style.overflow = "hidden";
+    if(Notification.permission === "denied") showBlockedHelp();
+  }
+
+  (function initNotifGate(){
+    const el = notifGateEls();
+    if(!el.gate) return;
+
+    el.enable.addEventListener("click", async ()=>{
+      el.enable.disabled = true;
+      el.enable.textContent = "⏳ جاري التفعيل...";
+      el.err.classList.remove("show");
+
+      let phone = "";
+      try{ phone = localStorage.getItem("janat-my-phone") || ""; }catch(e){}
+      const ok = window.silentlyEnableCustomerNotifications
+        ? await window.silentlyEnableCustomerNotifications(phone)
+        : false;
+
+      if(ok){
+        closeNotifGate();
+        return;
+      }
+      if(Notification.permission === "denied"){
+        showBlockedHelp();
+        return;
+      }
+      // ضغط "لاحقاً" بنافذة المتصفح، أو فشل التسجيل — نخليه يعيد المحاولة
+      el.err.textContent = "⚠️ ما انفعّلت — جرّب مرة ثانية واختار «سماح»";
+      el.err.classList.add("show");
+      el.enable.disabled = false;
+      el.enable.textContent = "🔔 حاول مرة ثانية";
+      el.skip.classList.add("show");
+    });
+
+    el.skip.addEventListener("click", ()=>{
+      try{ localStorage.setItem(NG_SKIP_KEY, "1"); }catch(e){}
+      closeNotifGate();
+    });
+  })();
+
   // ---------- (٣) شريط التقييمات بالصفحة الرئيسية ----------
   // اسم أول + نجوم بس. الملاحظة والرقم ما يطلعون منه أبداً.
   function escHtml(v){
@@ -2776,6 +2999,7 @@
     // 1) نعرض الصفحة فوراً من آخر نسخة محفوظة بالجهاز
     applyCachedSettings();
     applySettingsToUI();
+    maybeShowNotifGate();   // من الكاش — ما ننتظر الشبكة حتى تطلع البوابة
     if(!loadCachedProducts()) products = fallbackProducts;
     restoreCart();          // ترجع سلة الزبون لو سكّر التطبيق قبل ما يكمّل
     renderGrids();
