@@ -8,7 +8,11 @@
     "image": "images/tomato-1785117823924.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 0
+    "order": 0,
+    "bundle": {
+      "qty": 3,
+      "price": 2000
+    }
   },
   {
     "id": "cucumber",
@@ -21,7 +25,11 @@
     "onSale": false,
     "visible": true,
     "order": 1,
-    "oldPrice": 0
+    "oldPrice": 0,
+    "bundle": {
+      "qty": 3,
+      "price": 2000
+    }
   },
   {
     "id": "potato",
@@ -43,7 +51,11 @@
     "image": "images/eggplant-1785117873353.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 3
+    "order": 3,
+    "bundle": {
+      "qty": 3,
+      "price": 2000
+    }
   },
   {
     "id": "zucchini",
