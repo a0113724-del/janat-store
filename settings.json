@@ -8,6 +8,8 @@
   "manualClosed": false,
   "closedMessage": "مغلق للصيانه",
   "pointsPerOrder": 2,
+  "roundTo": 250,
+  "requireNotifications": false,
   "promoText": "🚴 التوصيل الأول مجاني لكل زبون جديد!",
   "announcement": ""
 }

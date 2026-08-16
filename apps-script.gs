@@ -92,8 +92,36 @@ const DEFAULT_SETTINGS = {
   deliveryFee: 1000,
   freeDeliveryOver: 0,        // 0 = معطّل
   minOrderTotal: 0,
-  firstOrderFreeDelivery: true
+  firstOrderFreeDelivery: true,
+  // تقريب الفلوس لأقرب مضاعف — 250 لأن أصغر ورقة بالعراق 250 دينار.
+  // لازم يطابق نفس الرقم بـ index.html وإلا كل طلب ينتفلگ بعلامة حمراء.
+  roundTo: 250
 };
+
+/** يقرّب المبلغ لأقرب مضاعف قابل للدفع (250 افتراضياً) */
+function roundMoneyTo(n, step) {
+  const v = Number(n) || 0;
+  const s = Number(step) || 0;
+  if (s < 1) return Math.round(v);
+  return Math.round(v / s) * s;
+}
+
+/**
+ * سعر سطر واحد: يطبّق عرض الحزمة (مثلاً 3 بـ 2000) على الكمية الكاملة،
+ * والباقي بسعر الوحدة العادي. نفس المنطق حرفياً بـ index.html.
+ */
+function lineTotalFor(p, qty) {
+  const unit = Number(p.price) || 0;
+  const b = p.bundle;
+  const bq = b ? Math.floor(Number(b.qty) || 0) : 0;
+  const bp = b ? Number(b.price) || 0 : 0;
+  if (bq >= 2 && bp > 0) {
+    const packs = Math.floor(qty / bq);
+    const rest = qty - packs * bq;
+    return packs * bp + rest * unit;
+  }
+  return unit * qty;
+}
 
 function getStoreSettings() {
   const cache = CacheService.getScriptCache();
@@ -122,7 +150,7 @@ function getProductPrices() {
   const cache = CacheService.getScriptCache();
   const props = PropertiesService.getScriptProperties();
 
-  const cached = cache.get("product-prices");
+  const cached = cache.get("product-prices-v2");
   if (cached) {
     try { return { map: JSON.parse(cached), stale: false, reason: "" }; } catch (e) { }
   }
@@ -141,15 +169,24 @@ function getProductPrices() {
         const map = {};
         arr.forEach(function (p) {
           if (p && p.id) {
-            map[String(p.id)] = {
+            const entry = {
               price: Number(p.price) || 0,
               name: String(p.name || ""),
               unit: String(p.unit || "كغم")
             };
+            // عرض حزمة: 3 بـ 2000 — لازم يوصل للسيرفر وإلا حسابه يختلف
+            // عن حساب الصفحة وكل طلب ينتفلگ
+            if (p.bundle && Number(p.bundle.qty) >= 2 && Number(p.bundle.price) > 0) {
+              entry.bundle = {
+                qty: Math.floor(Number(p.bundle.qty)),
+                price: Number(p.bundle.price)
+              };
+            }
+            map[String(p.id)] = entry;
           }
         });
         const json = JSON.stringify(map);
-        try { cache.put("product-prices", json, 300); } catch (e) { }
+        try { cache.put("product-prices-v2", json, 300); } catch (e) { }
         // نسخة احتياطية دائمة — تنقذنا لو فشل الجلب مرة جاية
         try { props.setProperty("prices-backup", json); } catch (e) { }
         try { props.deleteProperty("prices-last-error"); } catch (e) { }
@@ -191,6 +228,7 @@ function computeSubtotalFromLines(lines) {
              issues: ["تعذّر جلب قائمة الأسعار" + (pr && pr.reason ? ": " + pr.reason : "")] };
   }
   const prices = pr.map;
+  const step = Number(getStoreSettings().roundTo) || 0;
   let sum = 0;
   const issues = [];
   lines.forEach(function (l) {
@@ -199,7 +237,9 @@ function computeSubtotalFromLines(lines) {
     const p = prices[id];
     if (!p) { issues.push("منتج غير معروف: " + id); return; }
     if (!(qty > 0) || qty > 500) { issues.push("كمية غير منطقية لـ " + id + ": " + qty); return; }
-    sum += p.price * qty;
+    // نقرّب كل سطر لحاله — هيك مجموع السطور المعروضة للزبون يطابق
+    // المجموع بالضبط، وما يبقى فرق يخلّي الطلب ينتفلگ
+    sum += roundMoneyTo(lineTotalFor(p, qty), step);
   });
   return {
     ok: issues.length === 0,
@@ -1230,7 +1270,7 @@ function doPost(e) {
         // جلب ثاني للأسعار مكلف (رحلة شبكة كاملة). ما نسويه إلا لو
         // الفرق راح يطلّع تنبيه فعلاً — يعني الزبون أرسل أقل من حسابنا.
         if (calc.ok && !calc.stale && clientSubtotal > 0 && clientSubtotal < calc.subtotal - 1) {
-          CacheService.getScriptCache().remove("product-prices");
+          CacheService.getScriptCache().remove("product-prices-v2");
           const fresh = computeSubtotalFromLines(data.lines);
           if (fresh.ok) calc = fresh;
         }

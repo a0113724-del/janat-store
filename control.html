@@ -151,10 +151,15 @@
   .fields .fld{ display:flex; flex-direction:column; gap:3px; flex:1; min-width:64px; }
   .fields .fld .lbl{ font-size:.62rem; color:#888; font-weight:700; }
   .fields .fld input{ width:100%; }
-  .sale-warn{ font-size:.7rem; line-height:1.6; color:var(--pomegranate); }
-  .sale-warn:empty{ display:none; }
-  .sale-warn .ok{ color:var(--leaf); }
+  .sale-warn, .bundle-warn{ font-size:.7rem; line-height:1.6; color:var(--pomegranate); }
+  .sale-warn:empty, .bundle-warn:empty{ display:none; }
+  .sale-warn .ok, .bundle-warn .ok{ color:var(--leaf); }
   .sale-warn s{ opacity:.7; }
+  .round-hint{ color:#8a6a10; background:#FFF3D6; border-radius:8px; padding:5px 9px; margin-top:4px; }
+  .round-hint b{ color:#6a5210; }
+  .bundle-fields{ display:inline-flex; align-items:center; gap:5px; }
+  .bundle-fields input{ width:64px; }
+  .bundle-fields .bx{ font-size:.72rem; color:#888; }
   .row-actions{ display:flex; flex-direction:column; gap:6px; flex:0 0 auto; }
   .row-actions button{ width:30px; height:30px; border-radius:8px; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:.85rem; }
   .row-actions .del{ color:var(--pomegranate); border-color:rgba(161,58,46,.3); }
@@ -794,21 +799,62 @@
 
   // يكشف الخطأ الشائع: الأدمن يأشّر "عرض خاص" ويكتب سعر العرض بحقل
   // "قبل العرض" ويخلي "السعر" فاضي — فالمنتج ما يعرض سعر أبداً للزبون.
+  // أصغر ورقة بالعراق 250، فالمتجر يقرّب كل سطر لأقرب 250. سعر مو من
+  // مضاعفات 250 معناه كل كيلو كامل ينقرّب — ربح أو خسارة صامتة كل طلب.
+  const ROUND_TO = 250;
+  function roundHint(p){
+    const price = Number(p.price) || 0;
+    if(!(price > 0) || ROUND_TO < 1 || price % ROUND_TO === 0) return "";
+    const down = Math.floor(price / ROUND_TO) * ROUND_TO;
+    const up   = down + ROUND_TO;
+    const paid = Math.round(price / ROUND_TO) * ROUND_TO;
+    const diff = paid - price;
+    return `<div class="round-hint">💡 سعر <b>${price}</b> مو من مضاعفات ${ROUND_TO} —
+      الكيلو الكامل راح ينحسب <b>${paid}</b> (${diff > 0 ? "+" : ""}${diff} د.ع).
+      خلّيه <b>${down}</b> أو <b>${up}</b> ويطلع الحساب مضبوط.</div>`;
+  }
+
   function saleWarning(p){
     const price = Number(p.price) || 0;
     const old   = Number(p.oldPrice) || 0;
     if(!(price > 0)) return `<b>⚠️ ما فيه سعر</b> — المنتج ما راح يظهر له سعر عند الزبون. اكتب السعر بأول حقل.`;
-    if(!p.onSale) return "";
-    if(!(old > 0)) return `⚠️ اكتب <b>السعر قبل العرض</b> حتى يبان الخصم للزبون`;
-    if(old <= price) return `⚠️ <b>الأرقام مقلوبة</b> — "قبل العرض" (${old}) لازم يكون <b>أكبر</b> من سعر العرض (${price})`;
+    const hint = roundHint(p);
+    if(!p.onSale) return hint;
+    if(!(old > 0)) return `⚠️ اكتب <b>السعر قبل العرض</b> حتى يبان الخصم للزبون` + hint;
+    if(old <= price) return `⚠️ <b>الأرقام مقلوبة</b> — "قبل العرض" (${old}) لازم يكون <b>أكبر</b> من سعر العرض (${price})` + hint;
     const pct = Math.round((1 - price/old) * 100);
-    return `<span class="ok">✅ الزبون يشوف: <s>${old}</s> ${price} د.ع — خصم ${pct}%</span>`;
+    return `<span class="ok">✅ الزبون يشوف: <s>${old}</s> ${price} د.ع — خصم ${pct}%</span>` + hint;
   }
 
   function refreshSaleWarning(id){
     const p = findProduct(id);
     const box = document.querySelector(`[data-warn="${id}"]`);
     if(p && box) box.innerHTML = saleWarning(p);
+  }
+
+  // عرض الكمية: يبيّن للأدمن شنو راح يشوف الزبون بالضبط، ويمنع
+  // العروض اللي أغلى من السعر العادي (تصير مسخرة عند الزبون)
+  function bundleWarning(p){
+    if(!p.bundle) return "";
+    const qty   = Math.floor(Number(p.bundle.qty) || 0);
+    const price = Number(p.bundle.price) || 0;
+    const unit  = Number(p.price) || 0;
+    if(qty < 2)  return `⚠️ الكمية لازم تكون <b>2 فأكثر</b>`;
+    if(!(price > 0)) return `⚠️ اكتب سعر العرض`;
+    const normal = unit * qty;
+    if(unit > 0 && price >= normal){
+      return `⚠️ <b>هذا مو عرض</b> — ${qty} بالسعر العادي = ${normal} د.ع، وانته كاتب ${price}. نزّل السعر.`;
+    }
+    const per = Math.round(price / qty);
+    const saved = normal - price;
+    return `<span class="ok">✅ الزبون يشوف: ${qty} ${p.unit||"كغم"} بـ ${price} د.ع` +
+      (unit > 0 ? ` (${per} للوحدة · يوفّر ${saved} د.ع)` : "") + `</span>`;
+  }
+
+  function refreshBundleWarning(id){
+    const p = findProduct(id);
+    const box = document.querySelector(`[data-bwarn="${id}"]`);
+    if(p && box) box.innerHTML = bundleWarning(p);
   }
 
   function productRow(p){
@@ -845,6 +891,18 @@
             السعر قبل العرض: <input type="number" class="f-oldprice" data-id="${p.id}" value="${p.oldPrice||''}">
           </span>
         </div>
+        <div class="toggle-row bundle-row">
+          <label><input type="checkbox" class="f-hasbundle" data-id="${p.id}" ${p.bundle?'checked':''}> عرض كمية (٣ بـ ٢٠٠٠)</label>
+          <span class="bundle-fields" style="${p.bundle?'':'display:none'}" data-bundle-wrap="${p.id}">
+            <input type="number" class="f-bqty" data-id="${p.id}" min="2" step="1"
+              value="${(p.bundle&&p.bundle.qty)||''}" placeholder="الكمية">
+            <span class="bx">بـ</span>
+            <input type="number" class="f-bprice" data-id="${p.id}" min="1" step="250"
+              value="${(p.bundle&&p.bundle.price)||''}" placeholder="السعر">
+            <span class="bx">دينار</span>
+          </span>
+        </div>
+        <div class="bundle-warn" data-bwarn="${p.id}">${bundleWarning(p)}</div>
         <div class="sale-warn" data-warn="${p.id}">${saleWarning(p)}</div>
       </div>
       <div class="row-actions">
@@ -875,8 +933,20 @@
     if(e.target.classList.contains("f-unit")) p.unit = e.target.value;
     if(e.target.classList.contains("f-desc")) p.description = e.target.value;
     if(e.target.classList.contains("f-oldprice")) p.oldPrice = Number(e.target.value)||0;
+    if(e.target.classList.contains("f-bqty")){
+      p.bundle = p.bundle || {};
+      p.bundle.qty = Math.floor(Number(e.target.value)) || 0;
+    }
+    if(e.target.classList.contains("f-bprice")){
+      p.bundle = p.bundle || {};
+      p.bundle.price = Number(e.target.value) || 0;
+    }
     if(e.target.classList.contains("f-price") || e.target.classList.contains("f-oldprice")){
       refreshSaleWarning(id);
+    }
+    if(e.target.classList.contains("f-price") || e.target.classList.contains("f-bqty")
+       || e.target.classList.contains("f-bprice")){
+      refreshBundleWarning(id);
     }
     markDirty();
   });
@@ -898,6 +968,17 @@
       const lbl = e.target.closest(".product-row")?.querySelector(".row2 .lbl");
       if(lbl) lbl.textContent = p.onSale ? "سعر العرض (اللي يدفعه)" : "السعر";
       refreshSaleWarning(id);
+      markDirty();
+    }
+    if(e.target.classList.contains("f-hasbundle")){
+      const wrap = document.querySelector(`[data-bundle-wrap="${id}"]`);
+      if(e.target.checked){
+        p.bundle = p.bundle || { qty: 3, price: 0 };
+      }else{
+        delete p.bundle;
+      }
+      if(wrap) wrap.style.display = e.target.checked ? "inline-flex" : "none";
+      refreshBundleWarning(id);
       markDirty();
     }
     if(e.target.classList.contains("img-input") && e.target.files[0]) uploadImage(id, e.target.files[0]);
@@ -979,6 +1060,15 @@
     const btn = document.getElementById("saveAllBtn");
     btn.disabled = true; setStatus("saving", "⏳ جاري الحفظ على الموقع...");
     try{
+      // ننظّف عروض الكمية الناقصة قبل الحفظ — عرض بلا سعر أو بكمية 1
+      // يوصل للمتجر ويخرب حساب السطر
+      products.forEach(p=>{
+        if(!p.bundle) return;
+        const q = Math.floor(Number(p.bundle.qty) || 0);
+        const pr = Number(p.bundle.price) || 0;
+        if(q >= 2 && pr > 0) p.bundle = { qty: q, price: pr };
+        else delete p.bundle;
+      });
       const content = JSON.stringify(products, null, 2);
       const base64 = btoa(unescape(encodeURIComponent(content)));
       const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${PRODUCTS_PATH}`, {
