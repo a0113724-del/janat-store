@@ -38,6 +38,11 @@ const CUSTOMERS_SHEET_NAME = "Customers";
 const POINTS_LOG_SHEET_NAME = "PointsLog";
 const REVIEWS_SHEET_NAME = "Reviews";
 
+// شريط التقييمات بالصفحة الرئيسية: أقل تقييم ينعرض، وكم واحد ينعرض.
+// خلّيها 1 إذا تريد تعرض كل التقييمات حتى الواطية.
+const PUBLIC_REVIEW_MIN_RATING = 4;
+const PUBLIC_REVIEW_LIMIT = 20;
+
 // سقف التعديل اليدوي على النقاط — يمنع غلطة كتابة (2000 بدل 20)
 // من تخريب رصيد زبون. إذا احتجت أكثر، عدّله من هنا.
 const MAX_MANUAL_POINTS = 1000;
@@ -1007,6 +1012,8 @@ function doPost(e) {
       reviewsSheet.appendRow([
         new Date(), rSeq, orderId, rName, rPhone, rating, note, source, visitorId
       ]);
+      // حتى التقييم الجديد يبين بشريط الصفحة الرئيسية بدون ما ينتظر الكاش
+      try { CacheService.getScriptCache().remove("public-reviews"); } catch (e) {}
 
       try {
         sendTelegram(
@@ -1472,6 +1479,41 @@ function doGet(e) {
   }
 
   // ═══ تقييمات الزبائن — لصاحب المحل بس ═══
+  // ═══ شريط التقييمات بالصفحة الرئيسية — مفتوح للكل ═══
+  // يرجّع الاسم الأول والنجوم بس. الملاحظة والرقم ما يطلعون أبداً.
+  if (e.parameter.publicReviews) {
+    const cache = CacheService.getScriptCache();
+    const cached = cache.get("public-reviews");
+    if (cached) return ContentService.createTextOutput(cached)
+      .setMimeType(ContentService.MimeType.JSON);
+
+    const pSheet = getReviewsSheet();
+    const pLast = pSheet.getLastRow();
+    let payload = { count: 0, avg: 0, items: [] };
+
+    if (pLast >= 2) {
+      const start = Math.max(2, pLast - 299);   // آخر 300 صف يكفون للشريط
+      const rows = pSheet.getRange(start, 1, pLast - start + 1, REVIEWS_NUM_COLS).getValues();
+      let sum = 0, n = 0;
+      const items = [];
+      for (let i = rows.length - 1; i >= 0; i--) {
+        const rt = Number(rows[i][5]) || 0;
+        if (rt < 1 || rt > 5) continue;
+        sum += rt; n++;
+        if (rt < PUBLIC_REVIEW_MIN_RATING) continue;   // الواطي ما ينعرض
+        if (items.length >= PUBLIC_REVIEW_LIMIT) continue;
+        // الاسم الأول بس — ما ننشر اسم كامل ولا رقم هاتف
+        const first = String(rows[i][3] || "").trim().split(/\s+/)[0] || "زبون";
+        items.push({ name: first.slice(0, 20), rating: rt });
+      }
+      payload = { count: n, avg: n ? Math.round((sum / n) * 10) / 10 : 0, items: items };
+    }
+
+    const out = JSON.stringify(payload);
+    cache.put("public-reviews", out, 300);         // 5 دقائق
+    return ContentService.createTextOutput(out).setMimeType(ContentService.MimeType.JSON);
+  }
+
   if (e.parameter.reviews) {
     if (!isAuthorized(adminKey)) return denied();
     const rSheet = getReviewsSheet();
