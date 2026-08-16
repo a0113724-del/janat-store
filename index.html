@@ -1636,8 +1636,11 @@
   // ---------- RENDER PRODUCT GRIDS ----------
   function productCard(p){
     const qty = cart[p.id] || 0;
+    // lazy = الصور اللي تحت الشاشة ما تنزّل إلا لمن يوصلها الزبون.
+    // width/height ثابتة تمنع القفزة اللي تصير لمن تحمّل الصورة.
     const imgHtml = p.image
-      ? `<img src="${p.image}" alt="${p.name}">`
+      ? `<img src="${p.image}" alt="${p.name}" width="360" height="360"
+             loading="lazy" decoding="async">`
       : `<span class="placeholder-emoji">${p.emoji||"🥬"}</span>`;
     const isFruit = p.cat === "fruit";
     const isOffer = !!p.onSale;
