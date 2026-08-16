@@ -24,6 +24,7 @@
     pointsPerOrder: 2,
     roundTo: 250,
     requireNotifications: false,
+    requireInstall: false,
     promoText: "🚴 التوصيل الأول مجاني لكل زبون جديد!",
     announcement: ""
   };
@@ -146,6 +147,12 @@
           <input type="checkbox" id="setRequireNotif">
           <span>ما يدخل التطبيق إلا بعد ما يفعّل الإشعارات</span>
         </label>
+        <label class="set-check">
+          <input type="checkbox" id="setRequireInstall">
+          <span>شاشة التثبيت تطلع لكل الزوار (مو للجاي من الباركود بس)</span>
+        </label>
+        <div class="sub">شاشة التثبيت تطلع دائماً للي يفتح الرابط من الباركود.
+          أشّر هنا إذا تريدها تطلع لكل واحد يفتح الموقع.</div>
         <div class="sub">تطلع للزبون شاشة تطلب منه يفعّل الإشعارات قبل ما يتصفّح.
           ⚠️ لو ضغط "حظر" بالمتصفح، ما نكدر نطلبها مرة ثانية — وقتها نشرحله
           شلون يفكّها ونخليه يدخل، حتى ما يضيع الزبون كلياً.</div>
@@ -237,6 +244,7 @@
     document.getElementById("setPoints").value = settings.pointsPerOrder;
     document.getElementById("setRoundTo").value = String(settings.roundTo ?? 250);
     document.getElementById("setRequireNotif").checked = !!settings.requireNotifications;
+    document.getElementById("setRequireInstall").checked = !!settings.requireInstall;
     document.getElementById("setFirstFree").checked = !!settings.firstOrderFreeDelivery;
     document.getElementById("setManualClosed").checked = !!settings.manualClosed;
     document.getElementById("setOpenHour").value = settings.openHour;
@@ -262,6 +270,7 @@
     settings.pointsPerOrder = num("setPoints");
     settings.roundTo = num("setRoundTo");
     settings.requireNotifications = document.getElementById("setRequireNotif").checked;
+    settings.requireInstall = document.getElementById("setRequireInstall").checked;
     settings.firstOrderFreeDelivery = document.getElementById("setFirstFree").checked;
     settings.manualClosed = document.getElementById("setManualClosed").checked;
     settings.openHour = num("setOpenHour");
