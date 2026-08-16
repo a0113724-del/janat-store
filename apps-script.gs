@@ -270,12 +270,18 @@ function getPointsLogSheet() {
 /**
  * تقييمات الزبائن — خاصة بصاحب المحل، ما تنعرض بالموقع لأي زبون.
  */
+const REVIEWS_NUM_COLS = 9;
+
 function getReviewsSheet() {
   const ss = ss_();
   let sheet = ss.getSheetByName(REVIEWS_SHEET_NAME);
   if (!sheet) sheet = ss.insertSheet(REVIEWS_SHEET_NAME);
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(["التاريخ", "رقم الطلب", "معرّف الطلب", "الاسم", "الهاتف", "التقييم", "الملاحظة"]);
+    sheet.appendRow(["التاريخ", "رقم الطلب", "معرّف الطلب", "الاسم", "الهاتف",
+                     "التقييم", "الملاحظة", "المصدر", "معرّف الزائر"]);
+  } else if (sheet.getLastColumn() < REVIEWS_NUM_COLS) {
+    // ترقية جدول قديم انعمل بنسخة سابقة (7 أعمدة) بدون ما نضيّع صفوفه
+    sheet.getRange(1, 8, 1, 2).setValues([["المصدر", "معرّف الزائر"]]);
   }
   forceTextColumn(sheet, 5);
   return sheet;
@@ -927,52 +933,88 @@ function doPost(e) {
     // مفتوح للزبائن — بس مربوط بمعرّف طلب حقيقي، وتقييم واحد لكل طلب.
     if (data.action === "submitReview") {
       const orderId = String(data.orderId || "").trim();
+      const visitorId = String(data.visitorId || "").trim();
       const rating = Math.round(Number(data.rating));
-      if (!orderId) return jsonOut({ status: "error", message: "الطلب غير محدد" });
       if (!isFinite(rating) || rating < 1 || rating > 5) {
         return jsonOut({ status: "error", message: "التقييم لازم يكون من 1 لـ 5" });
       }
 
-      const ordersSheet = getOrdersSheet();
-      const oLast = ordersSheet.getLastRow();
-      if (oLast < 2) return jsonOut({ status: "error", message: "الطلب غير موجود" });
-
-      // معرّف الطلب UUID — لازم يكون موجود فعلاً حتى ما ينكتب تقييم وهمي
-      const ids = ordersSheet.getRange(2, COL_ORDER_ID, oLast - 1, 1).getValues();
-      let orderRow = -1;
-      for (let i = 0; i < ids.length; i++) {
-        if (String(ids[i][0]) === orderId) { orderRow = i + 2; break; }
-      }
-      if (orderRow === -1) return jsonOut({ status: "error", message: "الطلب غير موجود" });
-
       const reviewsSheet = getReviewsSheet();
       const rLast = reviewsSheet.getLastRow();
-      if (rLast >= 2) {
-        const done = reviewsSheet.getRange(2, 3, rLast - 1, 1).getValues();
-        for (let i = 0; i < done.length; i++) {
-          if (String(done[i][0]) === orderId) {
-            return jsonOut({ status: "error", message: "هذا الطلب انقيّم قبل — شكراً!" });
-          }
-        }
-      }
-
-      // نأخذ الاسم والرقم من الجدول مو من المتصفح — الزبون ما يكدر ينتحل غيره
-      const orderData = ordersSheet.getRange(orderRow, 1, 1, ORDERS_NUM_COLS).getValues()[0];
-      const rName = String(orderData[COL_NAME - 1] || "");
-      const rPhone = normalizePhone(orderData[COL_PHONE - 1]);
-      const rSeq = orderData[COL_SEQ_NO - 1] || "";
       // تنظيف الملاحظة: بلا أحرف تحكّم، وبحد 500 حرف
       const note = String(data.note || "")
         .replace(/[\x00-\x1F\x7F]/g, " ").replace(/\s+/g, " ").trim().slice(0, 500);
 
-      reviewsSheet.appendRow([new Date(), rSeq, orderId, rName, rPhone, rating, note]);
+      let rName = "", rPhone = "", rSeq = "", source = "";
+
+      if (orderId) {
+        // ═══ تقييم مربوط بطلب ═══
+        const ordersSheet = getOrdersSheet();
+        const oLast = ordersSheet.getLastRow();
+        if (oLast < 2) return jsonOut({ status: "error", message: "الطلب غير موجود" });
+
+        // معرّف الطلب UUID — لازم يكون موجود فعلاً حتى ما ينكتب تقييم وهمي
+        const ids = ordersSheet.getRange(2, COL_ORDER_ID, oLast - 1, 1).getValues();
+        let orderRow = -1;
+        for (let i = 0; i < ids.length; i++) {
+          if (String(ids[i][0]) === orderId) { orderRow = i + 2; break; }
+        }
+        if (orderRow === -1) return jsonOut({ status: "error", message: "الطلب غير موجود" });
+
+        if (rLast >= 2) {
+          const done = reviewsSheet.getRange(2, 3, rLast - 1, 1).getValues();
+          for (let i = 0; i < done.length; i++) {
+            if (String(done[i][0]) === orderId) {
+              return jsonOut({ status: "error", reviewed: true, message: "هذا الطلب انقيّم قبل — شكراً!" });
+            }
+          }
+        }
+
+        // نأخذ الاسم والرقم من الجدول مو من المتصفح — الزبون ما ينتحل غيره
+        const orderData = ordersSheet.getRange(orderRow, 1, 1, ORDERS_NUM_COLS).getValues()[0];
+        rName = String(orderData[COL_NAME - 1] || "");
+        rPhone = normalizePhone(orderData[COL_PHONE - 1]);
+        rSeq = orderData[COL_SEQ_NO - 1] || "";
+        source = "طلب";
+
+      } else {
+        // ═══ تقييم عام (من أيقونة التقييم، بلا طلب) ═══
+        if (!visitorId) return jsonOut({ status: "error", message: "تعذّر تمييز جهازك" });
+
+        // تقييم عام واحد لكل جهاز كل 24 ساعة — يمنع التكرار والعبث
+        if (rLast >= 2) {
+          const start = Math.max(2, rLast - 299);   // آخر 300 صف يكفون
+          const recent = reviewsSheet.getRange(start, 1, rLast - start + 1, REVIEWS_NUM_COLS).getValues();
+          const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+          for (let i = 0; i < recent.length; i++) {
+            if (String(recent[i][8] || "") !== visitorId) continue;
+            const when = recent[i][0];
+            if (when && new Date(when).getTime() > dayAgo) {
+              return jsonOut({
+                status: "error", tooSoon: true,
+                message: "دزيت تقييم اليوم — تكدر تدز واحد جديد باچر 🌿"
+              });
+            }
+          }
+        }
+
+        rName = String(data.name || "").replace(/[\x00-\x1F\x7F]/g, " ").trim().slice(0, 60);
+        rPhone = normalizePhone(data.phone);
+        if (rPhone && !isValidPhone(rPhone)) rPhone = "";
+        source = "عام";
+      }
+
+      reviewsSheet.appendRow([
+        new Date(), rSeq, orderId, rName, rPhone, rating, note, source, visitorId
+      ]);
 
       try {
         sendTelegram(
           "⭐ <b>تقييم جديد</b> — " + "★".repeat(rating) + "☆".repeat(5 - rating) +
           " (" + rating + "/5)\n" +
-          "الطلب: #" + tgEsc(rSeq) + "\n" +
-          "الزبون: " + tgEsc(rName) + " — " + tgEsc(rPhone) +
+          (rSeq ? "الطلب: #" + tgEsc(rSeq) + "\n" : "من أيقونة التقييم (بلا طلب)\n") +
+          "الزبون: " + tgEsc(rName || "بدون اسم") +
+          (rPhone ? " — " + tgEsc(rPhone) : "") +
           (note ? "\n💬 " + tgEsc(note) : "")
         );
       } catch (e) { /* فشل تلغرام ما يضيّع التقييم */ }
@@ -1436,7 +1478,7 @@ function doGet(e) {
     const rLast = rSheet.getLastRow();
     if (rLast < 2) return jsonOut({ count: 0, avg: 0, dist: [0, 0, 0, 0, 0], items: [] });
 
-    const all = rSheet.getRange(2, 1, rLast - 1, 7).getValues();
+    const all = rSheet.getRange(2, 1, rLast - 1, REVIEWS_NUM_COLS).getValues();
     const dist = [0, 0, 0, 0, 0];
     let sum = 0;
     for (let i = 0; i < all.length; i++) {
@@ -1449,7 +1491,8 @@ function doGet(e) {
       items.push({
         date: all[i][0], seqNo: all[i][1], orderId: all[i][2],
         name: all[i][3], phone: all[i][4],
-        rating: Number(all[i][5]) || 0, note: all[i][6]
+        rating: Number(all[i][5]) || 0, note: all[i][6],
+        source: all[i][7] || (all[i][2] ? "طلب" : "عام")
       });
     }
     return jsonOut({
