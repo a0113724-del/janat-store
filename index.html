@@ -628,6 +628,30 @@
     animation:ios-pulse 1.5s ease-in-out infinite;
   }
 
+  /* السهم اللي يأشّر على زر المشاركة الحقيقي بشريط سفاري */
+  #iosPointer{
+    position:fixed; z-index:330; left:0; right:0; bottom:6px;
+    display:none; flex-direction:column; align-items:center; gap:2px;
+    pointer-events:none;
+  }
+  #iosPointer.show{ display:flex; }
+  #iosPointer .ip-txt{
+    background:var(--gold); color:#153122; font-weight:900; font-size:.8rem;
+    padding:6px 15px; border-radius:100px; box-shadow:0 6px 18px rgba(0,0,0,.45);
+    white-space:nowrap;
+  }
+  #iosPointer .ip-arrow{
+    font-size:2rem; line-height:1; color:var(--gold);
+    text-shadow:0 3px 10px rgba(0,0,0,.5);
+    animation:ip-jump 1.1s ease-in-out infinite;
+  }
+  @keyframes ip-jump{
+    0%,100%{ transform:translateY(0); opacity:.75; }
+    50%{ transform:translateY(9px); opacity:1; }
+  }
+  /* بالخطوة الأولى نرفع صندوق الشرح لفوق حتى ما يغطي السهم */
+  #installGate.ios-step1 .ig-box{ margin-bottom:78px; }
+
   .ios-nav{ display:flex; gap:9px; margin-top:18px; }
   .ios-nav button{
     flex:1; border:none; border-radius:13px; padding:14px;
@@ -1299,7 +1323,6 @@
             </div>
           </div>
           <div class="ios-txt">تلگاه <b>بالأسفل بالنص</b> — شكله مربع وطالع منه سهم ⬆</div>
-          <div class="ios-live">⬇️ هو بالضبط تحت هذي الشاشة</div>
         </div>
 
         <!-- خطوة ٢: إضافة إلى الشاشة الرئيسية -->
@@ -1356,6 +1379,13 @@
 
       <button id="igSkip">تصفّح بدون تثبيت</button>
     </div>
+  </div>
+
+  <!-- مؤشّر يأشّر على زر المشاركة الحقيقي بأسفل سفاري (خطوة ١ بالآيفون).
+       أسفل صفحتنا يقع فوق شريط سفاري مباشرة، فالسهم يوقع على الزر نفسه. -->
+  <div id="iosPointer">
+    <div class="ip-txt">زر المشاركة هنا</div>
+    <div class="ip-arrow">⬇</div>
   </div>
 
   <!-- ========= بوابة الإشعارات (تشتغل لو requireNotifications = true) ========= -->
@@ -3387,7 +3417,8 @@
 
   function closeInstallGate(){
     const gate = document.getElementById("installGate");
-    if(gate) gate.classList.remove("show");
+    if(gate){ gate.classList.remove("show", "ios-step1"); }
+    document.getElementById("iosPointer")?.classList.remove("show");
     document.body.style.overflow = "";
   }
 
@@ -3413,13 +3444,30 @@
     // ?install=1 يفتحها دائماً — للتجربة، ولرابط تثبيت مباشر تدزّه بالواتساب
     const forced = qs.get("install") === "1";
     if(!forced){
-      // ما عاد نحبس الجاي من الباركود بشاشة تثبيت قبل ما يشوف شي —
-      // زبون ما يعرفنا بعد يرفضها. الطلب ينتقل لبعد أول طلب ناجح.
-      // (requireInstall يرجّع السلوك القديم لو أردته)
-      if(!STORE.requireInstall) return;
+      // الأندرويد: ما نحبسه بشاشة قبل ما يشوف شي — التثبيت عنده ضغطة
+      // وحدة بأي وقت، فنطلبها بعد أول طلب لمن يصير عنده سبب.
+      // الآيفون: قصة ثانية — التثبيت عنده خطوات خفية بقائمة المشاركة،
+      // ولو ما تعلّمها من البداية ما راح يكتشفها بعمره. فنعلّمه فوراً.
+      const teachIos = isIOS() && !isInAppBrowser();
+      if(!teachIos && !STORE.requireInstall) return;
       if(isSkipActive()) return;
+
+      // نخليه يشوف المتجر ثانية أول — الشرح يجي كمرشد مو كجدار
+      if(teachIos && !igScheduled){
+        igScheduled = true;
+        setTimeout(openInstallGate, 1200);
+        return;
+      }
     }
 
+    openInstallGate();
+  }
+
+  let igScheduled = false;
+  function openInstallGate(){
+    const gate = document.getElementById("installGate");
+    if(!gate || gate.classList.contains("show")) return;
+    if(isStandalone()) return;        // ثبّته خلال الثانية اللي انتظرناها
     gate.classList.add("show");
     document.body.style.overflow = "hidden";
     refreshInstallGatePane();
@@ -3499,6 +3547,13 @@
       iosDots.forEach((d, i)=> d.classList.toggle("on", i === iosAt));
       iosPrev.disabled = iosAt === 0;
       iosNext.textContent = iosAt === iosSteps.length - 1 ? "✅ سويتها" : "التالي ←";
+      // السهم يطلع بالخطوة الأولى بس — هي الوحيدة اللي زرها بشريط سفاري
+      const ptr  = document.getElementById("iosPointer");
+      const gate = document.getElementById("installGate");
+      const onStep1 = iosAt === 0 && gate?.classList.contains("show")
+                      && document.getElementById("igIos")?.classList.contains("show");
+      ptr?.classList.toggle("show", !!onStep1);
+      gate?.classList.toggle("ios-step1", !!onStep1);
     }
     window.__resetIosGuide = ()=>{ iosAt = 0; paintIosStep(); };
 
