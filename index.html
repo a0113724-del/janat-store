@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>جنة الفواكه والخضار</title>
 
+<!-- ⚠️ لازم يبقى أول سكربت بالصفحة.
+     كروم يطلق beforeinstallprompt مرة وحدة وبوقت مبكر — إذا ما كان
+     المستمع جاهز قبله، الحدث يروح وزر التثبيت ما يشتغل أبداً. -->
+<script>
+  window.__installPrompt = null;
+  window.__onInstallPrompt = null;
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault();
+    window.__installPrompt = e;
+    if (typeof window.__onInstallPrompt === "function") window.__onInstallPrompt(e);
+  });
+</script>
+
 <!-- Social sharing preview -->
 <meta property="og:title" content="جنة الفواكه والخضار">
 <meta property="og:description" content="فواكه وخضروات طازجة توصل لباب بيتك 🚴 اطلب الآن عبر واتساب — أبو صخير، قرب مستشفى المناذرة العام">
@@ -3118,16 +3131,17 @@
   })();
 
   // ---------- PWA: INSTALL PROMPT ----------
-  let deferredInstallPrompt = null;
+  // الحدث ينمسك بسكربت الـ<head> — هنا نستلمه، سواء وصل قبلنا أو بعدنا
+  let deferredInstallPrompt = window.__installPrompt || null;
   const installBtn = document.getElementById("installBtn");
 
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
+  function onInstallPromptReady(e){
     deferredInstallPrompt = e;
     installBtn.classList.add("show");
-    // لو البوابة مفتوحة وكانت تعرض "افتح قائمة المتصفح"، نبدّلها لزر حقيقي
     refreshInstallGatePane();
-  });
+  }
+  window.__onInstallPrompt = onInstallPromptReady;
+  if(deferredInstallPrompt) onInstallPromptReady(deferredInstallPrompt);
 
   installBtn.addEventListener("click", async () => {
     if (!deferredInstallPrompt) return;
@@ -3174,13 +3188,42 @@
     });
   }
 
+  let igFallbackTimer = null;
+
   function refreshInstallGatePane(){
     const gate = document.getElementById("installGate");
     if(!gate || !gate.classList.contains("show")) return;
-    if(isInAppBrowser())            showIgPane("igInApp");
-    else if(deferredInstallPrompt)  showIgPane("igAndroid");
-    else if(isIOS())                showIgPane("igIos");
-    else                            showIgPane("igManual");
+
+    if(isInAppBrowser()){ showIgPane("igInApp"); return; }
+    if(isIOS()){ showIgPane("igIos"); return; }
+
+    // أندرويد: نعرض الزر الذهبي فوراً — ما ننتظر كروم يطلق حدثه.
+    // أغلب الأجهزة يوصل الحدث خلال أقل من ثانية، والزبون لازم يشوف
+    // الزر من أول لحظة مو نص "افتح قائمة المتصفح".
+    showIgPane("igAndroid");
+    clearTimeout(igFallbackTimer);
+    if(!deferredInstallPrompt){
+      // ما وصل الحدث بعد 4 ثواني = المتصفح ما يدعم التثبيت أصلاً
+      igFallbackTimer = setTimeout(()=>{
+        if(!deferredInstallPrompt && gate.classList.contains("show")){
+          showIgPane("igManual");
+        }
+      }, 4000);
+    }
+  }
+
+  /** ينتظر حدث كروم لمدة قصيرة — يرجّع true لو وصل */
+  function waitForInstallPrompt(ms){
+    if(deferredInstallPrompt) return Promise.resolve(true);
+    return new Promise(resolve=>{
+      let done = false;
+      const t = setTimeout(()=>{ if(!done){ done = true; resolve(false); } }, ms);
+      const prev = window.__onInstallPrompt;
+      window.__onInstallPrompt = (e)=>{
+        if(typeof prev === "function") prev(e);
+        if(!done){ done = true; clearTimeout(t); resolve(true); }
+      };
+    });
   }
 
   function closeInstallGate(){
@@ -3206,8 +3249,21 @@
   (function initInstallGate(){
     const btn = document.getElementById("igInstallBtn");
     btn?.addEventListener("click", async ()=>{
-      if(!deferredInstallPrompt){ refreshInstallGatePane(); return; }
       btn.disabled = true;
+      btn.textContent = "⏳ لحظة...";
+
+      // لو ضغط قبل ما يوصل حدث كروم، ننتظره ثانيتين بدل ما نقوله "ما ينفع"
+      if(!deferredInstallPrompt) await waitForInstallPrompt(2000);
+
+      if(!deferredInstallPrompt){
+        // المتصفح ما يدعم التثبيت — نوريه الطريقة اليدوية
+        clearTimeout(igFallbackTimer);
+        showIgPane("igManual");
+        btn.disabled = false;
+        btn.textContent = "📲 ثبّت التطبيق";
+        return;
+      }
+
       btn.textContent = "⏳ جاري التثبيت...";
       try{
         deferredInstallPrompt.prompt();
@@ -3220,7 +3276,6 @@
       }catch(e){ /* المتصفح رفض العرض */ }
       btn.disabled = false;
       btn.textContent = "📲 ثبّت التطبيق";
-      document.getElementById("igSkip").textContent = "تصفّح بدون تثبيت";
     });
 
     document.getElementById("igCopyLink")?.addEventListener("click", async (e)=>{
