@@ -3232,18 +3232,51 @@
     document.body.style.overflow = "";
   }
 
+  // الرفض ينتهي بعد أسبوع — قبل، ضغطة وحدة على "تصفّح بدون تثبيت"
+  // تخفي الشاشة للأبد وما بيه طريقة يرجّعها الزبون
+  const IG_SKIP_DAYS = 7;
+  function isSkipActive(){
+    try{
+      const v = localStorage.getItem(IG_SKIP_KEY);
+      if(!v) return false;
+      const at = Number(v);
+      if(!Number.isFinite(at) || at <= 1) return false;   // قيمة قديمة ("1") = منتهية
+      return (Date.now() - at) < IG_SKIP_DAYS * 86400000;
+    }catch(e){ return false; }
+  }
+
   function maybeShowInstallGate(){
     const gate = document.getElementById("installGate");
     if(!gate || gate.classList.contains("show")) return;
     if(isStandalone()) return;                       // مثبّت أصلاً
-    // تطلع للجاي من الباركود، أو لو شغّلتها للكل من الإعدادات
-    const fromQr = new URLSearchParams(location.search).get("src") === "qr";
-    if(!fromQr && !STORE.requireInstall) return;
-    try{ if(localStorage.getItem(IG_SKIP_KEY) === "1") return; }catch(e){}
+
+    const qs = new URLSearchParams(location.search);
+    // ?install=1 يفتحها دائماً — للتجربة، ولرابط تثبيت مباشر تدزّه بالواتساب
+    const forced = qs.get("install") === "1";
+    if(!forced){
+      const fromQr = qs.get("src") === "qr";
+      if(!fromQr && !STORE.requireInstall) return;
+      if(isSkipActive()) return;
+    }
 
     gate.classList.add("show");
     document.body.style.overflow = "hidden";
     refreshInstallGatePane();
+  }
+
+  // الآيفون ما يطلق حدث تثبيت أبداً، فزر التثبيت العائم كان ما يبين
+  // لمستخدميه نهائياً — يعني بعد ما يسكّر الشاشة ما عنده أي طريقة يرجّعها
+  function showInstallBtnForIOS(){
+    if(!installBtn) return;
+    if(isStandalone() || isInAppBrowser() || !isIOS()) return;
+    installBtn.classList.add("show");
+    installBtn.addEventListener("click", ()=>{
+      const gate = document.getElementById("installGate");
+      if(!gate) return;
+      gate.classList.add("show");
+      document.body.style.overflow = "hidden";
+      refreshInstallGatePane();
+    });
   }
 
   (function initInstallGate(){
@@ -3289,9 +3322,11 @@
     });
 
     document.getElementById("igSkip")?.addEventListener("click", ()=>{
-      try{ localStorage.setItem(IG_SKIP_KEY, "1"); }catch(e){}
+      try{ localStorage.setItem(IG_SKIP_KEY, String(Date.now())); }catch(e){}
       closeInstallGate();
     });
+
+    showInstallBtnForIOS();
   })();
 
   // ---------- PWA: SERVICE WORKER ----------
