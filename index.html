@@ -736,6 +736,25 @@
   .rstrip-item .nm{ font-size:.78rem; font-weight:800; color:var(--ink); }
   .rstrip-item .st{ font-size:.78rem; color:#E8B923; letter-spacing:.5px; }
 
+  /* ---------- دعوة التثبيت بعد الطلب ---------- */
+  #postInstall{
+    display:none; margin-top:16px; padding:16px 14px; border-radius:16px;
+    background:linear-gradient(160deg, rgba(201,154,46,.16), rgba(201,154,46,.06));
+    border:1.5px solid rgba(201,154,46,.45);
+  }
+  #postInstall.show{ display:block; }
+  #postInstall .pi-ic{ font-size:1.9rem; line-height:1; margin-bottom:5px; }
+  #postInstall .pi-title{ font-weight:900; color:var(--forest); font-size:.98rem; }
+  html.dark #postInstall .pi-title{ color:var(--gold-light); }
+  #postInstall .pi-sub{ font-size:.78rem; color:#8a8a7c; margin:4px 0 13px; line-height:1.7; }
+  #postInstallBtn{
+    width:100%; background:var(--gold); color:#153122; border:none;
+    padding:14px; border-radius:13px; font-family:inherit;
+    font-weight:900; font-size:.95rem; cursor:pointer;
+    box-shadow:0 7px 20px rgba(201,154,46,.35);
+  }
+  #postInstallBtn:disabled{ background:#ccc; color:#666; box-shadow:none; }
+
   /* ---------- تقييم الطلب (يطلع بعد نجاح الطلب) ---------- */
   #rateBox{
     margin-top:18px; padding-top:16px; border-top:1px dashed rgba(0,0,0,.12);
@@ -1478,6 +1497,15 @@
         <div style="font-weight:900; color:var(--forest); font-size:1.1rem; margin-bottom:4px;">تم استلام طلبك بنجاح!</div>
         <div style="font-size:.85rem; color:#777; margin-bottom:16px;">رقم طلبك: <b id="orderSeqNo" style="color:var(--pomegranate);">#0</b></div>
         <button class="send-btn" id="sendWhatsappBtn" style="margin:0;">📲 تواصل معنا عبر واتساب (اختياري)</button>
+
+        <!-- دعوة التثبيت — تطلع بعد أول طلب ناجح، وقت ما يكون الزبون
+             مبسوط ويعرفنا. قبل الطلب كان يرفضها لأنه ما يعرفنا بعد. -->
+        <div id="postInstall">
+          <div class="pi-ic">📲</div>
+          <div class="pi-title">ثبّت التطبيق على شاشتك</div>
+          <div class="pi-sub">طلبك الجاي بضغطتين بس — بلا ما تدوّر على الرابط</div>
+          <button id="postInstallBtn">📲 ثبّته الحين</button>
+        </div>
 
         <!-- تقييم الطلب — يوصل لصاحب المحل بس، ما ينعرض بالموقع -->
         <div id="rateBox">
@@ -2629,6 +2657,7 @@
       document.getElementById("sendWhatsappBtn").onclick = openWhatsappWithOrder;
       if(window.silentlyEnableCustomerNotifications) window.silentlyEnableCustomerNotifications(phone);
       resetRateBox({ orderId: savedOrderId, seqNo: seqNo, name: name, phone: phone });
+      showPostOrderInstall();   // هسه الزبون مبسوط ويعرفنا — وقت الطلب الصح
 
       // نعرض رقم السيرفر مو رقم الصفحة، وننبّه لو اختلفوا
       if(serverTotals){
@@ -3384,8 +3413,10 @@
     // ?install=1 يفتحها دائماً — للتجربة، ولرابط تثبيت مباشر تدزّه بالواتساب
     const forced = qs.get("install") === "1";
     if(!forced){
-      const fromQr = qs.get("src") === "qr";
-      if(!fromQr && !STORE.requireInstall) return;
+      // ما عاد نحبس الجاي من الباركود بشاشة تثبيت قبل ما يشوف شي —
+      // زبون ما يعرفنا بعد يرفضها. الطلب ينتقل لبعد أول طلب ناجح.
+      // (requireInstall يرجّع السلوك القديم لو أردته)
+      if(!STORE.requireInstall) return;
       if(isSkipActive()) return;
     }
 
@@ -3482,7 +3513,45 @@
     if(iosSteps.length) paintIosStep();
 
     showInstallBtnForIOS();
+
+    // --- دعوة التثبيت بعد الطلب ---
+    document.getElementById("postInstallBtn")?.addEventListener("click", async ()=>{
+      const b = document.getElementById("postInstallBtn");
+      // أندرويد: نطلق نافذة التثبيت مباشرة — بلا شاشات وسط
+      if(!deferredInstallPrompt){
+        b.disabled = true; b.textContent = "⏳ لحظة...";
+        await waitForInstallPrompt(1500);
+        b.disabled = false; b.textContent = "📲 ثبّته الحين";
+      }
+      if(deferredInstallPrompt){
+        try{
+          deferredInstallPrompt.prompt();
+          const { outcome } = await deferredInstallPrompt.userChoice;
+          deferredInstallPrompt = null;
+          if(outcome === "accepted"){
+            document.getElementById("postInstall")?.classList.remove("show");
+            return;
+          }
+        }catch(e){ /* المتصفح رفض العرض */ }
+        return;
+      }
+      // آيفون أو متصفح مدمج: نفتح المرشد المصوّر
+      const gate = document.getElementById("installGate");
+      if(gate){
+        gate.classList.add("show");
+        document.body.style.overflow = "hidden";
+        refreshInstallGatePane();
+      }
+    });
   })();
+
+  /** تنادى بعد نجاح الطلب — الوقت اللي الزبون بيه مبسوط ويعرفنا */
+  function showPostOrderInstall(){
+    const box = document.getElementById("postInstall");
+    if(!box) return;
+    if(isStandalone()){ box.classList.remove("show"); return; }   // مثبّت أصلاً
+    box.classList.add("show");
+  }
 
   // ---------- PWA: SERVICE WORKER ----------
   if ("serviceWorker" in navigator) {
