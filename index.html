@@ -1161,6 +1161,16 @@
   .step-hint{ font-size:.62rem; color:#8a8a7c; margin:-4px 0 6px; }
   .step-hint b{ color:var(--forest); }
   html.dark .step-hint b{ color:var(--gold-light); }
+  #custArea{
+    width:100%; border:1.5px solid var(--card-border); border-radius:12px;
+    padding:12px; font-family:inherit; font-size:.92rem;
+    background:var(--card-bg); color:inherit;
+  }
+  .area-fee{
+    font-size:.78rem; font-weight:800; color:var(--leaf);
+    margin-top:6px; min-height:18px; line-height:1.7;
+  }
+  .area-fee.warn{ color:var(--pomegranate); }
   .saved-loc{
     display:flex; align-items:center; justify-content:space-between; gap:8px;
     background:#EAF3EB; border:1.5px solid var(--leaf); border-radius:10px;
@@ -1643,8 +1653,20 @@
           <div class="points-info" id="pointsInfo" style="display:none;"></div>
         </div>
         <div class="field">
-          <label>العنوان / الموقع</label>
-          <textarea id="custAddress" rows="2" placeholder="المنطقة، الحي، أقرب نقطة دالة..."></textarea>
+          <label>منطقتك *</label>
+          <select id="custArea">
+            <option value="">— اختار منطقتك —</option>
+          </select>
+          <div class="area-fee" id="areaFee"></div>
+        </div>
+        <div class="field" id="otherAreaRow" style="display:none;">
+          <label>اكتب اسم منطقتك</label>
+          <input type="text" id="custAreaOther" maxlength="60" placeholder="مثال: حي الأنصار">
+          <div class="area-fee">نتواصل وياك لتحديد أجرة التوصيل</div>
+        </div>
+        <div class="field">
+          <label>العنوان بالتفصيل</label>
+          <textarea id="custAddress" rows="2" placeholder="الشارع، أقرب نقطة دالة، لون البيت..."></textarea>
         </div>
         <div class="saved-loc" id="savedLocRow" style="display:none;">
           <span>📍 موقعك محفوظ ✓</span>
@@ -1753,6 +1775,7 @@
     requireNotifications: false,// true = ما يدخل التطبيق إلا بعد ما يفعّل الإشعارات
     requireInstall: false,      // true = شاشة التثبيت تطلع للكل، مو للجاي من الباركود بس
     promoText: "🚴 التوصيل الأول مجاني لكل زبون جديد!",
+    areas: [],                  // مناطق التوصيل وأجرة كل وحدة — من settings.json
     announcement: ""            // إعلان يظهر بأعلى الصفحة (فاضي = مخفي)
   };
 
@@ -1760,6 +1783,7 @@
   const SETTINGS_NUMBERS = ["deliveryFee","freeDeliveryOver","minOrderTotal","openHour","closeHour","quarterKgOverPrice","pointsPerOrder","roundTo"];
   const SETTINGS_BOOLS   = ["firstOrderFreeDelivery","manualClosed","requireNotifications","requireInstall"];
   const SETTINGS_TEXTS   = ["closedMessage","promoText","announcement"];
+  const SETTINGS_ARRAYS  = ["areas"];
 
   const SETTINGS_CACHE_KEY = "janat-settings-cache";
 
@@ -1774,6 +1798,9 @@
     });
     SETTINGS_TEXTS.forEach(k=>{
       if(typeof cfg[k] === "string") STORE[k] = cfg[k];
+    });
+    SETTINGS_ARRAYS.forEach(k=>{
+      if(Array.isArray(cfg[k])) STORE[k] = cfg[k];
     });
   }
 
@@ -1803,8 +1830,64 @@
     }
   }
 
+  // ---------- بناء قائمة المناطق ----------
+  function buildAreaOptions(){
+    const sel = document.getElementById("custArea");
+    if(!sel) return;
+    const list = Array.isArray(STORE.areas) ? STORE.areas : [];
+    const prev = sel.value;
+    let saved = "";
+    try{ saved = localStorage.getItem(AREA_KEY) || ""; }catch(e){}
+
+    sel.innerHTML = `<option value="">— اختار منطقتك —</option>` +
+      list.map(a => {
+        const fee = Number(a.fee) || 0;
+        const max = Number(a.feeMax) || 0;
+        const price = max > fee ? `${money(fee)} – ${money(max)}` : (fee === 0 ? "مجاني" : money(fee));
+        return `<option value="${escHtml(a.name)}">${escHtml(a.name)} — ${price}</option>`;
+      }).join("") +
+      `<option value="${OTHER_AREA}">📝 منطقتي مو موجودة</option>`;
+
+    // نرجّع اختياره السابق: اللي بالشاشة، وإلا المحفوظ بجهازه
+    const want = prev || saved;
+    if(want && [...sel.options].some(o => o.value === want)) sel.value = want;
+    refreshAreaUI();
+  }
+
+  function refreshAreaUI(){
+    const sel = document.getElementById("custArea");
+    const note = document.getElementById("areaFee");
+    const other = document.getElementById("otherAreaRow");
+    if(!sel) return;
+    const isOther = sel.value === OTHER_AREA;
+    if(other) other.style.display = isOther ? "block" : "none";
+    if(note){
+      const a = selectedArea();
+      if(isOther){
+        note.className = "area-fee warn";
+        note.textContent = "منطقة جديدة — نتواصل وياك لتأكيد أجرة التوصيل";
+      }else if(a){
+        const max = Number(a.feeMax) || 0;
+        note.className = max > Number(a.fee) ? "area-fee warn" : "area-fee";
+        note.textContent = max > Number(a.fee)
+          ? `الأجرة تتراوح ${money(a.fee)} – ${money(max)} حسب موقعك بالمنطقة`
+          : (Number(a.fee) === 0 ? "🎁 التوصيل مجاني لهذي المنطقة" : `أجرة التوصيل ${money(a.fee)}`);
+      }else{
+        note.className = "area-fee";
+        note.textContent = "";
+      }
+    }
+    if(sel.value && sel.value !== OTHER_AREA){
+      try{ localStorage.setItem(AREA_KEY, sel.value); }catch(e){}
+    }
+    updateCartUI();     // الأجرة والمجموع يتحدّثون فوراً كدام الزبون
+  }
+
+  document.getElementById("custArea")?.addEventListener("change", refreshAreaUI);
+
   // ---------- تطبيق الإعدادات على الواجهة ----------
   function applySettingsToUI(){
+    buildAreaOptions();
     const promo = document.getElementById("promoBanner");
     const promoTextEl = document.getElementById("promoText");
     if(promo){
@@ -2449,10 +2532,34 @@
     if(!STORE.firstOrderFreeDelivery) return false;
     return firstOrderVerified === true;
   }
+  // ---------- مناطق التوصيل ----------
+  const AREA_KEY = "janat-my-area";
+  const OTHER_AREA = "__other__";
+
+  function selectedArea(){
+    const sel = document.getElementById("custArea");
+    const v = sel ? sel.value : "";
+    if(!v || v === OTHER_AREA) return null;
+    return (STORE.areas || []).find(a => a && a.name === v) || null;
+  }
+
+  /** اسم المنطقة اللي ينرسل مع الطلب — سواء من القائمة أو كتبها بيده */
+  function areaNameForOrder(){
+    const sel = document.getElementById("custArea");
+    if(!sel) return "";
+    if(sel.value === OTHER_AREA){
+      return (document.getElementById("custAreaOther")?.value || "").trim();
+    }
+    return sel.value || "";
+  }
+
   function deliveryFeeFor(subtotal){
     if(subtotal <= 0) return 0;
     if(isFirstOrderFreeDelivery()) return 0;
     if(STORE.freeDeliveryOver && subtotal >= STORE.freeDeliveryOver) return 0;
+    const a = selectedArea();
+    // منطقة معروفة = أجرتها. غيرها = الأجرة الافتراضية لحد ما نتواصل وياه.
+    if(a && Number(a.fee) >= 0) return Number(a.fee) || 0;
     return STORE.deliveryFee;
   }
   const IQD_PER_10_POINTS = 1000;   // ⚠️ لازم يطابق نفس الثابت بـ apps-script.gs
@@ -2745,11 +2852,14 @@
     const pointsUsedCount = usingPoints ? pointsPlan(cartTotal()).pointsUsed : 0;
     const entries = Object.entries(cart).filter(([,q])=>q>0);
 
-    if(!name || !phone || (entries.length===0 && !customRequest)){
-      formErr.textContent = (entries.length===0 && !customRequest)
-        ? "الرجاء اختيار منتج واحد على الأقل أو كتابة طلب خاص."
-        : "الرجاء إدخال الاسم ورقم الهاتف.";
+    const orderArea = areaNameForOrder();
+    if(!name || !phone || (entries.length===0 && !customRequest) || !orderArea){
+      formErr.textContent =
+        (entries.length===0 && !customRequest) ? "الرجاء اختيار منتج واحد على الأقل أو كتابة طلب خاص."
+        : (!name || !phone) ? "الرجاء إدخال الاسم ورقم الهاتف."
+        : "الرجاء اختيار منطقتك — بيها نحدد أجرة التوصيل.";
       formErr.classList.add("show");
+      if(!orderArea) document.getElementById("custArea")?.focus();
       return;
     }
     // رقم غلط = طلب ما نكدر نوصله، ونقاط تروح لرقم ما موجود
@@ -2769,6 +2879,7 @@
     let msg = "🌿 طلب جديد من جنة الفواكه والخضار\n\n";
     msg += `👤 الاسم: ${name}\n`;
     msg += `📞 الهاتف: ${phone}\n`;
+    msg += `🗺️ المنطقة: ${orderArea}\n`;
     if(address) msg += `📍 العنوان: ${address}\n`;
     if(gpsCoords){
       msg += `🗺️ خرائط قوقل: https://maps.google.com/?q=${gpsCoords.lat},${gpsCoords.lng}\n`;
@@ -2885,6 +2996,7 @@
             // على products.json بدل ما يصدّق الرقم الجاي من المتصفح
             lines: entries.map(([id, qty]) => ({ id, qty })),
             customRequest: customRequest,
+            area: orderArea,
             visitorId: getVisitorId(),
             orderRef: orderRef(),
             firstOrderVerified: firstOrderVerified === true,

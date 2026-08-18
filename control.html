@@ -191,6 +191,11 @@
   .oc-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:6px; }
   .oc-name{ font-weight:900; font-size:.98rem; }
   .oc-time{ font-size:.7rem; color:#888; white-space:nowrap; }
+  .oc-area{
+    display:inline-block; background:#EFE7FB; color:#6b3fa0;
+    font-size:.72rem; font-weight:900; padding:3px 11px;
+    border-radius:100px; margin:4px 0;
+  }
   .oc-phone{ font-size:.8rem; color:var(--leaf); direction:ltr; text-align:left; margin-bottom:6px; }
   .oc-items{ font-size:.78rem; color:#555; white-space:pre-line; margin-bottom:8px; line-height:1.6; }
   .oc-bottom{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; flex-wrap:wrap; }
@@ -1324,6 +1329,9 @@
         const m = (o.approxLocation||"").match(/https?:\/\/\S+/);
         if(m) mapsUrl = m[0];
       }
+      // المنطقة أول شي يشوفه السائق — منها يعرف الجهة والأجرة
+      const areaLine = o.area
+        ? `<div class="oc-area">🗺️ ${esc(o.area)}</div>` : "";
       const locationLine = mapsUrl
         ? `<div class="oc-phone"><a href="${esc(mapsUrl)}" target="_blank" style="color:var(--pomegranate); font-weight:800; text-decoration:underline;">📍 فتح الموقع الدقيق على الخرائط</a></div>`
         : (o.address ? `<div class="oc-phone" style="color:#555;">📍 ${esc(o.address)}</div>` : (o.approxLocation && o.approxLocation !== "غير معروف" ? `<div class="oc-phone" style="color:#888;">🌐 ${esc(o.approxLocation)}</div>` : ""));
@@ -1374,6 +1382,7 @@
           <div class="oc-time">${timeStr}</div>
         </div>
         <div class="oc-phone">📞 ${showPhone(o.phone)}</div>
+        ${areaLine}
         ${locationLine}
         <div class="oc-items">${esc(o.items).replace(/\|/g,"\n")}</div>
         <div class="oc-bottom">${totalBlock}<div class="oc-badges">${badges}</div></div>
