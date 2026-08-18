@@ -2209,7 +2209,7 @@
         ${ready && step < 1 ? `<div class="step-hint">كل ضغطة + تزيد <b>${qtyWords(step, unit)}</b> = ${money(lineTotal(p, step))}</div>` : ""}
         <div class="qty-row">
           <button class="minus" data-id="${p.id}" ${ready?"":"disabled"}>−</button>
-          <span class="qty-val" id="qv-${p.id}">${qtyWords(qty, unit)}<small id="qs-${p.id}">${
+          <span class="qty-val">${qtyWords(qty, unit)}<small>${
             qty > 0 ? money(lineTotal(p, qty)) : unit
           }</small></span>
           <button class="plus" data-id="${p.id}" ${ready?"":"disabled"}>+</button>
@@ -2256,14 +2256,17 @@
     const newQty = Math.max(0, Math.round(((cart[id]||0) + delta*step) * 100) / 100);
     if(newQty===0) delete cart[id]; else cart[id] = newQty;
     const unit = (p && p.unit) || "كغم";
-    const qv = document.getElementById("qv-"+id);
-    if(qv){
-      const q = cart[id] || 0;
+    const q = cart[id] || 0;
+    // ⚠️ المنتج اللي عليه عرض ينرسم مرتين: بقسمه وبقسم العروض. قبل، كنا
+    // نحدّث الكارت الأول بس — فالزبون يضغط + بقسم العروض والرقم ما يتحرك،
+    // فيضغط بعد وبعد والسلة تمتلي بصمت. الحين نحدّث كل كروت المنتج.
+    document.querySelectorAll(".card").forEach(card=>{
+      if(card.dataset.id !== id) return;
+      const qv = card.querySelector(".qty-val");
       // الكمية بالكلام وتحتها سعرها — الزبون يشوف بالضبط شنو ياخذ وبكم
-      qv.innerHTML = `${qtyWords(q, unit)}<small>${q > 0 ? money(lineTotal(p, q)) : unit}</small>`;
-    }
-    const card = qv ? qv.closest(".card") : null;
-    if(card){ card.classList.toggle("has-qty",(cart[id]||0)>0); }
+      if(qv) qv.innerHTML = `${qtyWords(q, unit)}<small>${q > 0 ? money(lineTotal(p, q)) : unit}</small>`;
+      card.classList.toggle("has-qty", q > 0);
+    });
     updateCartUI();
     saveCart();
   }
