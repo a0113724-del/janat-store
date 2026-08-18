@@ -8,7 +8,12 @@
     "image": "images/tomato-1785117823924.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 0
+    "order": 0,
+    "onSale": false,
+    "bundle": {
+      "qty": 3,
+      "price": 2000
+    }
   },
   {
     "id": "cucumber",
@@ -18,9 +23,14 @@
     "emoji": "🥒",
     "image": "images/cucumber-1785117845595.jpg",
     "unit": "كغم",
-    "onSale": false,
+    "onSale": true,
     "visible": true,
-    "order": 1
+    "order": 1,
+    "oldPrice": 0,
+    "bundle": {
+      "qty": 3,
+      "price": 2000
+    }
   },
   {
     "id": "potato",
@@ -42,7 +52,12 @@
     "image": "images/eggplant-1785117873353.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 3
+    "order": 3,
+    "onSale": false,
+    "bundle": {
+      "qty": 3,
+      "price": 2000
+    }
   },
   {
     "id": "zucchini",
@@ -119,7 +134,11 @@
     "image": "images/onionw-1785118269464.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 10
+    "order": 10,
+    "bundle": {
+      "qty": 3,
+      "price": 2000
+    }
   },
   {
     "id": "oniony",
@@ -212,7 +231,7 @@
   {
     "id": "banana",
     "name": "موز",
-    "price": 1000,
+    "price": 1250,
     "cat": "fruit",
     "emoji": "🍌",
     "image": "images/banana-1785118460886.jpg",
@@ -271,24 +290,28 @@
   {
     "id": "kojar",
     "name": "كوجه حمراء",
-    "price": 2000,
+    "price": 1500,
     "cat": "fruit",
     "emoji": "🔴",
     "image": "images/kojar-1786410953669.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 26
+    "order": 26,
+    "onSale": true,
+    "oldPrice": 2000
   },
   {
     "id": "kojay",
     "name": "كوجه صفراء",
-    "price": 2000,
+    "price": 1500,
     "cat": "fruit",
     "emoji": "🟡",
     "image": "images/kojay-1786410719479.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 27
+    "order": 27,
+    "onSale": true,
+    "oldPrice": 2000
   },
   {
     "id": "cherry",
@@ -315,24 +338,28 @@
   {
     "id": "peach_tini",
     "name": "خوخ تيني",
-    "price": 2500,
+    "price": 2100,
     "cat": "fruit",
     "emoji": "🍑",
     "image": "images/peach_tini-1785118608639.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 30
+    "order": 30,
+    "onSale": true,
+    "oldPrice": 2500
   },
   {
     "id": "peach_musk",
     "name": "خوخ مسكي",
-    "price": 2000,
+    "price": 1900,
     "cat": "fruit",
     "emoji": "🍑",
     "image": "images/peach_musk-1785118623236.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 31
+    "order": 31,
+    "onSale": true,
+    "oldPrice": 2000
   },
   {
     "id": "peach_sofi",
@@ -427,13 +454,15 @@
   {
     "id": "p1786409743164",
     "name": "رمان يمني ",
-    "price": 5000,
+    "price": 4000,
     "cat": "fruit",
     "unit": "كغم",
     "emoji": "🥬",
     "image": "images/p1786409743164-1786409989766.jpg",
     "visible": true,
-    "order": 40
+    "order": 40,
+    "onSale": true,
+    "oldPrice": 5000
   },
   {
     "id": "p1786410724425",

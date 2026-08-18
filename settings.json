@@ -9,9 +9,10 @@
   "closedMessage": "مغلق للصيانه",
   "pointsPerOrder": 2,
   "roundTo": 250,
-  "requireNotifications": false,
+  "requireNotifications": true,
   "requireInstall": false,
   "promoText": "🚴 التوصيل الأول مجاني لكل زبون جديد!",
+<<<<<<< HEAD
   "announcement": "",
   "areas": [
     {
@@ -85,3 +86,7 @@
     }
   ]
 }
+=======
+  "announcement": ""
+}
+>>>>>>> origin/main
