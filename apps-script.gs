@@ -1290,13 +1290,20 @@ function doPost(e) {
         }
       }
 
-      // ═══ النقاط: مقيَّدة برصيده الفعلي ومن مضاعفات 10 ═══
+      // ═══ النقاط: الخصم أولاً، والنقاط تنشتق منه ═══
+      // قبل، كنا نخصم كل النقاط المطلوبة حتى لو السلة ما تستوعب قيمتها:
+      // زبون عنده 600 نقطة ويطلب بـ1,000 دينار ياخذ خصم 1,000 وتنخصم
+      // منه 600 نقطة — يخسر 590 نقطة. الحين ما ننزل من رصيده إلا
+      // مقابل خصم استفاد منه فعلاً.
       const requestedPoints = Math.max(0, Number(data.pointsUsed) || 0);
       const balance = getCustomerPointsBalance(phone);
-      const pointsUsed = Math.floor(Math.min(requestedPoints, balance) / 10) * 10;
-      const maxDiscount = (pointsUsed / 10) * IQD_PER_10_POINTS;
-      const discount = Math.min(maxDiscount, subtotal); // الخصم ما يتجاوز قيمة السلة
-      if (requestedPoints !== pointsUsed) {
+      const usablePoints = Math.floor(Math.min(requestedPoints, balance) / 10) * 10;
+      const maxDiscount = (usablePoints / 10) * IQD_PER_10_POINTS;
+      // الخصم بمضاعفات 1,000 لأن كل 1,000 دينار = 10 نقاط
+      const discount = Math.floor(Math.min(maxDiscount, subtotal) / IQD_PER_10_POINTS) * IQD_PER_10_POINTS;
+      const pointsUsed = (discount / IQD_PER_10_POINTS) * 10;
+      // ننبّه بس لو طلب أكثر من رصيده — التقليص بسبب صغر السلة طبيعي
+      if (requestedPoints > balance) {
         flags.push("نقاط مرفوضة: طلب " + requestedPoints + " / رصيده " + balance);
       }
 

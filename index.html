@@ -40,7 +40,7 @@
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root{
     --ink:#1C2A1D;
@@ -82,7 +82,9 @@
     line-height:1.55;
     padding-bottom:calc(var(--bar-h) + 18px);
   }
-  h1,h2,h3, .display{ font-family:'Aref Ruqaa', serif; }
+  /* نجيب وزن واحد بس من Aref (700) — فنثبّته صراحة حتى ما يصطنعه
+     المتصفح للعناصر اللي مو عناوين (مثل اسم المحل بالفوتر) */
+  h1,h2,h3, .display{ font-family:'Aref Ruqaa', serif; font-weight:700; }
   button{ font-family:inherit; }
   img{ display:block; }
 
@@ -1096,10 +1098,10 @@
   }
 
 </style>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-  import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
-
+<script>
+  /* ⚡ مكتبة Firebase كانت تتحمّل بكل فتحة للتطبيق — أكثر من 200 كيلو
+     تنزل قبل ما يشوف الزبون أي منتج، مع إنها ما تنستعمل إلا لحظة تفعيل
+     الإشعارات (بعد أول طلب). صارت تتحمّل عند الحاجة بس. */
   const firebaseConfig = {
     apiKey: "AIzaSyDTdGzpr7SLK79m0UVqrwKfEyWHfD7HYeE",
     authDomain: "janat-store-notifications.firebaseapp.com",
@@ -1109,8 +1111,20 @@
     appId: "1:262111878623:web:6f26ec354fe4c205d2386a"
   };
   const VAPID_KEY = "BBQ3ouOvUisn2yOROxBi4ZKeRIU-GQXIga4_KnLWViEMxgTdQOmOXc-wzGm32nyGr6aGZ-OQKPMtANAJvLnpU2Y";
-  const fbApp = initializeApp(firebaseConfig);
-  const messaging = getMessaging(fbApp);
+
+  let _fbReady = null;
+  function loadFirebase(){
+    if(_fbReady) return _fbReady;              // ما ننزّلها مرتين
+    _fbReady = (async ()=>{
+      const [appMod, msgMod] = await Promise.all([
+        import("https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js"),
+        import("https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js")
+      ]);
+      const app = appMod.initializeApp(firebaseConfig);
+      return { messaging: msgMod.getMessaging(app), getToken: msgMod.getToken };
+    })();
+    return _fbReady;
+  }
 
   // يتفعّل بصمت بعد أول طلب ناجح فقط — بدون أي زر بالواجهة، ما يطلب
   // إذن المتصفح إلا مرة وحدة إذا الزبون ما رفض قبل
@@ -1118,9 +1132,13 @@
     try{
       if(!("Notification" in window)) return false;
       if(Notification.permission === "denied") return false; // رفض قبل، ما نزعجه مرة ثانية
+      // الإذن أول — قبل أي await ثقيل، حتى ما تضيع لمسة الزبون
       const permission = await Notification.requestPermission();
       if(permission !== "granted") return false;
-      const registration = await navigator.serviceWorker.register("firebase-messaging-sw.js");
+      const [{ messaging, getToken }, registration] = await Promise.all([
+        loadFirebase(),
+        navigator.serviceWorker.register("firebase-messaging-sw.js")
+      ]);
       const tk = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxs_MKe9t1O6ghLWA5G44OrB69A23m1RayxrfZ0HpblHHG2NRxRRkpljbHWTfYPWAHp/exec";
       fetch(GOOGLE_SCRIPT_URL, {
@@ -1538,7 +1556,7 @@
         </label>
         <label class="first-order-check points-redeem" id="pointsRedeemRow" style="display:none;">
           <input type="checkbox" id="usePointsCheck">
-          <span class="txt">⭐ <strong>استخدم نقاطي</strong> (<span id="redeemableText">0 د.ع</span> خصم متاح)</span>
+          <span class="txt">⭐ <strong>استخدم نقاطي</strong> — خصم <span id="redeemableText">0 د.ع</span></span>
         </label>
       </div>
 
@@ -1741,8 +1759,21 @@
   // ---------- APPROXIMATE LOCATION (city-level, via IP — no permission popup) ----------
   // ملاحظة: هذا تقريبي بحدود المدينة اعتماداً على شركة الإنترنت، وليس دقيقاً
   // كموقع GPS. يُستخدم فقط كمؤشر إضافي لكشف الطلبات المشبوهة، وليس عنواناً دقيقاً.
+  /**
+   * يشغّل شغلة ثانوية لمن يفضى المتصفح — مو وقت ما الزبون ينتظر
+   * المنتجات تبيّن. على نت الموبايل الضعيف، كل طلب زايد بأول ثانيتين
+   * ياخذ من عرض النطاق المفروض يروح للصور والأسعار.
+   */
+  function whenIdle(fn){
+    if(typeof requestIdleCallback === "function"){
+      requestIdleCallback(fn, { timeout: 4000 });
+    }else{
+      setTimeout(fn, 2000);
+    }
+  }
+
   let approxLocationText = "";
-  (async function fetchApproxLocation(){
+  whenIdle(async function fetchApproxLocation(){
     try{
       const res = await fetch("https://ipapi.co/json/");
       if(!res.ok) throw new Error("geo lookup failed");
@@ -1753,7 +1784,7 @@
       approxLocationText = "غير معروف";
     }
     logAnalyticsEvent("visit");
-  })();
+  });
 
   // ---------- ANALYTICS: VISITS & APP INSTALLS ----------
   function getVisitorId(){
@@ -2216,7 +2247,13 @@
       const show = currentRedeemableValue > 0;
       redeemRow.style.display = show ? "flex" : "none";
       if(show){
-        document.getElementById("redeemableText").textContent = money(currentRedeemableValue);
+        // نعرض الخصم اللي راح ينطبق على سلته الحالية، مو قيمة رصيده كامل —
+        // زبون عنده 60,000 وسلته 3,000 لازم يشوف 3,000 حتى ما يتفاجأ
+        const plan = pointsPlan(cartTotal());
+        const el = document.getElementById("redeemableText");
+        el.textContent = plan.discount > 0
+          ? `${money(plan.discount)} · ${plan.pointsUsed} نقطة`
+          : `تحتاج طلب بـ${money(IQD_PER_10_POINTS)} على الأقل`;
       }else{
         const chk = document.getElementById("usePointsCheck");
         if(chk) chk.checked = false;
@@ -2265,10 +2302,31 @@
     if(STORE.freeDeliveryOver && subtotal >= STORE.freeDeliveryOver) return 0;
     return STORE.deliveryFee;
   }
+  const IQD_PER_10_POINTS = 1000;   // ⚠️ لازم يطابق نفس الثابت بـ apps-script.gs
+
+  /**
+   * يحسب الخصم والنقاط المصروفة سوا — لازم يطلعون من نفس المعادلة.
+   *
+   * الباگ اللي كان: الخصم ينحسب من السلة (min(قيمة النقاط, السلة))
+   * بس النقاط المصروفة تنحسب من الرصيد كامل. يعني زبون عنده 600 نقطة
+   * ويطلب بـ1,000 دينار: ياخذ خصم 1,000 وتنخصم منه 600 نقطة —
+   * خسر 590 نقطة قيمتها 59,000 دينار.
+   *
+   * الصح: نحدد الخصم أول (بمضاعفات 1,000 لأن كل 1,000 = 10 نقاط)،
+   * وبعدين نشتق النقاط منه.
+   */
+  function pointsPlan(subtotal){
+    const usable   = Math.floor((Number(currentPointsBalance) || 0) / 10) * 10;
+    const maxValue = (usable / 10) * IQD_PER_10_POINTS;
+    const base     = Math.max(0, Number(subtotal) || 0);
+    const discount = Math.floor(Math.min(maxValue, base) / IQD_PER_10_POINTS) * IQD_PER_10_POINTS;
+    return { discount, pointsUsed: (discount / IQD_PER_10_POINTS) * 10, maxValue };
+  }
+
   function pointsDiscountFor(subtotal){
     const usePointsEl = document.getElementById("usePointsCheck");
     if(!(usePointsEl && usePointsEl.checked)) return 0;
-    return Math.min(currentRedeemableValue, subtotal);
+    return pointsPlan(subtotal).discount;
   }
   function finalTotal(){
     const base = cartTotal();
@@ -2278,6 +2336,8 @@
   function updateCartUI(){
     const lines = Object.values(cart).filter(q=>q>0).length;
     const total = cartTotal();
+    // الخصم المعروض يتبع السلة — تتغيّر السلة، يتغيّر الرقم
+    if(typeof applyPointsUI === "function") applyPointsUI();
     const fee = deliveryFeeFor(total);
     const discount = pointsDiscountFor(total);
 
@@ -2528,7 +2588,8 @@
     const isFirstOrder = isFirstOrderFreeDelivery();   // من السستم، مو من مربع يعلّمه الزبون
     const usePointsEl = document.getElementById("usePointsCheck");
     const usingPoints = !!(usePointsEl && usePointsEl.checked && currentRedeemableValue > 0);
-    const pointsUsedCount = usingPoints ? Math.floor(currentPointsBalance/10)*10 : 0;
+    // النقاط تنشتق من الخصم المطبّق فعلاً — مو من الرصيد كامل
+    const pointsUsedCount = usingPoints ? pointsPlan(cartTotal()).pointsUsed : 0;
     const entries = Object.entries(cart).filter(([,q])=>q>0);
 
     if(!name || !phone || (entries.length===0 && !customRequest)){
@@ -3273,7 +3334,7 @@
       track.addEventListener("click", ()=> track.classList.toggle("paused"));
     }catch(e){ /* الشريط تزيين — فشله ما يأثر على المتجر */ }
   }
-  loadReviewStrip();
+  whenIdle(loadReviewStrip);   // شريط تزييني — ما يستاهل يزاحم المنتجات
 
   // ---------- تاريخ اليوم بشريط الأسعار ----------
   // أسماء الأشهر العراقية (كانون/شباط/آذار...) مو الميلادية العربية العامة
