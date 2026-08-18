@@ -9,7 +9,7 @@
   "closedMessage": "مغلق للصيانه",
   "pointsPerOrder": 2,
   "roundTo": 250,
-  "requireNotifications": true,
+  "requireNotifications": false,
   "requireInstall": false,
   "promoText": "🚴 التوصيل الأول مجاني لكل زبون جديد!",
   "announcement": "",
