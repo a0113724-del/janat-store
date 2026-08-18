@@ -859,8 +859,14 @@
   #ngSkip.show{ display:block; }
 
   /* ---------- شريط تقييمات الزبائن ---------- */
-  #reviewStrip{ display:none; max-width:1080px; margin:14px auto 0; padding:0 16px; }
-  #reviewStrip.show{ display:block; }
+  /* أول زيارة ما بيها كاش، فالشريط يجي متأخر. نخليه ينفتح بهدوء بدل
+     ما ينط ويزيح المحتوى تحت إصبع الزبون. */
+  #reviewStrip{
+    max-width:1080px; margin:0 auto; padding:0 16px;
+    max-height:0; opacity:0; overflow:hidden;
+    transition:max-height .45s ease, opacity .45s ease, margin-top .45s ease;
+  }
+  #reviewStrip.show{ max-height:120px; opacity:1; margin-top:14px; }
   .rstrip-head{
     display:flex; align-items:center; justify-content:center; gap:8px;
     font-size:.78rem; font-weight:800; color:var(--forest); margin-bottom:7px;
@@ -3530,38 +3536,61 @@
       .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   }
 
-  async function loadReviewStrip(){
-    if(!GOOGLE_SCRIPT_URL) return;
+  // ⚡ الشريط كان ينتظر رد السيرفر (١-٣ ثواني) وبعدين يطلع فجأة ويزيح
+  // المحتوى. صار يرسم فوراً من آخر نسخة محفوظة بالجهاز، ويتحدّث بهدوء
+  // بالخلفية — نفس أسلوب المنتجات والإعدادات.
+  const REVIEWS_CACHE_KEY = "janat-reviews-cache";
+
+  function paintReviewStrip(d){
     const strip = document.getElementById("reviewStrip");
     const track = document.getElementById("rstripTrack");
-    if(!strip || !track) return;
+    if(!strip || !track) return false;
+    if(!d || !Array.isArray(d.items) || d.items.length === 0) return false;
+
+    document.getElementById("rstripAvg").textContent = "★ " + d.avg;
+    document.getElementById("rstripCount").textContent = `(${d.count} تقييم)`;
+
+    const one = d.items.map(r=>{
+      const rt = Math.max(1, Math.min(5, Number(r.rating) || 0));
+      return `<div class="rstrip-item">
+        <span class="nm">${escHtml(r.name)}</span>
+        <span class="st">${"★".repeat(rt)}</span>
+      </div>`;
+    }).join("");
+
+    // نكرر القائمة مرتين حتى الحركة تلف بلا فجوة (الأنيميشن يمشي لنص العرض)
+    track.innerHTML = one + one;
+    // شريط قصير يخلص بسرعة — نبطّئه حسب عدد العناصر
+    track.style.animationDuration = Math.max(18, d.items.length * 3.4) + "s";
+    strip.classList.add("show");
+    return true;
+  }
+
+  // باللمس ما بيه hover — ضغطة توقّف الحركة وضغطة ترجّعها.
+  // نربطها مرة وحدة على الحاوية، مو بكل إعادة رسم.
+  document.getElementById("rstripTrack")
+    ?.addEventListener("click", function(){ this.classList.toggle("paused"); });
+
+  function showCachedReviewStrip(){
+    try{
+      const raw = localStorage.getItem(REVIEWS_CACHE_KEY);
+      if(raw) paintReviewStrip(JSON.parse(raw));
+    }catch(e){}
+  }
+
+  async function refreshReviewStrip(){
+    if(!GOOGLE_SCRIPT_URL) return;
     try{
       const res = await fetch(GOOGLE_SCRIPT_URL + "?publicReviews=1", { cache:"no-store" });
       const d = await res.json();
-      if(!d || !Array.isArray(d.items) || d.items.length === 0) return;
-
-      document.getElementById("rstripAvg").textContent = "★ " + d.avg;
-      document.getElementById("rstripCount").textContent = `(${d.count} تقييم)`;
-
-      const one = d.items.map(r=>{
-        const rt = Math.max(1, Math.min(5, Number(r.rating) || 0));
-        return `<div class="rstrip-item">
-          <span class="nm">${escHtml(r.name)}</span>
-          <span class="st">${"★".repeat(rt)}</span>
-        </div>`;
-      }).join("");
-
-      // نكرر القائمة مرتين حتى الحركة تلف بلا فجوة (الأنيميشن يمشي لنص العرض)
-      track.innerHTML = one + one;
-      // شريط قصير يخلص بسرعة — نبطّئه حسب عدد العناصر
-      track.style.animationDuration = Math.max(18, d.items.length * 3.4) + "s";
-      strip.classList.add("show");
-
-      // باللمس ما بيه hover — ضغطة توقّف الحركة وضغطة ترجّعها
-      track.addEventListener("click", ()=> track.classList.toggle("paused"));
+      if(!d || !Array.isArray(d.items)) return;
+      try{ localStorage.setItem(REVIEWS_CACHE_KEY, JSON.stringify(d)); }catch(e){}
+      paintReviewStrip(d);
     }catch(e){ /* الشريط تزيين — فشله ما يأثر على المتجر */ }
   }
-  whenIdle(loadReviewStrip);   // شريط تزييني — ما يستاهل يزاحم المنتجات
+
+  showCachedReviewStrip();          // فوري، بلا انتظار شبكة
+  whenIdle(refreshReviewStrip);     // التحديث بالخلفية
 
   // ---------- تاريخ اليوم بشريط الأسعار ----------
   // أسماء الأشهر العراقية (كانون/شباط/آذار...) مو الميلادية العربية العامة
