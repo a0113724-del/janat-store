@@ -40,7 +40,19 @@
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<!-- ⚠️ الخطوط تتحمّل بلا ما توقف الرسم.
+     قبل، وسم <link rel="stylesheet"> عادي كان يمنع الصفحة تنرسم لحد ما
+     يوصل ملف الخطوط من جوجل. لو الشبكة بطيئة أو جوجل محجوب، الزبون يظل
+     يشوف شاشة بيضاء ثواني طويلة. الحين النص يبين فوراً بخط الجهاز،
+     وخط تجوّل يتبدّل مكانه لمن يوصل. -->
+<link rel="preload" as="style"
+      href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&family=Tajawal:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" media="print" onload="this.media='all'; this.onload=null;"
+      href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&family=Tajawal:wght@400;500;700;900&display=swap">
+<noscript>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&family=Tajawal:wght@400;500;700;900&display=swap">
+</noscript>
 <style>
   :root{
     --ink:#1C2A1D;
@@ -76,7 +88,7 @@
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
   body{
-    font-family:'Tajawal', sans-serif;
+    font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif;
     background:var(--paper);
     color:var(--ink);
     line-height:1.55;
@@ -84,7 +96,7 @@
   }
   /* نجيب وزن واحد بس من Aref (700) — فنثبّته صراحة حتى ما يصطنعه
      المتصفح للعناصر اللي مو عناوين (مثل اسم المحل بالفوتر) */
-  h1,h2,h3, .display{ font-family:'Aref Ruqaa', serif; font-weight:700; }
+  h1,h2,h3, .display{ font-family:'Aref Ruqaa', 'Noto Naskh Arabic', 'Times New Roman', serif; font-weight:700; }
   button{ font-family:inherit; }
   img{ display:block; }
 
@@ -184,12 +196,12 @@
     border-radius:16px; padding:20px; text-align:center;
   }
   .custom-request-box .crb-icon{ font-size:2.2rem; margin-bottom:8px; }
-  .custom-request-box h3{ font-family:'Tajawal',sans-serif; font-size:1rem; color:var(--forest); margin-bottom:6px; }
+  .custom-request-box h3{ font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-size:1rem; color:var(--forest); margin-bottom:6px; }
   html.dark .custom-request-box h3{ color:var(--gold-light); }
   .custom-request-box p{ font-size:.8rem; color:#8a8a7c; margin-bottom:14px; }
   .custom-request-box textarea{
     width:100%; border:1.5px solid var(--card-border); border-radius:12px;
-    padding:12px; font-family:'Tajawal',sans-serif; font-size:.88rem;
+    padding:12px; font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-size:.88rem;
     background:var(--paper); color:var(--ink); resize:vertical;
   }
   .custom-request-box textarea:focus{ outline:none; border-color:var(--leaf); }
@@ -199,7 +211,7 @@
     border-radius:20px; padding:26px 22px; text-align:center;
   }
   .referral-box .rb-icon{ font-size:2.4rem; margin-bottom:8px; }
-  .referral-box h3{ font-family:'Tajawal',sans-serif; font-weight:900; font-size:1.05rem; color:var(--forest); margin-bottom:6px; }
+  .referral-box h3{ font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-weight:900; font-size:1.05rem; color:var(--forest); margin-bottom:6px; }
   .referral-box p{ font-size:.82rem; color:#3c2f12; margin-bottom:16px; line-height:1.6; }
   .referral-box p b{ color:var(--pomegranate); }
   .referral-btn{
@@ -245,7 +257,7 @@
     animation: tutorialPop .4s ease;
   }
   @keyframes tutorialPop{ 0%{transform:scale(.5); opacity:0;} 100%{transform:scale(1); opacity:1;} }
-  .tutorial-title{ font-family:'Tajawal',sans-serif; font-weight:900; font-size:1.15rem; color:var(--forest); margin-bottom:10px; }
+  .tutorial-title{ font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-weight:900; font-size:1.15rem; color:var(--forest); margin-bottom:10px; }
   html.dark .tutorial-title{ color:var(--gold-light); }
   .tutorial-text{ font-size:.92rem; color:var(--ink); line-height:1.8; max-width:300px; }
   .tutorial-text b{ color:var(--pomegranate); }
@@ -268,7 +280,7 @@
   .search-wrap{ flex:1; position:relative; }
   .search-wrap input{
     width:100%; border:1.5px solid var(--card-border); border-radius:100px;
-    padding:10px 40px 10px 14px; font-family:'Tajawal',sans-serif; font-size:.86rem;
+    padding:10px 40px 10px 14px; font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-size:.86rem;
     background:var(--card-bg); color:var(--ink);
   }
   .search-wrap input:focus{ outline:none; border-color:var(--leaf); }
@@ -539,7 +551,7 @@
   .card .img-wrap img{ width:100%; height:100%; object-fit:cover; }
   .card .img-wrap .placeholder-emoji{ font-size:2.6rem; opacity:.85; }
   .card .body{ padding:10px 10px 12px; text-align:center; }
-  .card h3{ font-family:'Tajawal',sans-serif; font-weight:700; font-size:.92rem; margin-bottom:4px; color:var(--ink); }
+  .card h3{ font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-weight:700; font-size:.92rem; margin-bottom:4px; color:var(--ink); }
   .card .price{ color:var(--pomegranate); font-weight:900; font-size:.86rem; margin-bottom:10px; }
   .card .price small{ font-weight:500; font-size:.68rem; color:#8a8a7c; }
   .card .price .old{
@@ -1104,7 +1116,7 @@
   .field label{ display:block; font-size:.78rem; font-weight:700; margin-bottom:5px; color:var(--ink); }
   .field input, .field textarea{
     width:100%; border:1.5px solid rgba(62,122,68,.3); border-radius:10px;
-    padding:10px 12px; font-family:'Tajawal',sans-serif; font-size:.88rem;
+    padding:10px 12px; font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-size:.88rem;
     background:#fff; color:var(--ink);
   }
   .field input:focus, .field textarea:focus{ outline:none; border-color:var(--leaf); }
@@ -1821,13 +1833,29 @@
     });
 
     // يصغّر الزر أثناء السحب لتحت حتى لا يغطي عناوين الأقسام، ويرجع طبيعي عند الوقوف
-    let lastY = window.scrollY, idleTimer = null;
+    //
+    // ⚠️ قبل، هذا المستمع كان يقرا scrollY ويكتب class بكل حدث تمرير.
+    // المتصفح يطلق عشرات الأحداث بالثانية، وكل قراءة بعد كتابة تجبره
+    // يعيد حساب التخطيط — فيتقطّع التمرير على الموبايلات الرخيصة.
+    // الحين: تحديث واحد بكل إطار، وما نكتب بالـDOM إلا لو الحالة تغيّرت.
+    let lastY = window.scrollY, idleTimer = null, queued = false, isMini = false;
+    function setMini(on){
+      if(on === isMini) return;          // نفس الحالة = ما نلمس الـDOM
+      btn.classList.toggle("mini", on);
+      isMini = on;
+    }
     window.addEventListener("scroll", ()=>{
-      const y = window.scrollY;
-      if(y > lastY + 8) btn.classList.add("mini");
-      lastY = y;
+      if(!queued){
+        queued = true;
+        requestAnimationFrame(()=>{
+          const y = window.scrollY;
+          if(y > lastY + 8) setMini(true);
+          lastY = y;
+          queued = false;
+        });
+      }
       clearTimeout(idleTimer);
-      idleTimer = setTimeout(()=>{ btn.classList.remove("mini"); }, 700);
+      idleTimer = setTimeout(()=> setMini(false), 700);
     }, { passive:true });
   })();
 
