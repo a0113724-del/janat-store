@@ -1000,7 +1000,8 @@
   .qty-row .qty-val{
     flex:1; text-align:center; font-weight:800; font-size:.86rem; color:var(--forest);
   }
-  .qty-row .qty-val small{ display:block; font-weight:500; font-size:.6rem; color:#8a8a7c; }
+  .qty-row .qty-val small{ display:block; font-weight:800; font-size:.63rem; color:var(--pomegranate); }
+  .card:not(.has-qty) .qty-row .qty-val small{ font-weight:500; color:#8a8a7c; }
   .card.has-qty{ outline:2px solid var(--leaf); }
 
   .note{ text-align:center; font-size:.76rem; color:#8a8a7c; margin:4px 0 26px; }
@@ -1158,6 +1159,8 @@
   }
   html.dark .store-status.closed{ background:#241512; }
   .step-hint{ font-size:.62rem; color:#8a8a7c; margin:-4px 0 6px; }
+  .step-hint b{ color:var(--forest); }
+  html.dark .step-hint b{ color:var(--gold-light); }
   .saved-loc{
     display:flex; align-items:center; justify-content:space-between; gap:8px;
     background:#EAF3EB; border:1.5px solid var(--leaf); border-radius:10px;
@@ -2044,6 +2047,27 @@
     return Number.isInteger(n) ? String(n) : String(n);
   }
 
+  /**
+   * الكمية بالكلام مو بالأرقام العشرية.
+   *
+   * المشكلة اللي انكشفت: منتج سعره 4000 يتقسّم أرباع، فأول ضغطة +
+   * تعطي 0.25 كغم = 1,000 دينار. الزبون يقرا "0.25" بسرعة ويفهمها
+   * كيلو، وينصدم لمن توصله ربع. "ربع كيلو" ما تنقرا غلط.
+   */
+  function qtyWords(q, unit){
+    const n = Math.round((Number(q) || 0) * 100) / 100;
+    if(n <= 0) return "0";
+    if((unit || "كغم") !== "كغم") return `${fmtQty(n)} ${unit}`;
+
+    const whole = Math.floor(n);
+    const frac  = Math.round((n - whole) * 100);
+    const fracWord = { 25:"ربع", 50:"نص", 75:"٣ أرباع" }[frac] || "";
+
+    if(whole === 0) return fracWord || `${fmtQty(n)} كغم`;
+    const wholeWord = whole === 1 ? "كيلو" : whole === 2 ? "كيلوين" : `${whole} كيلو`;
+    return fracWord ? `${wholeWord} و${fracWord}` : wholeWord;
+  }
+
   // ---------- أوقات العمل ----------
   function isStoreOpen(){
     if(STORE.manualClosed) return false;
@@ -2182,10 +2206,12 @@
         <h3>${p.name}</h3>
         <div class="price">${priceHtml}</div>
         ${saveLine}
-        ${ready && step < 1 ? `<div class="step-hint">تقدر تطلب ${fmtQty(step)} ${unit}</div>` : ""}
+        ${ready && step < 1 ? `<div class="step-hint">كل ضغطة + تزيد <b>${qtyWords(step, unit)}</b> = ${money(lineTotal(p, step))}</div>` : ""}
         <div class="qty-row">
           <button class="minus" data-id="${p.id}" ${ready?"":"disabled"}>−</button>
-          <span class="qty-val" id="qv-${p.id}">${fmtQty(qty)}<small>${unit}</small></span>
+          <span class="qty-val" id="qv-${p.id}">${qtyWords(qty, unit)}<small id="qs-${p.id}">${
+            qty > 0 ? money(lineTotal(p, qty)) : unit
+          }</small></span>
           <button class="plus" data-id="${p.id}" ${ready?"":"disabled"}>+</button>
         </div>
       </div>
@@ -2231,7 +2257,11 @@
     if(newQty===0) delete cart[id]; else cart[id] = newQty;
     const unit = (p && p.unit) || "كغم";
     const qv = document.getElementById("qv-"+id);
-    if(qv){ qv.innerHTML = `${fmtQty(cart[id]||0)}<small>${unit}</small>`; }
+    if(qv){
+      const q = cart[id] || 0;
+      // الكمية بالكلام وتحتها سعرها — الزبون يشوف بالضبط شنو ياخذ وبكم
+      qv.innerHTML = `${qtyWords(q, unit)}<small>${q > 0 ? money(lineTotal(p, q)) : unit}</small>`;
+    }
     const card = qv ? qv.closest(".card") : null;
     if(card){ card.classList.toggle("has-qty",(cart[id]||0)>0); }
     updateCartUI();
