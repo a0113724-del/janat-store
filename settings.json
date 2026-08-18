@@ -12,7 +12,6 @@
   "requireNotifications": true,
   "requireInstall": false,
   "promoText": "🚴 التوصيل الأول مجاني لكل زبون جديد!",
-<<<<<<< HEAD
   "announcement": "",
   "areas": [
     {
@@ -86,7 +85,3 @@
     }
   ]
 }
-=======
-  "announcement": ""
-}
->>>>>>> origin/main
