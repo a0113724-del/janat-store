@@ -286,6 +286,80 @@
   }
   .rate-toggle.done{ color:#1e6b2b; border-color:rgba(30,107,43,.5); }
 
+  /* زر تتبّع الطلب — ما يبين إلا لو عنده طلب فعلاً */
+  .track-toggle{ display:none; border-color:rgba(62,122,68,.5); color:var(--leaf); }
+  .track-toggle.show{ display:flex; }
+  .track-toggle.live{
+    border-color:var(--pomegranate); color:var(--pomegranate);
+    animation:tt-pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes tt-pulse{
+    0%,100%{ box-shadow:0 0 0 0 rgba(161,58,46,.5); }
+    70%{ box-shadow:0 0 0 9px rgba(161,58,46,0); }
+  }
+
+  /* ---------- بطاقة تتبّع الطلب ---------- */
+  .trk{
+    background:var(--card-bg); border:1px solid var(--card-border);
+    border-radius:16px; padding:15px; margin-bottom:12px;
+  }
+  .trk-top{
+    display:flex; justify-content:space-between; align-items:baseline;
+    gap:10px; margin-bottom:14px;
+  }
+  .trk-no{ font-weight:900; color:var(--forest); font-size:1rem; }
+  html.dark .trk-no{ color:var(--gold-light); }
+  .trk-when{ font-size:.72rem; color:#8a8a7c; }
+
+  .trk-steps{ display:flex; align-items:flex-start; margin-bottom:14px; }
+  .trk-st{ flex:1; text-align:center; position:relative; }
+  .trk-st .dot{
+    width:30px; height:30px; border-radius:50%; margin:0 auto 6px;
+    background:var(--card-border); color:#8a8a7c;
+    display:flex; align-items:center; justify-content:center; font-size:.9rem;
+    position:relative; z-index:2; transition:.3s;
+  }
+  .trk-st .lbl{ font-size:.68rem; font-weight:800; color:#8a8a7c; line-height:1.4; }
+  /* الخط الواصل بين النقاط */
+  /* الخط يمتد من مركز النقطة باتجاه النقطة اللي قبلها (يمينها بالعربي).
+     أول نقطة ما ورّاها شي، فنخفيه — بدونها الخط يطلع برّا البطاقة. */
+  .trk-st::before{
+    content:""; position:absolute; top:15px; left:50%; width:100%; height:3px;
+    background:var(--card-border); z-index:1;
+  }
+  .trk-st:first-child::before{ display:none; }
+  .trk-st.on .dot{ background:var(--leaf); color:#fff; }
+  .trk-st.on .lbl{ color:var(--leaf); }
+  .trk-st.on::before{ background:var(--leaf); }
+  .trk-st.now .dot{
+    background:var(--gold); color:#153122;
+    animation:tt-pulse 1.6s ease-in-out infinite;
+  }
+  .trk-st.now .lbl{ color:var(--gold); }
+
+  .trk-cancel{
+    background:rgba(161,58,46,.12); border:1px solid rgba(161,58,46,.4);
+    border-radius:11px; padding:11px; text-align:center;
+    font-weight:800; font-size:.85rem; color:var(--pomegranate); margin-bottom:12px;
+  }
+  .trk-items{
+    font-size:.78rem; color:#8a8a7c; line-height:1.9;
+    background:rgba(0,0,0,.03); border-radius:10px; padding:9px 11px;
+    white-space:pre-wrap; max-height:96px; overflow-y:auto;
+  }
+  html.dark .trk-items{ background:rgba(255,255,255,.05); }
+  .trk-sum{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:10px; padding-top:9px; border-top:1px dashed var(--card-border);
+    font-size:.86rem;
+  }
+  .trk-sum b{ color:var(--pomegranate); font-weight:900; }
+  .trk-hint{ font-size:.74rem; color:#8a8a7c; text-align:center; margin-top:12px; line-height:1.8; }
+  .trk-wa{
+    display:block; text-align:center; margin-top:10px; background:#25D366; color:#fff;
+    text-decoration:none; font-size:.82rem; font-weight:800; padding:11px; border-radius:12px;
+  }
+
   /* ---------- FACEBOOK LINK ---------- */
   .fb-chip{
     display:inline-flex; align-items:center; gap:6px;
@@ -1220,6 +1294,7 @@
       <input type="text" id="searchInput" placeholder="دوّر على منتج...">
       <span class="icon">🔍</span>
     </div>
+    <button class="theme-toggle track-toggle" id="openTrackBtn" title="وين طلبي؟">🚴</button>
     <button class="theme-toggle rate-toggle" id="openRateBtn" title="قيّم المتجر">⭐</button>
     <button class="theme-toggle" id="themeToggle" title="الوضع الليلي">🌙</button>
   </div>
@@ -1472,6 +1547,17 @@
 
   <!-- ================= OVERLAY ================= -->
   <div class="overlay" id="overlay"></div>
+
+  <!-- ================= TRACK SHEET (وين طلبي؟) ================= -->
+  <div class="sheet" id="trackSheet">
+    <div class="sheet-head">
+      <h3>🚴 وين طلبي؟</h3>
+      <button id="closeTrack">✕</button>
+    </div>
+    <div class="sheet-body" id="trackBody">
+      <p class="cart-empty">جاري التحميل...</p>
+    </div>
+  </div>
 
   <!-- ================= REVIEW SHEET (من أيقونة ⭐ بشريط الأدوات) ================= -->
   <div class="sheet" id="reviewSheet">
@@ -3083,6 +3169,8 @@
     if(rateOrder){
       setLastOrder({ orderId: rateOrder.orderId, seqNo: rateOrder.seqNo, at: Date.now() });
       refreshRateToggle();
+      rememberOrder(rateOrder);   // يدخل بقائمة "وين طلبي؟"
+      refreshTrackBtn();
     }
     rateNoteEl.value = "";
     rateMsgEl.textContent = "";
@@ -3294,6 +3382,117 @@
       closeNotifGate();
     });
   })();
+
+  // ================= تتبّع الطلب — "وين طلبي؟" =================
+  // الزبون كان يضغط "أرسل" وبعدها سكوت: ما يدري وصل الطلب لو لا، ولا
+  // متى يوصله. فيتصل يسأل، أو ما يرجع يطلب.
+  const MY_ORDERS_KEY = "janat-my-orders";
+  const TRACK_STEPS = [
+    { key: "استلمنا",   icon: "📝", label: "استلمنا طلبك" },
+    { key: "قيد التجهيز", icon: "🧺", label: "نجهّزه" },
+    { key: "بالطريق",   icon: "🚴", label: "بالطريق" },
+    { key: "تم التسليم", icon: "✅", label: "وصل" }
+  ];
+
+  function myOrders(){
+    try{ return JSON.parse(localStorage.getItem(MY_ORDERS_KEY) || "[]"); }
+    catch(e){ return []; }
+  }
+  function rememberOrder(o){
+    if(!o || !o.orderId) return;
+    try{
+      const list = myOrders().filter(x => x.orderId !== o.orderId);
+      list.push({ orderId: o.orderId, seqNo: o.seqNo, at: Date.now() });
+      // آخر 10 طلبات تكفي — ما نخلي التخزين يكبر بلا داعي
+      localStorage.setItem(MY_ORDERS_KEY, JSON.stringify(list.slice(-10)));
+    }catch(e){}
+  }
+
+  /** رقم المرحلة الحالية حسب نص الحالة الجاي من السيرفر */
+  function stepIndexOf(status){
+    const s = String(status || "").trim();
+    if(s === "تم التسليم") return 3;
+    if(s === "بالطريق")   return 2;
+    if(s === "قيد التجهيز") return 1;
+    return 0;                       // قيد المراجعة أو أي شي ثاني
+  }
+
+  function trackCardHtml(d){
+    const cancelled = String(d.status || "").trim() === "ملغي";
+    const at = stepIndexOf(d.status);
+    const when = d.time ? new Date(d.time).toLocaleString('ar-IQ',
+      { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : "";
+
+    const steps = cancelled ? "" : `<div class="trk-steps">` + TRACK_STEPS.map((s, i)=>{
+      const cls = i < at ? "on" : (i === at ? "on now" : "");
+      return `<div class="trk-st ${cls}">
+        <div class="dot">${s.icon}</div>
+        <div class="lbl">${escHtml(s.label)}</div>
+      </div>`;
+    }).join("") + `</div>`;
+
+    const hint = cancelled ? ""
+      : at === 3 ? `<div class="trk-hint">✅ وصل طلبك — تسلّم ${Number(d.pointsEarned)||0} نقطة 🌿</div>`
+      : at === 2 ? `<div class="trk-hint">🚴 طلع من المحل وجاي لك</div>`
+      : `<div class="trk-hint">نجهّز طلبك الحين — راح نخبرك لمن يطلع بالطريق</div>`;
+
+    return `<div class="trk">
+      <div class="trk-top">
+        <span class="trk-no">طلب #${escHtml(d.seqNo || "—")}</span>
+        <span class="trk-when">${escHtml(when)}</span>
+      </div>
+      ${cancelled ? `<div class="trk-cancel">✖️ هذا الطلب انلغى</div>` : steps}
+      ${d.items ? `<div class="trk-items">${escHtml(String(d.items).replace(/\|/g, "\n"))}</div>` : ""}
+      <div class="trk-sum"><span>الإجمالي</span><b>${money(Number(d.total)||0)}</b></div>
+      ${hint}
+    </div>`;
+  }
+
+  async function loadTracking(){
+    const body = document.getElementById("trackBody");
+    if(!body) return;
+    const list = myOrders().slice().reverse();      // الأحدث أول
+    if(!list.length){
+      body.innerHTML = `<p class="cart-empty">ما عندك طلبات بعد — أول ما تطلب تكدر تتابعه من هنا</p>`;
+      return;
+    }
+    body.innerHTML = `<p class="cart-empty">جاري التحميل...</p>`;
+    try{
+      const results = await Promise.all(list.slice(0, 5).map(o =>
+        fetch(`${GOOGLE_SCRIPT_URL}?trackOrder=${encodeURIComponent(o.orderId)}`, { cache:"no-store" })
+          .then(r => r.json()).catch(()=> ({ found:false }))
+      ));
+      const found = results.filter(r => r && r.found);
+      if(!found.length){
+        body.innerHTML = `<p class="cart-empty">تعذّر جلب حالة طلبك — تأكد من الإنترنت وحاول مرة ثانية</p>`;
+        return;
+      }
+      body.innerHTML = found.map(trackCardHtml).join("") +
+        `<a class="trk-wa" target="_blank" rel="noopener"
+            href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("سلام عليكم، أريد أسأل عن طلبي")}">
+          📲 اسأل عن طلبك بالواتساب</a>`;
+    }catch(err){
+      body.innerHTML = `<p class="cart-empty">ما وصلنا للسيرفر — تأكد من الإنترنت</p>`;
+    }
+  }
+
+  /** زر التتبّع ما يبين إلا لو عنده طلب، ويصير أحمر لو بيه طلب شغّال */
+  function refreshTrackBtn(){
+    const btn = document.getElementById("openTrackBtn");
+    if(!btn) return;
+    const list = myOrders();
+    btn.classList.toggle("show", list.length > 0);
+    // طلب خلال آخر يومين = على الأغلب لسه ما وصل
+    const fresh = list.some(o => (Date.now() - (Number(o.at)||0)) < 2*24*60*60*1000);
+    btn.classList.toggle("live", fresh);
+  }
+
+  document.getElementById("openTrackBtn")?.addEventListener("click", ()=>{
+    openSheet(document.getElementById("trackSheet"));
+    loadTracking();
+  });
+  document.getElementById("closeTrack")?.addEventListener("click", closeSheets);
+  refreshTrackBtn();
 
   // ---------- (٣) شريط التقييمات بالصفحة الرئيسية ----------
   // اسم أول + نجوم بس. الملاحظة والرقم ما يطلعون منه أبداً.
