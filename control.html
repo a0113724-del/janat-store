@@ -208,6 +208,14 @@
   .confirm-btn{ background:var(--leaf); color:#fff; border:none; padding:9px 18px; border-radius:100px; font-weight:800; font-size:.78rem; cursor:pointer; width:100%; margin-top:10px; }
   .confirm-btn:disabled{ background:#ccc; cursor:not-allowed; }
   .confirm-btn.done{ background:#DFF2E1; color:#1e6b2b; }
+  .stage-row{ display:flex; gap:6px; margin-top:10px; }
+  .stage-btn{
+    flex:1; background:#fff; border:1.5px solid var(--line); color:#666;
+    padding:8px 6px; border-radius:100px; font-family:inherit;
+    font-weight:800; font-size:.72rem; cursor:pointer;
+  }
+  .stage-btn.on{ background:var(--gold); border-color:var(--gold); color:var(--forest); }
+  .stage-btn:disabled{ opacity:.6; cursor:not-allowed; }
 
   /* ---------- CUSTOMERS TABLE ---------- */
   table{ width:100%; border-collapse:collapse; background:var(--card); border-radius:14px; overflow:hidden; border:1px solid var(--line); font-size:.78rem; }
@@ -1275,6 +1283,33 @@
   }
   window.confirmDelivery = confirmDelivery;
 
+  // يحرّك الطلب لمرحلة وسط — الزبون يشوفها بصفحة "وين طلبي؟"
+  // و"بالطريق" تدز له إشعار كذلك
+  async function setOrderStatus(orderId, status, btnEl){
+    const was = btnEl.textContent;
+    btnEl.disabled = true; btnEl.textContent = "⏳ ...";
+    try{
+      const res = await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST", headers: { "Content-Type": "text/plain" },
+        body: adminBody({ action: "setOrderStatus", orderId, status })
+      });
+      const data = await res.json();
+      if(!checkAuth(data)){ btnEl.disabled = false; btnEl.textContent = was; return; }
+      if(data.status === "ok"){
+        btnEl.textContent = "✅ " + status;
+        setTimeout(loadOrdersData, 1000);
+      }else{
+        btnEl.textContent = "⚠️ " + (data.message || "ما انحفظ");
+        btnEl.disabled = false;
+        setTimeout(()=>{ btnEl.textContent = was; }, 2500);
+      }
+    }catch(e){
+      btnEl.textContent = "⚠️ تعذّر الاتصال"; btnEl.disabled = false;
+      setTimeout(()=>{ btnEl.textContent = was; }, 2500);
+    }
+  }
+  window.setOrderStatus = setOrderStatus;
+
   function renderOrdersList(orders){
     const sorted = [...orders].sort((a,b)=> new Date(b.time) - new Date(a.time)).slice(0,30);
     const list = document.getElementById("ordersList");
@@ -1297,9 +1332,21 @@
         <span class="badge badge-points">⭐ ${o.pointsEarned||0} نقطة</span>
         ${o.firstOrder === "نعم" ? '<span class="badge badge-first">🎁 أول طلب</span>' : ''}
         ${isGps ? '<span class="badge badge-gps">📍 دقيق</span>' : ''}`;
-      const btn = isDelivered
+      const st = (o.status || "").trim();
+      const isCancelled = st === "ملغي";
+      // أزرار المراحل — الزبون يشوف كل تغيير بصفحة "وين طلبي؟"
+      const stageBtns = (isDelivered || isCancelled) ? "" : `
+        <div class="stage-row">
+          <button class="stage-btn ${st==='قيد التجهيز'?'on':''}"
+            onclick="setOrderStatus('${o.orderId}','قيد التجهيز', this)">🧺 قيد التجهيز</button>
+          <button class="stage-btn ${st==='بالطريق'?'on':''}"
+            onclick="setOrderStatus('${o.orderId}','بالطريق', this)">🚴 بالطريق</button>
+        </div>`;
+      const btn = stageBtns + (isDelivered
         ? `<button class="confirm-btn done" disabled>✅ تم التسليم</button>`
-        : `<button class="confirm-btn" onclick="confirmDelivery('${o.orderId}', this)">✅ تأكيد الاستلام</button>`;
+        : isCancelled
+        ? `<button class="confirm-btn" disabled style="background:#FBE1DE; color:#8a2418;">✖️ ملغي</button>`
+        : `<button class="confirm-btn" onclick="confirmDelivery('${o.orderId}', this)">✅ تأكيد الاستلام</button>`);
 
       // تنبيه التلاعب — flag فاضي يعني الطلب سليم، ما نعرض أي علامة
       const flag = (o.flag ?? "").toString().trim();

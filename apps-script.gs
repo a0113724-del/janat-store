@@ -52,8 +52,14 @@ const IQD_PER_10_POINTS = 1000;
 const REFERRAL_BONUS_POINTS = 10;
 const REFERRAL_MIN_ORDER_TOTAL = 10000; // الحد الأدنى لقيمة طلب الصديق المدعو
 const DEFAULT_STATUS = "قيد المراجعة";
+const PREPARING_STATUS = "قيد التجهيز";
+const ONWAY_STATUS = "بالطريق";
 const DELIVERED_STATUS = "تم التسليم";
 const CANCELLED_STATUS = "ملغي";
+
+// الحالات اللي الأدمن يكدر يحطها من صفحة التحكم (التسليم إله مسار خاص
+// لأنه يضيف النقاط، والإلغاء إله مسار خاص لأنه يرجّعها)
+const SETTABLE_STATUSES = [DEFAULT_STATUS, PREPARING_STATUS, ONWAY_STATUS];
 
 // كم دقيقة يبقى الزائر محسوب "فاتح التطبيق الآن"
 const ONLINE_WINDOW_MINUTES = 5;
@@ -1160,6 +1166,42 @@ function doPost(e) {
       }
     }
 
+    // ═══ تغيير حالة الطلب من صفحة التحكم (قيد التجهيز / بالطريق) ═══
+    // التسليم والإلغاء إلهم مسارات خاصة لأنهم يحرّكون النقاط
+    if (data.action === "setOrderStatus" && data.orderId) {
+      if (!isAuthorized(data.adminKey)) return denied();
+      const wanted = String(data.status || "").trim();
+      if (SETTABLE_STATUSES.indexOf(wanted) === -1) {
+        return jsonOut({ status: "error", message: "حالة غير مسموحة" });
+      }
+      const ordersSheet = getOrdersSheet();
+      const lastRow = ordersSheet.getLastRow();
+      if (lastRow < 2) return jsonOut({ status: "error", message: "no orders" });
+
+      const ids = ordersSheet.getRange(2, COL_ORDER_ID, lastRow - 1, 1).getValues();
+      let targetRow = -1;
+      for (let i = 0; i < ids.length; i++) {
+        if (String(ids[i][0]) === String(data.orderId)) { targetRow = i + 2; break; }
+      }
+      if (targetRow === -1) return jsonOut({ status: "error", message: "order not found" });
+
+      const cur = String(ordersSheet.getRange(targetRow, COL_STATUS).getValue()).trim();
+      if (cur === DELIVERED_STATUS || cur === CANCELLED_STATUS) {
+        return jsonOut({ status: "error", message: "الطلب مقفل — " + cur });
+      }
+      ordersSheet.getRange(targetRow, COL_STATUS).setValue(wanted);
+
+      // نخبر الزبون إن طلبه تحرّك — هاي أهم لحظة بالانتظار
+      if (wanted === ONWAY_STATUS) {
+        try {
+          const row = ordersSheet.getRange(targetRow, 1, 1, ORDERS_NUM_COLS).getValues()[0];
+          notifyCustomer(row[COL_PHONE - 1], "🚴 طلبك بالطريق!",
+            "طلبك #" + (row[COL_SEQ_NO - 1] || "") + " طلع من المحل وجاي لك 🌿");
+        } catch (e) { /* فشل الإشعار ما يوقف تغيير الحالة */ }
+      }
+      return jsonOut({ status: "ok", newStatus: wanted });
+    }
+
     // زر "تأكيد الاستلام" بصفحة التقارير
     if (data.action === "confirmDelivery" && data.orderId) {
       if (!isAuthorized(data.adminKey)) return denied();
@@ -1718,6 +1760,38 @@ function doGet(e) {
 
   const ordersSheet = getOrdersSheet();
   const lastRow = ordersSheet.getLastRow();
+
+  // ═══ تتبّع طلب بمعرّفه — للزبون ═══
+  // مربوط بالـUUID مو برقم الهاتف: أي أحد يعرف رقم زبون كان يكدر يشوف
+  // طلبه وسعره ومحتوياته. الـUUID محد يخمّنه، فما يشوفه إلا صاحبه.
+  if (e.parameter.trackOrder) {
+    const wanted = String(e.parameter.trackOrder).trim();
+    if (!wanted) return jsonOut({ found: false });
+    const oSheet = getOrdersSheet();
+    const oLast = oSheet.getLastRow();
+    if (oLast < 2) return jsonOut({ found: false });
+
+    const ids = oSheet.getRange(2, COL_ORDER_ID, oLast - 1, 1).getValues();
+    let row = -1;
+    for (let i = 0; i < ids.length; i++) {
+      if (String(ids[i][0]) === wanted) { row = i + 2; break; }
+    }
+    if (row === -1) return jsonOut({ found: false });
+
+    const r = oSheet.getRange(row, 1, 1, ORDERS_NUM_COLS).getValues()[0];
+    return jsonOut({
+      found: true,
+      orderId: wanted,
+      seqNo: r[COL_SEQ_NO - 1],
+      time: r[COL_TIME - 1],
+      items: r[COL_ITEMS - 1],
+      subtotal: r[COL_SUBTOTAL - 1],
+      deliveryFee: r[COL_DELIVERY_FEE - 1],
+      total: r[COL_TOTAL - 1],
+      pointsEarned: r[COL_POINTS_EARNED - 1],
+      status: String(r[COL_STATUS - 1] || DEFAULT_STATUS).trim()
+    });
+  }
 
   if (e.parameter.orderStatus) {
     const target = normalizePhone(e.parameter.orderStatus);
