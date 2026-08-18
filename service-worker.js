@@ -1,13 +1,14 @@
 /* ==========================================================
-   جنة الفواكه والخضار — Service Worker  (v14)
+   جنة الفواكه والخضار — Service Worker  (v15)
    1) كاش للملفات الأساسية حتى التطبيق يفتح بدون نت
    2) يضيف <script src="bottom-nav.js"> لصفحة الزبون فقط
       ⚠️ صفحات الإدارة (control / admin / dashboard) مستثناة تماماً —
       قبل هذا التعديل كان الشريط يظهر بلوحة التحكم ويغطّي المحتوى.
-   3) الصفحات وملفات البيانات: نت أولاً، حتى أي تعديل يوصل فوراً
+   3) الصفحة: الكاش أولاً والتحديث بالخلفية — تفتح فوراً بلا انتظار نت
+   4) ملفات البيانات (products/settings): نت أولاً، حتى الأسعار تبقى محدثة
    ========================================================== */
 
-const CACHE_NAME = "janat-store-cache-v14";
+const CACHE_NAME = "janat-store-cache-v15";
 const CORE_ASSETS = [
   "./index.html",
   "./products.json",
@@ -90,35 +91,52 @@ self.addEventListener("fetch", (event) => {
   // ملفات السكربت والبيانات: نت أولاً حتى أي تعديل يوصل فوراً
   const isFresh = /\.(json|js)(\?.*)?$/.test(req.url) && sameOrigin;
 
-  // الصفحات: نت أولاً (حتى الأسعار والإعدادات تبقى محدثة) + كاش احتياطي
+  // ═══ الصفحات: الكاش أولاً، والتحديث بالخلفية ═══
+  //
+  // قبل، كانت "نت أولاً": يعني كل فتحة للتطبيق تنتظر تنزيل الصفحة كاملة
+  // (١٩٣ كيلو) قبل ما يشوف الزبون أي شي — حتى لو النسخة محفوظة بجهازه.
+  // على نت موبايل ضعيف هذا ثواني ضايعة بكل مرة.
+  //
+  // الحين: نرجّع النسخة المحفوظة فوراً، وننزّل الجديدة بالهدوء للفتحة
+  // الجاية. الأسعار والإعدادات ما تتأثر — هي بملفات JSON منفصلة تجي
+  // من النت أولاً دائماً.
   if (isPage && sameOrigin) {
-    event.respondWith(
-      fetch(req)
+    event.respondWith((async () => {
+      const cached = await caches.match(req);
+
+      const fromNetwork = fetch(req)
         .then(async (res) => {
           const out = await injectBottomNav(res, req);
           const copy = out.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => {});
           return out;
         })
-        .catch(async () => {
-          const cached = await caches.match(req);
-          if (cached) return cached;
-          // بدون نت: صفحة الإدارة ما نبدلها بصفحة الزبون
-          if (!isCustomerPage(req.url)) {
-            return new Response(
-              "<h3 style='font-family:sans-serif;text-align:center;padding:40px'>ما في اتصال بالإنترنت — لوحة التحكم تحتاج نت</h3>",
-              { status: 503, headers: { "Content-Type": "text/html; charset=utf-8" } }
-            );
-          }
-          return (
-            (await caches.match("./index.html")) ||
-            new Response("<h3 style='font-family:sans-serif;text-align:center;padding:40px'>ما في اتصال بالإنترنت</h3>", {
-              status: 503,
-              headers: { "Content-Type": "text/html; charset=utf-8" }
-            })
-          );
+        .catch(() => null);
+
+      // عدنا نسخة؟ نعطيها فوراً ونكمل التنزيل بالخلفية
+      if (cached) {
+        event.waitUntil(fromNetwork);
+        return cached;
+      }
+
+      const fresh = await fromNetwork;
+      if (fresh) return fresh;
+
+      // أول زيارة وبلا نت: صفحة الإدارة ما نبدلها بصفحة الزبون
+      if (!isCustomerPage(req.url)) {
+        return new Response(
+          "<h3 style='font-family:sans-serif;text-align:center;padding:40px'>ما في اتصال بالإنترنت — لوحة التحكم تحتاج نت</h3>",
+          { status: 503, headers: { "Content-Type": "text/html; charset=utf-8" } }
+        );
+      }
+      return (
+        (await caches.match("./index.html")) ||
+        new Response("<h3 style='font-family:sans-serif;text-align:center;padding:40px'>ما في اتصال بالإنترنت</h3>", {
+          status: 503,
+          headers: { "Content-Type": "text/html; charset=utf-8" }
         })
-    );
+      );
+    })());
     return;
   }
 
