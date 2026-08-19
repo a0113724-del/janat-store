@@ -87,8 +87,7 @@ const COL_SEQ_NO = 16;
 const COL_SUBTOTAL = 17;
 const COL_DELIVERY_FEE = 18;
 const COL_FLAG = 19;
-const COL_AREA = 20;
-const ORDERS_NUM_COLS = 20;
+const ORDERS_NUM_COLS = 19;
 
 // ═══════════ إعدادات المتجر وأسعاره (مصدر الحقيقة لحساب الفلوس) ═══════════
 const BASE_URL = "https://a0113724-del.github.io/janat-store/";
@@ -256,28 +255,10 @@ function computeSubtotalFromLines(lines) {
   };
 }
 
-/** يدوّر منطقة بالاسم داخل إعدادات المتجر. يرجّع null لو ما لقاها. */
-function findArea(name) {
-  const s = getStoreSettings();
-  const list = Array.isArray(s.areas) ? s.areas : [];
-  const wanted = String(name || "").trim();
-  if (!wanted) return null;
-  for (let i = 0; i < list.length; i++) {
-    if (String(list[i] && list[i].name || "").trim() === wanted) return list[i];
-  }
-  return null;
-}
-
-/**
- * أجرة التوصيل. لو الطلب جايب منطقة معروفة، أجرتها هي المعتمدة —
- * ما نصدّق الرقم الجاي من المتصفح، نفس مبدأ الأسعار.
- */
-function computeDeliveryFee(subtotal, isFirstOrder, areaName) {
+function computeDeliveryFee(subtotal, isFirstOrder) {
   const s = getStoreSettings();
   if (s.firstOrderFreeDelivery && isFirstOrder) return 0;
   if (Number(s.freeDeliveryOver) > 0 && subtotal >= Number(s.freeDeliveryOver)) return 0;
-  const area = findArea(areaName);
-  if (area && Number(area.fee) >= 0) return Number(area.fee) || 0;
   return Number(s.deliveryFee) || 0;
 }
 
@@ -299,17 +280,12 @@ function getOrdersSheet() {
       "الوقت", "الاسم", "الهاتف", "العنوان",
       "الموقع التقريبي", "المنتجات", "المجموع", "ملاحظات", "أول طلب",
       "نقاط مكتسبة", "نقاط مستخدمة", "الحالة", "أحاله", "معالجة النقاط",
-      "رقم الطلب", "الرقم التسلسلي", "المجموع الفرعي", "رسوم التوصيل", "تنبيه", "المنطقة"
+      "رقم الطلب", "الرقم التسلسلي", "المجموع الفرعي", "رسوم التوصيل", "تنبيه"
     ]);
-  } else {
+  } else if (String(sheet.getRange(1, COL_SUBTOTAL).getValue()).trim() === "") {
     // ترقية جدول موجود: نضيف عناوين الأعمدة الجديدة بدون المساس بالبيانات
-    if (String(sheet.getRange(1, COL_SUBTOTAL).getValue()).trim() === "") {
-      sheet.getRange(1, COL_SUBTOTAL, 1, 3)
-        .setValues([["المجموع الفرعي", "رسوم التوصيل", "تنبيه"]]);
-    }
-    if (String(sheet.getRange(1, COL_AREA).getValue()).trim() === "") {
-      sheet.getRange(1, COL_AREA).setValue("المنطقة");
-    }
+    sheet.getRange(1, COL_SUBTOTAL, 1, 3)
+      .setValues([["المجموع الفرعي", "رسوم التوصيل", "تنبيه"]]);
   }
   // بدونها Sheets يحوّل 07831158964 لرقم ويشيل الصفر
   forceTextColumn(sheet, COL_PHONE);
@@ -599,7 +575,6 @@ function telegramOrderText(o) {
   L.push("");
   L.push("👤 " + tgEsc(o.name || "بدون اسم"));
   L.push("📞 <code>" + tgEsc(o.phone) + "</code>");
-  if (o.area) L.push("🗺️ <b>" + tgEsc(o.area) + "</b>");
   if (o.address) L.push("📍 " + tgEsc(o.address));
   if (o.mapsUrl) L.push('🗺️ <a href="' + tgEsc(o.mapsUrl) + '">افتح الموقع على الخرائط</a>');
   if (items) { L.push(""); L.push("🧺 <b>الطلب:</b>"); L.push(items); }
@@ -1375,17 +1350,7 @@ function doPost(e) {
       }
 
       // ═══ رسوم التوصيل والمجموع النهائي ═══
-      const areaName = String(data.area || "").trim();
-      const areaRow = findArea(areaName);
-      const serverFee = computeDeliveryFee(subtotal, isGenuinelyFirstOrder, areaName);
-      if (areaName && !areaRow) {
-        // منطقة كتبها الزبون بيده (خيار "منطقتي مو موجودة")
-        flags.push("منطقة جديدة: " + areaName + " — راجع الأجرة");
-      }
-      if (areaRow && Number(areaRow.feeMax) > Number(areaRow.fee)) {
-        // منطقة سعرها مدى (المحاجير) — انحسبت بالأقل، تأكد قبل التسليم
-        flags.push("أجرة " + areaName + " تتراوح " + areaRow.fee + "–" + areaRow.feeMax + " — راجعها");
-      }
+      const serverFee = computeDeliveryFee(subtotal, isGenuinelyFirstOrder);
       const total = Math.max(0, subtotal + serverFee - discount);
 
       // الواجهة تعرف "أول طلب" من checkPhone اللي ينتظر 600ms بعد ما يكتب
@@ -1445,8 +1410,7 @@ function doPost(e) {
         seqNo,
         subtotal,
         serverFee,
-        flags.join(" | "),
-        areaName
+        flags.join(" | ")
       ]);
 
       // نربط جهاز الزائر بالزبون حتى تظهر أسماء بقائمة النشطين
@@ -1477,7 +1441,6 @@ function doPost(e) {
         fee: serverFee,
         total: total,
         seqNo: seqNo,
-        area: areaName,
         firstOrder: isGenuinelyFirstOrder,
         flagged: flags.length > 0,
         flags: flags.join(" | ")
@@ -1826,7 +1789,6 @@ function doGet(e) {
       deliveryFee: r[COL_DELIVERY_FEE - 1],
       total: r[COL_TOTAL - 1],
       pointsEarned: r[COL_POINTS_EARNED - 1],
-      area: r[COL_AREA - 1],
       status: String(r[COL_STATUS - 1] || DEFAULT_STATUS).trim()
     });
   }
@@ -1908,8 +1870,7 @@ function doGet(e) {
       seqNo: row[COL_SEQ_NO - 1],
       subtotal: row[COL_SUBTOTAL - 1],
       deliveryFee: row[COL_DELIVERY_FEE - 1],
-      flag: row[COL_FLAG - 1],
-      area: row[COL_AREA - 1]
+      flag: row[COL_FLAG - 1]
     };
   });
   return jsonOut(orders);
