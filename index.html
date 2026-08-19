@@ -858,6 +858,24 @@
   }
   #ngSkip.show{ display:block; }
 
+  /* شريط "صدر تحديث" — يطلع لمن تجهز نسخة جديدة بالخلفية */
+  #swUpdateBar{
+    position:fixed; left:12px; right:12px; z-index:400;
+    bottom:calc(var(--bar-h) + 16px + env(safe-area-inset-bottom, 0px));
+    background:var(--forest); color:var(--gold-light);
+    border:1px solid rgba(233,205,134,.35); border-radius:14px;
+    padding:12px 14px; display:flex; align-items:center; justify-content:space-between;
+    gap:10px; font-size:.85rem; font-weight:800;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+    transform:translateY(140%); transition:transform .35s cubic-bezier(.2,.8,.25,1);
+  }
+  #swUpdateBar.show{ transform:translateY(0); }
+  #swUpdateBar button{
+    flex:0 0 auto; background:var(--gold); color:#153122; border:none;
+    border-radius:100px; padding:8px 16px; font-family:inherit;
+    font-weight:900; font-size:.8rem; cursor:pointer;
+  }
+
   /* ---------- شريط تقييمات الزبائن ---------- */
   /* أول زيارة ما بيها كاش، فالشريط يجي متأخر. نخليه ينفتح بهدوء بدل
      ما ينط ويزيح المحتوى تحت إصبع الزبون. */
@@ -4054,9 +4072,40 @@
   }
 
   // ---------- PWA: SERVICE WORKER ----------
+  //
+  // ⚠️ الصفحة تنعرض من الكاش فوراً (عشان السرعة)، يعني أول فتحة بعد أي
+  // تحديث يشوف الزبون النسخة القديمة والجديدة تتنزّل بالخلفية. بدون
+  // تنبيه، الواحد يظن إن التعديل ما انطبق ويعيد ويزيد.
+  // الحل: أول ما تجهز نسخة جديدة، نطلع شريط يخليه يحدّث بضغطة.
+  function showUpdateBar(){
+    if(document.getElementById("swUpdateBar")) return;
+    const bar = document.createElement("div");
+    bar.id = "swUpdateBar";
+    bar.innerHTML = `<span>✨ صدر تحديث جديد للتطبيق</span>
+      <button type="button">حدّث الآن</button>`;
+    bar.querySelector("button").addEventListener("click", ()=> location.reload());
+    document.body.appendChild(bar);
+    requestAnimationFrame(()=> bar.classList.add("show"));
+  }
+
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("service-worker.js").catch((err) => {
+      navigator.serviceWorker.register("service-worker.js").then((reg)=>{
+        // نسخة جديدة انتنزّلت وعدنا نسخة شغّالة أصلاً = بيه تحديث
+        reg.addEventListener("updatefound", ()=>{
+          const nw = reg.installing;
+          if(!nw) return;
+          nw.addEventListener("statechange", ()=>{
+            if(nw.state === "installed" && navigator.serviceWorker.controller){
+              showUpdateBar();
+            }
+          });
+        });
+        // ندوّر على تحديث كل مرة يرجع الزبون للتطبيق
+        document.addEventListener("visibilitychange", ()=>{
+          if(!document.hidden) reg.update().catch(()=>{});
+        });
+      }).catch((err) => {
         console.warn("Service worker registration failed:", err);
       });
     });
