@@ -99,7 +99,7 @@ const DEFAULT_SETTINGS = {
   deliveryFee: 1000,
   freeDeliveryOver: 0,        // 0 = معطّل
   minOrderTotal: 0,
-  firstOrderFreeDelivery: false,   // انلغى — الأجرة تتحدد بالمنطقة
+  firstOrderFreeDelivery: true,
   // تقريب الفلوس لأقرب مضاعف — 250 لأن أصغر ورقة بالعراق 250 دينار.
   // لازم يطابق نفس الرقم بـ index.html وإلا كل طلب ينتفلگ بعلامة حمراء.
   roundTo: 250

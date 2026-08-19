@@ -1277,7 +1277,7 @@
 
   <div class="promo-banner" id="promoBanner">
     <span class="tag-new">جديد</span>
-    <span id="promoText">🚴 نوصّل لكل مناطق أبو صخير والحيرة</span>
+    <span id="promoText">🚴 التوصيل الأول مجاني لكل زبون جديد!</span>
   </div>
 
   <div class="store-status" id="storeStatus"></div>
@@ -1768,13 +1768,13 @@
     closeHour: 22,              // ساعة الإغلاق بنظام 24
     quarterKgOverPrice: 4000,   // المنتج الأغلى من هذا يُطلب بربع كيلو، والباقي بنص كيلو
     pointsPerOrder: 2,          // ⚠️ لازم يطابق الرقم المكتوب بـ Apps Script
-    firstOrderFreeDelivery: false,// انلغى العرض — أجرة التوصيل تتحدد بالمنطقة
+    firstOrderFreeDelivery: true, // شعار "التوصيل الأول مجاني" — يُلغى تلقائياً لأي زبون موجود بالسستم
     manualClosed: false,        // إغلاق يدوي (عطلة/طارئ) يتجاوز أوقات العمل
     closedMessage: "",          // نص يظهر وقت الإغلاق اليدوي
     roundTo: 250,               // تقريب الفلوس لأقرب مضاعف (أصغر ورقة بالعراق 250) — 0 يعطّله
     requireNotifications: false,// true = ما يدخل التطبيق إلا بعد ما يفعّل الإشعارات
     requireInstall: false,      // true = شاشة التثبيت تطلع للكل، مو للجاي من الباركود بس
-    promoText: "🚴 نوصّل لكل مناطق أبو صخير والحيرة — شوف أجرة منطقتك بصفحة الطلب",
+    promoText: "🚴 التوصيل الأول مجاني لكل زبون جديد!",
     areas: [],                  // مناطق التوصيل وأجرة كل وحدة — من settings.json
     announcement: ""            // إعلان يظهر بأعلى الصفحة (فاضي = مخفي)
   };
@@ -1890,12 +1890,12 @@
     buildAreaOptions();
     const promo = document.getElementById("promoBanner");
     const promoTextEl = document.getElementById("promoText");
-    // البانر كان مربوط بعرض "التوصيل الأول مجاني" — لمن انلغى العرض
-    // اختفى البانر كله. صار مستقل: يطلع بأي نص تكتبه، ويختفي لو فرّغته.
     if(promo){
-      const txt = String(STORE.promoText || "").trim();
-      promo.style.display = txt ? "" : "none";
-      if(txt && promoTextEl) promoTextEl.textContent = txt;
+      if(!STORE.firstOrderFreeDelivery || !String(STORE.promoText || "").trim()){
+        promo.style.display = "none";
+      }else if(promoTextEl){
+        promoTextEl.textContent = STORE.promoText;
+      }
     }
     // صف "هذا أول طلب لي" ما له معنى إذا العرض مطفي
     if(!STORE.firstOrderFreeDelivery){
@@ -3208,7 +3208,7 @@
 
     const baseUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, "");
     const referralLink = `${baseUrl}?ref=${encodeURIComponent(myPhone)}`;
-    const shareText = `🌿 جرب جنة الفواكه والخضار! فواكه وخضروات طازجة توصل لباب بيتك\n\n${referralLink}`;
+    const shareText = `🌿 جرب جنة الفواكه والخضار! فواكه وخضروات طازجة توصل لباب بيتك\n\n${referralLink}\n\nأول طلب لك التوصيل مجاني 🎁`;
 
     if(navigator.share){
       navigator.share({ title:"جنة الفواكه والخضار", text:shareText }).catch(()=>{});

@@ -16,7 +16,7 @@
     deliveryFee: 1000,
     freeDeliveryOver: 0,
     minOrderTotal: 0,
-    firstOrderFreeDelivery: false,
+    firstOrderFreeDelivery: true,
     openHour: 8,
     closeHour: 22,
     manualClosed: false,
@@ -25,7 +25,7 @@
     roundTo: 250,
     requireNotifications: false,
     requireInstall: false,
-    promoText: "🚴 نوصّل لكل مناطق أبو صخير والحيرة",
+    promoText: "🚴 التوصيل الأول مجاني لكل زبون جديد!",
     announcement: ""
   };
 
@@ -179,8 +179,8 @@
         <h3>📢 نصوص الصفحة</h3>
         <div class="set-field">
           <label>بانر العرض (الشريط الأحمر)</label>
-          <input type="text" id="setPromoText" placeholder="🚴 نوصّل لكل مناطق أبو صخير والحيرة">
-          <div class="sub">يختفي البانر إذا خليته فاضي.</div>
+          <input type="text" id="setPromoText" placeholder="🚴 التوصيل الأول مجاني لكل زبون جديد!">
+          <div class="sub">يختفي البانر إذا خليته فاضي أو طفّيت عرض التوصيل الأول.</div>
         </div>
         <div class="set-field">
           <label>إعلان بأعلى الصفحة</label>
