@@ -2,7 +2,7 @@
   "deliveryFee": 1000,
   "freeDeliveryOver": 0,
   "minOrderTotal": 0,
-  "firstOrderFreeDelivery": true,
+  "firstOrderFreeDelivery": false,
   "openHour": 8,
   "closeHour": 18,
   "manualClosed": false,
@@ -11,7 +11,7 @@
   "roundTo": 250,
   "requireNotifications": true,
   "requireInstall": false,
-  "promoText": "🚴 التوصيل الأول مجاني لكل زبون جديد!",
+  "promoText": "🚴 نوصّل لكل مناطق أبو صخير والحيرة — شوف أجرة منطقتك بصفحة الطلب",
   "announcement": "",
   "areas": [
     {
