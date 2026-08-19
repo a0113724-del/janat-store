@@ -223,13 +223,13 @@
   {
     "id": "banana",
     "name": "موز",
-    "price": 1250,
+    "price": 1750,
     "cat": "fruit",
     "emoji": "🍌",
     "image": "images/banana-1785118460886.jpg",
     "featured": true,
     "unit": "كغم",
-    "onSale": true,
+    "onSale": false,
     "oldPrice": 1500,
     "visible": true,
     "order": 21
