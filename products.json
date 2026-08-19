@@ -9,11 +9,7 @@
     "unit": "كغم",
     "visible": true,
     "order": 0,
-    "onSale": false,
-    "bundle": {
-      "qty": 3,
-      "price": 2000
-    }
+    "onSale": false
   },
   {
     "id": "cucumber",
@@ -23,14 +19,10 @@
     "emoji": "🥒",
     "image": "images/cucumber-1785117845595.jpg",
     "unit": "كغم",
-    "onSale": true,
+    "onSale": false,
     "visible": true,
     "order": 1,
-    "oldPrice": 0,
-    "bundle": {
-      "qty": 3,
-      "price": 2000
-    }
+    "oldPrice": 0
   },
   {
     "id": "potato",
