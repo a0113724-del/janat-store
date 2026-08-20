@@ -102,9 +102,10 @@
 
   /* ---------- HEADER ---------- */
   .site-header{
+    /* hero-bg.jpg ما كان موجود أصلاً — كل فتحة تطلبه ويرجع 404.
+       والتدرّج فوقه معتم 88-94%، يعني حتى لو وجد ما يبين. شلناه. */
     background:
-      linear-gradient(180deg, rgba(21,49,34,.88) 0%, rgba(30,69,48,.94) 65%, var(--forest-2) 100%),
-      url('hero-bg.jpg');
+      linear-gradient(180deg, rgba(21,49,34,.88) 0%, rgba(30,69,48,.94) 65%, var(--forest-2) 100%);
     background-size:cover;
     background-position:center 30%;
     color:var(--gold-light);
@@ -646,6 +647,32 @@
   }
   .ig-hl{ color:var(--gold-light); font-weight:800; }
   .ig-ic{ font-size:1.1rem; }
+  /* --- صور حقيقية من آيفون: الزبون يشوف نفس شاشته --- */
+  .ios-shots{ display:none; }
+  .ios-shots.show{ display:block; }
+  .ios-shots figure{
+    position:relative; margin:0 0 14px;
+    border:1px solid rgba(233,205,134,.22); border-radius:14px; overflow:hidden;
+    background:rgba(0,0,0,.25);
+  }
+  .ios-shots img{ display:block; width:100%; height:auto; }
+  .ios-shots .n{
+    position:absolute; top:8px; inset-inline-start:8px; z-index:2;
+    width:26px; height:26px; border-radius:50%;
+    background:var(--gold); color:#153122; font-weight:900; font-size:.8rem;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 3px 9px rgba(0,0,0,.45);
+  }
+  .ios-shots figcaption{
+    padding:9px 12px; font-size:.82rem; font-weight:800; color:#DCE7DA;
+    background:rgba(255,255,255,.05); text-align:right;
+  }
+  .ios-shots figcaption b{ color:var(--gold-light); }
+  .ios-done{
+    text-align:center; font-size:.85rem; font-weight:900; color:var(--gold-light);
+    background:rgba(233,205,134,.12); border-radius:12px; padding:11px; margin-bottom:4px;
+  }
+
   /* --- قائمة الخطوات المختصرة تحت العرض --- */
   .ios-list{ text-align:right; margin-top:14px; }
   .ios-list .il{
@@ -1526,6 +1553,28 @@
         </div>
 
         <div class="demo-cap" id="demoCap">&nbsp;</div>
+
+        <div class="ios-shots" id="iosShots">
+          <figure>
+            <span class="n">١</span>
+            <img src="images/ios-1-menu-btn.jpg" alt="زر القائمة بأسفل الشاشة"
+                 width="560" height="285" loading="lazy" decoding="async">
+            <figcaption>اضغط <b>•••</b> بأسفل الشاشة</figcaption>
+          </figure>
+          <figure>
+            <span class="n">٢</span>
+            <img src="images/ios-2-share.jpg" alt="خيار المشاركة بالقائمة"
+                 width="560" height="589" loading="lazy" decoding="async">
+            <figcaption>اختار <b>Share</b> — أول خيار</figcaption>
+          </figure>
+          <figure>
+            <span class="n">٣</span>
+            <img src="images/ios-3-add-home.jpg" alt="إضافة إلى الشاشة الرئيسية"
+                 width="560" height="399" loading="lazy" decoding="async">
+            <figcaption>مرّر لتحت واختار <b>Add to Home Screen</b></figcaption>
+          </figure>
+          <div class="ios-done">✅ وبيها يطلع التطبيق بشاشة موبايلك</div>
+        </div>
 
         <div class="ios-list" id="iosList"></div>
 
@@ -3820,6 +3869,18 @@
     const num = ["١","٢","٣","٤"];
     box.innerHTML = steps.map((s,i)=>
       `<div class="il"><b>${num[i]}</b> ${s[0]} <span>${escHtml(s[1])}</span></div>`).join("");
+
+    // الصور الحقيقية مصوّرة من فَيرفُكس (••• ← Share ← Add to Home Screen)
+    // فنعرضها لمتصفحات غير سفاري بس — سفاري طريقه مختلف والرسم المتحرك
+    // يمثّله صح. عرض صور مو مطابقة لشاشته يضيّعه بدل ما يساعده.
+    const shots = document.getElementById("iosShots");
+    const phone = document.getElementById("demoPhone");
+    const cap   = document.getElementById("demoCap");
+    const replay= document.getElementById("demoReplay");
+    const useShots = br.key !== "safari";
+    if(shots) shots.classList.toggle("show", useShots);
+    [phone, cap, replay].forEach(el=>{ if(el) el.style.display = useShots ? "none" : ""; });
+    if(useShots && typeof window.__stopIosDemo === "function") window.__stopIosDemo();
 
     // السهم السفلي يأشّر على ••• عند غير سفاري، وعلى زر المشاركة بسفاري
     const ptrTxt = document.querySelector("#iosPointer .ip-txt");
