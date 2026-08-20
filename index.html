@@ -647,43 +647,109 @@
   }
   .ig-hl{ color:var(--gold-light); font-weight:800; }
   .ig-ic{ font-size:1.1rem; }
-  /* ---------- دليل التثبيت بالصور الحقيقية ----------
-     سكرينات مصوّرة من نفس التطبيق، والزر المطلوب عليه مربّع ذهبي.
-     الزبون ما يقرا تعليمات — يوازن الصورة بشاشته ويضغط بنفس المكان. */
-  .ios-shots{ display:none; }
-  .ios-shots.show{ display:block; }
-  .ios-shots figure{
-    position:relative; margin:0 0 13px;
-    border:1px solid rgba(233,205,134,.26); border-radius:15px; overflow:hidden;
-    background:rgba(0,0,0,.25); box-shadow:0 6px 16px rgba(0,0,0,.28);
+  /* ---------- دليل التثبيت: خطوة وحدة بالمرة ----------
+     السكرينات مصوّرة من نفس التطبيق والزر المطلوب عليه مربّع ذهبي.
+     قبل، كانت الخطوات الثلاثة فوق بعض بصفحة وحدة طويلة — الزبون
+     يلف ويضيع وما يعرف وين واصل. الحين خطوة وحدة تنعرض، عليها
+     نبضة ذهبية على مكان الضغط، ويتنقّل بزر أو بلمس نفس المكان
+     بالصورة — يعني يتمرّن على الحركة قبل ما يسويها بشاشته. */
+  .ios-wiz{ display:none; }
+  .ios-wiz.show{ display:block; }
+
+  /* شريط التقدّم — يعرف وين واصل وكم باقي */
+  .wz-bar{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .wz-dots{ display:flex; gap:5px; flex:1; }
+  .wz-dots i{
+    flex:1; height:5px; border-radius:99px;
+    background:rgba(255,255,255,.14); transition:background .3s;
   }
+  .wz-dots i.done{ background:rgba(201,154,46,.5); }
+  .wz-dots i.now{ background:var(--gold); }
+  .wz-count{ font-size:.72rem; font-weight:800; color:#8fa392; white-space:nowrap; }
+
+  .wz-step{ display:none; margin:0; }
+  .wz-step.on{ display:block; animation:wz-in .26s ease both; }
+  @keyframes wz-in{ from{ opacity:0; transform:translateX(-12px); } to{ opacity:1; transform:none; } }
+
   /* السكرينات خلفيتها بيضاء — نخليها على أرضية بيضاء حتى ما تبين مقصوصة */
-  .ios-shots .shot{ background:#fff; padding:7px; }
-  .ios-shots img{ display:block; width:100%; height:auto; border-radius:8px; }
-  /* رقم الخطوة بشريط الشرح مو فوق الصورة — لمن كان فوقها كان يغطي
-     «إلغاء» بصورة الخطوة الثالثة ويخربط الزبون */
-  .ios-shots figcaption{
-    display:flex; align-items:flex-start; gap:9px;
-    padding:10px 12px; text-align:right;
-    background:rgba(255,255,255,.05);
-    font-size:.85rem; font-weight:800; color:#DCE7DA; line-height:1.5;
+  .wz-shot{
+    background:#fff; padding:7px; border-radius:15px 15px 0 0;
+    border:1px solid rgba(233,205,134,.26); border-bottom:none;
+    cursor:pointer; -webkit-tap-highlight-color:transparent;
   }
-  .ios-shots .n{
+  .wz-img{ position:relative; }
+  .wz-img img{ display:block; width:100%; height:auto; border-radius:8px; }
+  /* نبضة على نفس مكان المربّع الذهبي المحروق بالصورة */
+  .wz-hot{
+    position:absolute; border-radius:9px; pointer-events:none;
+    animation:wz-pulse 1.7s ease-out infinite;
+  }
+  @keyframes wz-pulse{
+    0%  { box-shadow:0 0 0 0 rgba(201,154,46,.55); }
+    72% { box-shadow:0 0 0 13px rgba(201,154,46,0); }
+    100%{ box-shadow:0 0 0 0 rgba(201,154,46,0); }
+  }
+
+  .wz-cap{
+    display:flex; align-items:flex-start; gap:9px;
+    padding:11px 12px; text-align:right;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(233,205,134,.26); border-top:none;
+    border-radius:0 0 15px 15px;
+    font-size:.86rem; font-weight:800; color:#DCE7DA; line-height:1.5;
+  }
+  .wz-cap .n{
     flex:0 0 auto; margin-top:1px;
     width:24px; height:24px; border-radius:50%;
     background:var(--gold); color:#153122; font-weight:900; font-size:.78rem;
     display:flex; align-items:center; justify-content:center;
   }
-  .ios-shots .cap{ flex:1; min-width:0; }
-  .ios-shots .cap b{ color:var(--gold-light); }
-  .ios-shots .cap i{
+  .wz-cap .tx{ flex:1; min-width:0; }
+  .wz-cap .tx b{ color:var(--gold-light); }
+  .wz-cap .tx i{
     display:block; margin-top:2px; font-style:normal;
     font-weight:500; font-size:.73rem; color:#8fa392;
   }
-  .ios-done{
-    text-align:center; font-size:.85rem; font-weight:900; color:var(--gold-light);
-    background:rgba(233,205,134,.12); border-radius:12px; padding:11px; margin-bottom:4px;
+
+  .wz-nav{ display:flex; gap:9px; margin-top:12px; }
+  .wz-nav button{
+    border:none; border-radius:13px; padding:14px 10px; font-family:inherit;
+    font-weight:900; font-size:.9rem; cursor:pointer;
   }
+  .wz-next{ flex:2; background:var(--gold); color:#153122; }
+  .wz-back{
+    flex:1; background:none; color:var(--gold-light);
+    border:1.5px solid rgba(233,205,134,.32);
+  }
+  .wz-back[disabled]{ opacity:.35; }
+  .wz-all{
+    display:block; width:100%; margin-top:10px; background:none; border:none;
+    font-family:inherit; font-size:.76rem; font-weight:700; color:#8fa392;
+    text-decoration:underline; cursor:pointer;
+  }
+
+  /* شاشة "خلصت" — الزبون لازم يعرف إنه خلص ووين يلگى التطبيق */
+  .wz-done{ display:none; text-align:center; padding:6px 0 2px; }
+  .wz-done.on{ display:block; animation:wz-in .3s ease both; }
+  .wz-done .tick{ font-size:2.6rem; line-height:1; }
+  .wz-done h4{ font-size:1.05rem; font-weight:900; color:var(--gold-light); margin:9px 0 5px; }
+  .wz-done p{ font-size:.84rem; color:#B6C7B4; line-height:1.75; }
+  .wz-done .app-hint{
+    display:inline-flex; align-items:center; gap:7px; margin:13px 0 3px;
+    background:rgba(233,205,134,.12); border:1px solid rgba(233,205,134,.3);
+    border-radius:13px; padding:9px 14px; font-size:.85rem; font-weight:800; color:#DCE7DA;
+  }
+  .wz-done .app-hint b{
+    width:34px; height:34px; border-radius:9px; font-size:1.15rem;
+    background:linear-gradient(160deg,#2d4a37,#16281d);
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* وضع "شوفهن كلهن" — للي يفضّل يقرا الخطوات دفعة وحدة */
+  .ios-wiz.all .wz-step{ display:block; margin-bottom:13px; animation:none; }
+  .ios-wiz.all .wz-bar,
+  .ios-wiz.all .wz-nav,
+  .ios-wiz.all .wz-hot{ display:none; }
 
   /* السهم اللي يأشّر على زر المشاركة الحقيقي بشريط سفاري */
   #iosPointer{
@@ -1414,7 +1480,7 @@
       <div class="ig-pane" id="igIos">
         <!-- الخطوات تتبني بـJS: الصور تفرق بين سفاري وباقي المتصفحات،
              ومكان زر المشاركة يفرق بين الآيفون والآيباد -->
-        <div class="ios-shots" id="iosShots"></div>
+        <div class="ios-wiz" id="iosShots"></div>
       </div>
 
       <!-- (ج) متصفح داخل فيسبوك/انستا — لازم يفتحه بالمتصفح الحقيقي -->
@@ -3691,13 +3757,21 @@
            (/Macintosh/i.test(ua) && (navigator.maxTouchPoints || 0) > 1);
   }
 
+  // وين واصل بالخطوات — يبقى محفوظ لو راح للمشاركة ورجع للصفحة
+  const WZ_STEP_KEY = "janat-ios-step";
+  const AR_NUM = ["١","٢","٣","٤"];
+
   /**
-   * دليل التثبيت بالصور. يتبنى على شغلتين:
+   * دليل التثبيت: خطوة وحدة بالمرة، والزبون هو اللي يمشّيها.
+   *
+   * الخطوات تتبنى على شغلتين:
    *  · المتصفح — سفاري زر المشاركة ظاهر عنده مباشرة، وباقي المتصفحات
    *    (فَيرفُكس/كروم/إيدج) مخبّينه جوّا قائمة ••• فيحتاجون خطوة زيادة.
    *  · الجهاز — آيفون الشريط تحت، آيباد الشريط فوق.
-   * الصور مصوّرة من نفس التطبيق والزر عليه مربّع ذهبي، فالزبون يوازن
-   * الصورة بشاشته بدل ما يقرا كلام.
+   *
+   * كل خطوة صورة من نفس التطبيق وعليها مربّع ذهبي على الزر المطلوب،
+   * وفوقه نبضة تنقر عليها فتنقّلك للخطوة الجاية — يعني الزبون يتمرّن
+   * على نفس الحركة قبل ما يسويها بشاشته.
    */
   function buildIosSteps(){
     const box = document.getElementById("iosShots");
@@ -3705,42 +3779,140 @@
     const br  = iosBrowser();
     const pad = isIPad();
 
-    // [مسار الصورة, عرض, ارتفاع, وصف بديل, عنوان الخطوة, تلميح]
+    // [مسار الصورة, عرض, ارتفاع, وصف بديل, عنوان, تلميح, مكان النبضة %]
+    // مكان النبضة محسوب من نفس إحداثيات المربّع الذهبي المرسوم بالصورة
     const steps = [];
     if(br.key !== "safari"){
-      steps.push(["images/ios-1-menu-btn.jpg", 560, 285, "زر القائمة بأسفل الشاشة",
-                  `اضغط زر <b>${escHtml(br.menu)}</b>`, `بأسفل الشاشة — انته فاتح بـ${br.name}`]);
-      steps.push(["images/ios-2-share.jpg", 560, 589, "خيار المشاركة بالقائمة",
-                  "اختار <b>Share</b>", "أول خيار بالقائمة"]);
+      // رسم مبسّط مو سكرين — قائمة كروم تفرق عن قائمة فَيرفُكس،
+      // فسكرين وحدة تطلع غلط لنص المستخدمين
+      steps.push(["images/ios-menu-btn.jpg", 640, 190, "زر القائمة بشريط المتصفح",
+                  `اضغط زر <b>${escHtml(br.menu)}</b>`, `بأسفل الشاشة — انته فاتح بـ${br.name}`,
+                  [82.3, 40.3, 11.1, 19.5]]);
+      steps.push(["images/ios-menu-share.jpg", 640, 430, "خيار المشاركة بالقائمة",
+                  "اختار <b>Share</b>", "أول خيار بالقائمة",
+                  [11.3, 15.0, 77.5, 16.3]]);
     }else{
       steps.push(["images/safari-1-share.jpg", 360, 132, "زر المشاركة بشريط سفاري",
                   "اضغط زر المشاركة", pad ? "بأعلى الشاشة — نفس المربّع الذهبي"
-                                          : "بأسفل الشاشة بالنص (بالصورة آيباد فالزر فوق)"]);
+                                          : "بأسفل الشاشة بالنص (بالصورة آيباد فالزر فوق)",
+                  [35.3, 16.7, 14.4, 43.2]]);
     }
     steps.push(["images/safari-2-add-home.jpg", 458, 549, "إضافة إلى الصفحة الرئيسية",
-                "اختار <b>«إضافة إلى الصفحة الرئيسية»</b>", "مرّر لتحت إذا ما شفتها"]);
+                "اختار <b>«إضافة إلى الصفحة الرئيسية»</b>", "مرّر لتحت إذا ما شفتها",
+                [2.2, 88.2, 95.6, 10.9]]);
     steps.push(["images/safari-3-confirm.jpg", 488, 216, "زر إضافة بنافذة التأكيد",
-                "اضغط <b>«إضافة»</b>", "بأعلى النافذة على اليسار"]);
+                "اضغط <b>«إضافة»</b>", "بأعلى النافذة على اليسار",
+                [4.1, 7.4, 15.6, 19.4]]);
 
-    const num = ["١","٢","٣","٤"];
-    box.innerHTML = steps.map(([src, w, h, alt, title, hint], i)=>
-      `<figure>
-         <div class="shot"><img src="${src}" alt="${escHtml(alt)}"
-              width="${w}" height="${h}" loading="lazy" decoding="async"></div>
-         <figcaption>
-           <span class="n">${num[i]}</span>
-           <span class="cap">${title}<i>${escHtml(hint)}</i></span>
-         </figcaption>
-       </figure>`).join("") +
-      `<div class="ios-done">✅ وبيها يطلع التطبيق بشاشة موبايلك</div>`;
+    box.innerHTML =
+      `<div class="wz-bar">
+         <div class="wz-dots">${steps.map(()=>"<i></i>").join("")}</div>
+         <div class="wz-count"></div>
+       </div>` +
+      steps.map(([src, w, h, alt, title, hint, hot], i)=>
+        `<figure class="wz-step">
+           <div class="wz-shot">
+             <div class="wz-img">
+               <img src="${src}" alt="${escHtml(alt)}" width="${w}" height="${h}" decoding="async">
+               <span class="wz-hot" style="left:${hot[0]}%;top:${hot[1]}%;width:${hot[2]}%;height:${hot[3]}%"></span>
+             </div>
+           </div>
+           <figcaption class="wz-cap">
+             <span class="n">${AR_NUM[i]}</span>
+             <span class="tx">${title}<i>${escHtml(hint)}</i></span>
+           </figcaption>
+         </figure>`).join("") +
+      `<div class="wz-done">
+         <div class="tick">✅</div>
+         <h4>خلصت — التطبيق صار بشاشة موبايلك</h4>
+         <p>دوّر على الأيقونة بين تطبيقاتك وافتحه منها،<br>مو من المتصفح.</p>
+         <div class="app-hint"><b>🌿</b> جنة الفواكه والخضار</div>
+       </div>
+       <div class="wz-nav">
+         <button type="button" class="wz-back">&lsaquo; رجوع</button>
+         <button type="button" class="wz-next"></button>
+       </div>
+       <button type="button" class="wz-all">شوف الخطوات كلها مرة وحدة</button>`;
+
     box.classList.add("show");
+    box.classList.remove("all");
+    wireWizard(box, steps.length, br, pad);
+  }
 
-    // السهم السفلي يأشّر على ••• عند غير سفاري، وعلى زر المشاركة بسفاري.
-    // بالآيباد الزر فوق مو تحت، فنخفي السهم أصلاً.
-    const ptr    = document.getElementById("iosPointer");
-    const ptrTxt = ptr?.querySelector(".ip-txt");
+  /** يشغّل التنقّل بين الخطوات ويحدّث الشريط والأزرار */
+  function wireWizard(box, total, br, pad){
+    const stepsEl = [...box.querySelectorAll(".wz-step")];
+    const dots    = [...box.querySelectorAll(".wz-dots i")];
+    const count   = box.querySelector(".wz-count");
+    const done    = box.querySelector(".wz-done");
+    const back    = box.querySelector(".wz-back");
+    const next    = box.querySelector(".wz-next");
+    const allBtn  = box.querySelector(".wz-all");
+    const ptr     = document.getElementById("iosPointer");
+    const ptrTxt  = ptr?.querySelector(".ip-txt");
+
     if(ptrTxt) ptrTxt.textContent = br.key === "safari" ? "زر المشاركة هنا" : `زر ${br.menu} هنا`;
-    if(ptr) ptr.dataset.hide = pad ? "1" : "";
+
+    // نرجع لنفس الخطوة إذا راح لورقة المشاركة ورجع للصفحة
+    let i = 0;
+    try{
+      const v = parseInt(sessionStorage.getItem(WZ_STEP_KEY) || "0", 10);
+      if(Number.isFinite(v)) i = Math.min(total, Math.max(0, v));
+    }catch(e){}
+
+    function render(){
+      const fin = i >= total;
+      stepsEl.forEach((el, k)=> el.classList.toggle("on", !fin && k === i));
+      dots.forEach((d, k)=>{
+        d.classList.toggle("done", k < i);
+        d.classList.toggle("now", !fin && k === i);
+      });
+      done?.classList.toggle("on", fin);
+      count.textContent = fin ? "خلصت ✅" : `خطوة ${AR_NUM[i]} من ${AR_NUM[total - 1]}`;
+      back.disabled = (i === 0);
+      next.textContent = fin ? "🛒 ابدأ الطلب"
+                       : (i === total - 1 ? "خلصت ✅" : "سويتها — التالي ›");
+
+      // السهم السفلي يخص الخطوة الأولى بس — بعدها الزبون داخل ورقة
+      // المشاركة والسهم ما إله معنى. وبالآيباد الزر فوق أصلاً.
+      if(ptr) ptr.dataset.hide = (pad || fin || i !== 0) ? "1" : "";
+      if(typeof window.__resetIosGuide === "function") window.__resetIosGuide();
+
+      try{ sessionStorage.setItem(WZ_STEP_KEY, String(i)); }catch(e){}
+    }
+
+    function go(d){
+      const n = Math.min(total, Math.max(0, i + d));
+      if(n === i) return;
+      i = n;
+      render();
+      // الصندوق هو اللي يتمرّر مو الصفحة — نرجّعه لفوق حتى الخطوة
+      // الجديدة تبان كاملة بدل ما يظل واقف بنص الصورة السابقة
+      box.closest(".ig-box")?.scrollTo?.({ top:0, behavior:"smooth" });
+    }
+
+    next.addEventListener("click", ()=>{
+      if(i >= total){                       // من شاشة "خلصت" يروح يتسوّق
+        try{ sessionStorage.removeItem(WZ_STEP_KEY); }catch(e){}
+        closeInstallGate();
+        return;
+      }
+      go(1);
+    });
+    back.addEventListener("click", ()=> go(-1));
+
+    // لمس نفس المربّع الذهبي بالصورة ينقّل — تمرين على الحركة الحقيقية
+    stepsEl.forEach(el=> el.querySelector(".wz-shot")
+      ?.addEventListener("click", ()=>{ if(!box.classList.contains("all")) go(1); }));
+
+    allBtn.addEventListener("click", ()=>{
+      const on = box.classList.toggle("all");
+      allBtn.textContent = on ? "رجّعها خطوة خطوة" : "شوف الخطوات كلها مرة وحدة";
+      if(!on) render();
+      else if(ptr){ ptr.dataset.hide = "1"; window.__resetIosGuide?.(); }
+    });
+
+    render();
   }
 
   function refreshInstallGatePane(){
