@@ -1527,11 +1527,7 @@
 
         <div class="demo-cap" id="demoCap">&nbsp;</div>
 
-        <div class="ios-list">
-          <div class="il"><b>١</b> زر المشاركة <span>بأسفل الشاشة</span></div>
-          <div class="il"><b>٢</b> «إضافة إلى الشاشة الرئيسية» <span>مرّر لتحت إذا ما شفتها</span></div>
-          <div class="il"><b>٣</b> «إضافة» <span>بأعلى الشاشة</span></div>
-        </div>
+        <div class="ios-list" id="iosList"></div>
 
         <button type="button" id="demoReplay">&#8635; أعِد العرض</button>
       </div>
@@ -3773,6 +3769,21 @@
     return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
            (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   }
+  /**
+   * أي متصفح آيفون؟ الطريقة تختلف:
+   *  · سفاري: زر المشاركة ⬆️ ظاهر مباشرة بالشريط السفلي
+   *  · فَيرفُكس/كروم/إيدج: لازم يضغط ••• أول، وبعدين "Share"
+   * كلهم WebKit بالآيفون، بس بصمة المتصفح تفرّقهم.
+   */
+  function iosBrowser(){
+    const ua = navigator.userAgent || "";
+    if(/CriOS/i.test(ua))  return { key:"chrome",  name:"كروم",     menu:"•••" };
+    if(/FxiOS/i.test(ua))  return { key:"firefox", name:"فَيرفُكس", menu:"•••" };
+    if(/EdgiOS/i.test(ua)) return { key:"edge",    name:"إيدج",     menu:"•••" };
+    if(/OPiOS|OPT\//i.test(ua)) return { key:"opera", name:"أوبرا", menu:"•••" };
+    return { key:"safari", name:"سفاري", menu:"" };
+  }
+
   // متصفحات مدمجة داخل تطبيقات — التثبيت ما يشتغل بيها أبداً
   function isInAppBrowser(){
     const ua = navigator.userAgent || "";
@@ -3787,12 +3798,41 @@
 
   let igFallbackTimer = null;
 
+  /**
+   * الخطوات تتبنى حسب المتصفح. سفاري زر المشاركة ظاهر عنده مباشرة،
+   * وباقي المتصفحات (فَيرفُكس/كروم/إيدج) مخبّينه جوّا قائمة •••
+   * — بدون هالخطوة الزبون يدوّر على زر ما موجود عنده.
+   */
+  function buildIosSteps(){
+    const box = document.getElementById("iosList");
+    if(!box) return;
+    const br = iosBrowser();
+    const steps = [];
+    if(br.key !== "safari"){
+      steps.push([`زر <b>${br.menu}</b> بأسفل الشاشة`, `انته فاتح بـ${br.name}`]);
+      steps.push(["اختار <b>Share</b> من القائمة", "أول خيار بالقائمة"]);
+    }else{
+      steps.push(["زر المشاركة", "بأسفل الشاشة بالنص"]);
+    }
+    steps.push(["<b>«إضافة إلى الشاشة الرئيسية»</b>", "مرّر لتحت إذا ما شفتها"]);
+    steps.push(["<b>«إضافة»</b>", "بأعلى الشاشة"]);
+
+    const num = ["١","٢","٣","٤"];
+    box.innerHTML = steps.map((s,i)=>
+      `<div class="il"><b>${num[i]}</b> ${s[0]} <span>${escHtml(s[1])}</span></div>`).join("");
+
+    // السهم السفلي يأشّر على ••• عند غير سفاري، وعلى زر المشاركة بسفاري
+    const ptrTxt = document.querySelector("#iosPointer .ip-txt");
+    if(ptrTxt) ptrTxt.textContent = br.key === "safari" ? "زر المشاركة هنا" : `زر ${br.menu} هنا`;
+  }
+
   function refreshInstallGatePane(){
     const gate = document.getElementById("installGate");
     if(!gate || !gate.classList.contains("show")) return;
 
     if(isInAppBrowser()){ showIgPane("igInApp"); return; }
     if(isIOS()){
+      buildIosSteps();
       showIgPane("igIos");
       if(typeof window.__resetIosGuide === "function") window.__resetIosGuide();
       if(typeof window.__playIosDemo === "function") window.__playIosDemo();
