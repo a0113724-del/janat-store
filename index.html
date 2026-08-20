@@ -681,12 +681,17 @@
     border-radius:11px; padding:9px 11px; margin-bottom:6px;
     font-size:.82rem; font-weight:800; color:#DCE7DA;
   }
-  .ios-list .il b{
+  /* ⚠️ لازم يبقى b.n مو b لحاله — نصوص الخطوات نفسها فيها <b> للتوضيح،
+     ولمن كانت القاعدة على b عام، «إضافة إلى الشاشة الرئيسية» انحولت
+     لدائرة 22 بكسل والنص انحشر جواها وما انقرا. */
+  .ios-list .il b.n{
     flex:0 0 auto; width:22px; height:22px; border-radius:50%;
     background:var(--gold); color:#153122; font-size:.75rem;
     display:flex; align-items:center; justify-content:center;
   }
-  .ios-list .il span{ font-weight:500; font-size:.72rem; color:#8fa392; }
+  .ios-list .il .tx{ flex:1; min-width:0; }
+  .ios-list .il .tx b{ color:var(--gold-light); }
+  .ios-list .il span{ font-weight:500; font-size:.72rem; color:#8fa392; display:block; }
 
   #demoReplay{
     width:100%; margin-top:12px; background:none;
@@ -3868,7 +3873,7 @@
 
     const num = ["١","٢","٣","٤"];
     box.innerHTML = steps.map((s,i)=>
-      `<div class="il"><b>${num[i]}</b> ${s[0]} <span>${escHtml(s[1])}</span></div>`).join("");
+      `<div class="il"><b class="n">${num[i]}</b><span class="tx">${s[0]}<span>${escHtml(s[1])}</span></span></div>`).join("");
 
     // الصور الحقيقية مصوّرة من فَيرفُكس (••• ← Share ← Add to Home Screen)
     // فنعرضها لمتصفحات غير سفاري بس — سفاري طريقه مختلف والرسم المتحرك
