@@ -647,150 +647,42 @@
   }
   .ig-hl{ color:var(--gold-light); font-weight:800; }
   .ig-ic{ font-size:1.1rem; }
-  /* --- صور حقيقية من آيفون: الزبون يشوف نفس شاشته --- */
+  /* ---------- دليل التثبيت بالصور الحقيقية ----------
+     سكرينات مصوّرة من نفس التطبيق، والزر المطلوب عليه مربّع ذهبي.
+     الزبون ما يقرا تعليمات — يوازن الصورة بشاشته ويضغط بنفس المكان. */
   .ios-shots{ display:none; }
   .ios-shots.show{ display:block; }
   .ios-shots figure{
-    position:relative; margin:0 0 14px;
-    border:1px solid rgba(233,205,134,.22); border-radius:14px; overflow:hidden;
-    background:rgba(0,0,0,.25);
+    position:relative; margin:0 0 13px;
+    border:1px solid rgba(233,205,134,.26); border-radius:15px; overflow:hidden;
+    background:rgba(0,0,0,.25); box-shadow:0 6px 16px rgba(0,0,0,.28);
   }
-  .ios-shots img{ display:block; width:100%; height:auto; }
-  .ios-shots .n{
-    position:absolute; top:8px; inset-inline-start:8px; z-index:2;
-    width:26px; height:26px; border-radius:50%;
-    background:var(--gold); color:#153122; font-weight:900; font-size:.8rem;
-    display:flex; align-items:center; justify-content:center;
-    box-shadow:0 3px 9px rgba(0,0,0,.45);
-  }
+  /* السكرينات خلفيتها بيضاء — نخليها على أرضية بيضاء حتى ما تبين مقصوصة */
+  .ios-shots .shot{ background:#fff; padding:7px; }
+  .ios-shots img{ display:block; width:100%; height:auto; border-radius:8px; }
+  /* رقم الخطوة بشريط الشرح مو فوق الصورة — لمن كان فوقها كان يغطي
+     «إلغاء» بصورة الخطوة الثالثة ويخربط الزبون */
   .ios-shots figcaption{
-    padding:9px 12px; font-size:.82rem; font-weight:800; color:#DCE7DA;
-    background:rgba(255,255,255,.05); text-align:right;
+    display:flex; align-items:flex-start; gap:9px;
+    padding:10px 12px; text-align:right;
+    background:rgba(255,255,255,.05);
+    font-size:.85rem; font-weight:800; color:#DCE7DA; line-height:1.5;
   }
-  .ios-shots figcaption b{ color:var(--gold-light); }
+  .ios-shots .n{
+    flex:0 0 auto; margin-top:1px;
+    width:24px; height:24px; border-radius:50%;
+    background:var(--gold); color:#153122; font-weight:900; font-size:.78rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ios-shots .cap{ flex:1; min-width:0; }
+  .ios-shots .cap b{ color:var(--gold-light); }
+  .ios-shots .cap i{
+    display:block; margin-top:2px; font-style:normal;
+    font-weight:500; font-size:.73rem; color:#8fa392;
+  }
   .ios-done{
     text-align:center; font-size:.85rem; font-weight:900; color:var(--gold-light);
     background:rgba(233,205,134,.12); border-radius:12px; padding:11px; margin-bottom:4px;
-  }
-
-  /* --- قائمة الخطوات المختصرة تحت العرض --- */
-  .ios-list{ text-align:right; margin-top:14px; }
-  .ios-list .il{
-    display:flex; align-items:center; gap:9px;
-    background:rgba(255,255,255,.06); border:1px solid rgba(233,205,134,.16);
-    border-radius:11px; padding:9px 11px; margin-bottom:6px;
-    font-size:.82rem; font-weight:800; color:#DCE7DA;
-  }
-  /* ⚠️ لازم يبقى b.n مو b لحاله — نصوص الخطوات نفسها فيها <b> للتوضيح،
-     ولمن كانت القاعدة على b عام، «إضافة إلى الشاشة الرئيسية» انحولت
-     لدائرة 22 بكسل والنص انحشر جواها وما انقرا. */
-  .ios-list .il b.n{
-    flex:0 0 auto; width:22px; height:22px; border-radius:50%;
-    background:var(--gold); color:#153122; font-size:.75rem;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .ios-list .il .tx{ flex:1; min-width:0; }
-  .ios-list .il .tx b{ color:var(--gold-light); }
-  .ios-list .il span{ font-weight:500; font-size:.72rem; color:#8fa392; display:block; }
-
-  #demoReplay{
-    width:100%; margin-top:12px; background:none;
-    border:1.5px solid rgba(233,205,134,.35); color:var(--gold-light);
-    border-radius:12px; padding:11px; font-family:inherit;
-    font-size:.85rem; font-weight:800; cursor:pointer;
-  }
-
-  /* ---------- العرض المتحرك: يمثّل التثبيت كاملاً ---------- */
-  .phone{
-    position:relative; width:164px; height:250px; margin:0 auto;
-    background:#000; border-radius:24px; padding:7px 6px;
-    box-shadow:0 10px 28px rgba(0,0,0,.5); overflow:hidden;
-  }
-  .ph-screen{
-    position:relative; width:100%; height:calc(100% - 30px);
-    background:var(--paper); border-radius:17px 17px 4px 4px; overflow:hidden;
-  }
-
-  /* شاشة المتجر */
-  .ph-store{ position:absolute; inset:0; padding:9px; }
-  .st-top{ font-size:.62rem; font-weight:900; color:#153122; text-align:center; margin-bottom:8px; }
-  .st-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
-  .st-grid i{ display:block; height:38px; background:#e6e0cd; border-radius:8px; }
-
-  /* قائمة المشاركة — تطلع من تحت */
-  .ph-sheet{
-    position:absolute; left:0; right:0; bottom:0; height:62%;
-    background:#f2f2f7; border-radius:14px 14px 0 0; padding:7px 8px;
-    transform:translateY(105%); transition:transform .55s cubic-bezier(.2,.8,.25,1);
-    box-shadow:0 -6px 18px rgba(0,0,0,.2);
-  }
-  .sh-grab{ width:32px; height:4px; border-radius:99px; background:#c7c7cc; margin:0 auto 8px; }
-  .sh-row{
-    font-size:.58rem; color:#3a3a3c; background:#fff; border-radius:7px;
-    padding:7px 8px; margin-bottom:5px; transition:.3s;
-  }
-  .sh-row.target.lit{
-    background:var(--gold); color:#153122; font-weight:900;
-    transform:scale(1.04);
-  }
-
-  /* نافذة "إضافة إلى الشاشة الرئيسية" */
-  .ph-dialog{
-    position:absolute; inset:0; background:#f2f2f7;
-    opacity:0; visibility:hidden; transition:.35s;
-  }
-  .dl-bar{
-    display:flex; justify-content:space-between; align-items:center;
-    padding:8px; font-size:.56rem; color:#8e8e93; background:#fff;
-    border-bottom:1px solid #e5e5ea;
-  }
-  .dl-bar .dl-add{ color:#0a7cff; font-weight:900; transition:.25s; }
-  .dl-bar .dl-add.lit{ background:var(--gold); color:#153122; border-radius:5px; padding:2px 7px; }
-  .dl-body{ display:flex; align-items:center; gap:7px; padding:10px 9px; }
-  .dl-icon{ font-size:1.3rem; background:#fff; border-radius:8px; padding:5px; }
-  .dl-name{ font-size:.6rem; color:#3a3a3c; font-weight:700; }
-
-  /* الشاشة الرئيسية بعد التثبيت */
-  .ph-home{
-    position:absolute; inset:0; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:5px;
-    background:linear-gradient(160deg,#2d4a37,#16281d);
-    opacity:0; visibility:hidden; transition:.4s;
-  }
-  .hm-icon{
-    font-size:1.5rem; background:#FBF8EF; border-radius:12px; padding:8px;
-    transform:scale(.4); transition:transform .45s cubic-bezier(.3,1.5,.5,1);
-  }
-  .ph-home.on .hm-icon{ transform:scale(1); }
-  .hm-label{ font-size:.55rem; color:#fff; }
-  .hm-done{ font-size:.6rem; font-weight:900; color:var(--gold-light); margin-top:6px; }
-
-  /* شريط سفاري داخل الموبايل */
-  .ph-bar{
-    position:absolute; left:6px; right:6px; bottom:7px; height:26px;
-    background:#e9e9eb; border-radius:0 0 17px 17px;
-    display:flex; justify-content:space-around; align-items:center;
-    font-size:.66rem; color:#8e8e93;
-  }
-  .ph-bar .nv{ font-size:.8rem; }
-  .ph-bar .blk{ width:11px; height:11px; border:1.5px solid #a3a3a8; border-radius:3px; }
-  .ph-share{ transition:.25s; border-radius:6px; padding:1px 7px; }
-  .ph-share.lit{ background:var(--gold); color:#153122; }
-  .ph-share b{ font-size:.6rem; }
-
-  /* الإصبع */
-  .ph-finger{
-    position:absolute; font-size:1.5rem; z-index:5;
-    left:50%; top:100%; opacity:0;
-    transition:left .5s ease, top .5s ease, opacity .3s, transform .18s;
-    pointer-events:none; filter:drop-shadow(0 3px 5px rgba(0,0,0,.5));
-  }
-  .ph-finger.on{ opacity:1; }
-  .ph-finger.press{ transform:scale(.78); }
-
-  .demo-cap{
-    font-size:.8rem; font-weight:800; color:var(--gold-light);
-    text-align:center; margin-top:11px; min-height:22px; line-height:1.6;
   }
 
   /* السهم اللي يأشّر على زر المشاركة الحقيقي بشريط سفاري */
@@ -1520,70 +1412,9 @@
 
       <!-- (ب) آيفون — ماكو API تثبيت بـiOS، فنمشي وياه خطوة خطوة بالصور -->
       <div class="ig-pane" id="igIos">
-        <!-- العرض المتحرك هو الشرح نفسه — الزبون ما يقرا، يشوف ويقلّد -->
-        <div class="phone" id="demoPhone">
-          <div class="ph-screen">
-            <div class="ph-store">
-              <div class="st-top">&#127807; جنة الفواكه</div>
-              <div class="st-grid"><i></i><i></i><i></i><i></i></div>
-            </div>
-
-            <div class="ph-sheet">
-              <div class="sh-grab"></div>
-              <div class="sh-row"><span>نسخ</span></div>
-              <div class="sh-row"><span>إضافة إلى المفضلة</span></div>
-              <div class="sh-row target"><span>إضافة إلى الشاشة الرئيسية</span></div>
-              <div class="sh-row"><span>طباعة</span></div>
-            </div>
-
-            <div class="ph-dialog">
-              <div class="dl-bar"><b class="dl-add">إضافة</b><span>الشاشة الرئيسية</span><span>إلغاء</span></div>
-              <div class="dl-body"><span class="dl-icon">&#127807;</span><span class="dl-name">جنة</span></div>
-            </div>
-
-            <div class="ph-home">
-              <div class="hm-icon">&#127807;</div>
-              <div class="hm-label">جنة</div>
-              <div class="hm-done">&#9989; صار بشاشتك</div>
-            </div>
-          </div>
-
-          <div class="ph-bar">
-            <span class="nv">&lsaquo;</span><span class="nv">&rsaquo;</span>
-            <span class="ph-share"><b>&#11014;</b></span>
-            <span class="blk"></span><span class="blk"></span>
-          </div>
-
-          <div class="ph-finger">&#128072;</div>
-        </div>
-
-        <div class="demo-cap" id="demoCap">&nbsp;</div>
-
-        <div class="ios-shots" id="iosShots">
-          <figure>
-            <span class="n">١</span>
-            <img src="images/ios-1-menu-btn.jpg" alt="زر القائمة بأسفل الشاشة"
-                 width="560" height="285" loading="lazy" decoding="async">
-            <figcaption>اضغط <b>•••</b> بأسفل الشاشة</figcaption>
-          </figure>
-          <figure>
-            <span class="n">٢</span>
-            <img src="images/ios-2-share.jpg" alt="خيار المشاركة بالقائمة"
-                 width="560" height="589" loading="lazy" decoding="async">
-            <figcaption>اختار <b>Share</b> — أول خيار</figcaption>
-          </figure>
-          <figure>
-            <span class="n">٣</span>
-            <img src="images/ios-3-add-home.jpg" alt="إضافة إلى الشاشة الرئيسية"
-                 width="560" height="399" loading="lazy" decoding="async">
-            <figcaption>مرّر لتحت واختار <b>Add to Home Screen</b></figcaption>
-          </figure>
-          <div class="ios-done">✅ وبيها يطلع التطبيق بشاشة موبايلك</div>
-        </div>
-
-        <div class="ios-list" id="iosList"></div>
-
-        <button type="button" id="demoReplay">&#8635; أعِد العرض</button>
+        <!-- الخطوات تتبني بـJS: الصور تفرق بين سفاري وباقي المتصفحات،
+             ومكان زر المشاركة يفرق بين الآيفون والآيباد -->
+        <div class="ios-shots" id="iosShots"></div>
       </div>
 
       <!-- (ج) متصفح داخل فيسبوك/انستا — لازم يفتحه بالمتصفح الحقيقي -->
@@ -3852,44 +3683,64 @@
 
   let igFallbackTimer = null;
 
+  // آيباد لو آيفون؟ مكان زر المشاركة يفرق: بالآيفون بالشريط الأسفل،
+  // وبالآيباد بالشريط الأعلى. لو أشّرنا على المكان الغلط ضيّعنا الزبون.
+  function isIPad(){
+    const ua = navigator.userAgent || "";
+    return /iPad/i.test(ua) ||
+           (/Macintosh/i.test(ua) && (navigator.maxTouchPoints || 0) > 1);
+  }
+
   /**
-   * الخطوات تتبنى حسب المتصفح. سفاري زر المشاركة ظاهر عنده مباشرة،
-   * وباقي المتصفحات (فَيرفُكس/كروم/إيدج) مخبّينه جوّا قائمة •••
-   * — بدون هالخطوة الزبون يدوّر على زر ما موجود عنده.
+   * دليل التثبيت بالصور. يتبنى على شغلتين:
+   *  · المتصفح — سفاري زر المشاركة ظاهر عنده مباشرة، وباقي المتصفحات
+   *    (فَيرفُكس/كروم/إيدج) مخبّينه جوّا قائمة ••• فيحتاجون خطوة زيادة.
+   *  · الجهاز — آيفون الشريط تحت، آيباد الشريط فوق.
+   * الصور مصوّرة من نفس التطبيق والزر عليه مربّع ذهبي، فالزبون يوازن
+   * الصورة بشاشته بدل ما يقرا كلام.
    */
   function buildIosSteps(){
-    const box = document.getElementById("iosList");
+    const box = document.getElementById("iosShots");
     if(!box) return;
-    const br = iosBrowser();
+    const br  = iosBrowser();
+    const pad = isIPad();
+
+    // [مسار الصورة, عرض, ارتفاع, وصف بديل, عنوان الخطوة, تلميح]
     const steps = [];
     if(br.key !== "safari"){
-      steps.push([`زر <b>${br.menu}</b> بأسفل الشاشة`, `انته فاتح بـ${br.name}`]);
-      steps.push(["اختار <b>Share</b> من القائمة", "أول خيار بالقائمة"]);
+      steps.push(["images/ios-1-menu-btn.jpg", 560, 285, "زر القائمة بأسفل الشاشة",
+                  `اضغط زر <b>${escHtml(br.menu)}</b>`, `بأسفل الشاشة — انته فاتح بـ${br.name}`]);
+      steps.push(["images/ios-2-share.jpg", 560, 589, "خيار المشاركة بالقائمة",
+                  "اختار <b>Share</b>", "أول خيار بالقائمة"]);
     }else{
-      steps.push(["زر المشاركة", "بأسفل الشاشة بالنص"]);
+      steps.push(["images/safari-1-share.jpg", 360, 132, "زر المشاركة بشريط سفاري",
+                  "اضغط زر المشاركة", pad ? "بأعلى الشاشة — نفس المربّع الذهبي"
+                                          : "بأسفل الشاشة بالنص (بالصورة آيباد فالزر فوق)"]);
     }
-    steps.push(["<b>«إضافة إلى الشاشة الرئيسية»</b>", "مرّر لتحت إذا ما شفتها"]);
-    steps.push(["<b>«إضافة»</b>", "بأعلى الشاشة"]);
+    steps.push(["images/safari-2-add-home.jpg", 458, 549, "إضافة إلى الصفحة الرئيسية",
+                "اختار <b>«إضافة إلى الصفحة الرئيسية»</b>", "مرّر لتحت إذا ما شفتها"]);
+    steps.push(["images/safari-3-confirm.jpg", 488, 216, "زر إضافة بنافذة التأكيد",
+                "اضغط <b>«إضافة»</b>", "بأعلى النافذة على اليسار"]);
 
     const num = ["١","٢","٣","٤"];
-    box.innerHTML = steps.map((s,i)=>
-      `<div class="il"><b class="n">${num[i]}</b><span class="tx">${s[0]}<span>${escHtml(s[1])}</span></span></div>`).join("");
+    box.innerHTML = steps.map(([src, w, h, alt, title, hint], i)=>
+      `<figure>
+         <div class="shot"><img src="${src}" alt="${escHtml(alt)}"
+              width="${w}" height="${h}" loading="lazy" decoding="async"></div>
+         <figcaption>
+           <span class="n">${num[i]}</span>
+           <span class="cap">${title}<i>${escHtml(hint)}</i></span>
+         </figcaption>
+       </figure>`).join("") +
+      `<div class="ios-done">✅ وبيها يطلع التطبيق بشاشة موبايلك</div>`;
+    box.classList.add("show");
 
-    // الصور الحقيقية مصوّرة من فَيرفُكس (••• ← Share ← Add to Home Screen)
-    // فنعرضها لمتصفحات غير سفاري بس — سفاري طريقه مختلف والرسم المتحرك
-    // يمثّله صح. عرض صور مو مطابقة لشاشته يضيّعه بدل ما يساعده.
-    const shots = document.getElementById("iosShots");
-    const phone = document.getElementById("demoPhone");
-    const cap   = document.getElementById("demoCap");
-    const replay= document.getElementById("demoReplay");
-    const useShots = br.key !== "safari";
-    if(shots) shots.classList.toggle("show", useShots);
-    [phone, cap, replay].forEach(el=>{ if(el) el.style.display = useShots ? "none" : ""; });
-    if(useShots && typeof window.__stopIosDemo === "function") window.__stopIosDemo();
-
-    // السهم السفلي يأشّر على ••• عند غير سفاري، وعلى زر المشاركة بسفاري
-    const ptrTxt = document.querySelector("#iosPointer .ip-txt");
+    // السهم السفلي يأشّر على ••• عند غير سفاري، وعلى زر المشاركة بسفاري.
+    // بالآيباد الزر فوق مو تحت، فنخفي السهم أصلاً.
+    const ptr    = document.getElementById("iosPointer");
+    const ptrTxt = ptr?.querySelector(".ip-txt");
     if(ptrTxt) ptrTxt.textContent = br.key === "safari" ? "زر المشاركة هنا" : `زر ${br.menu} هنا`;
+    if(ptr) ptr.dataset.hide = pad ? "1" : "";
   }
 
   function refreshInstallGatePane(){
@@ -3901,7 +3752,6 @@
       buildIosSteps();
       showIgPane("igIos");
       if(typeof window.__resetIosGuide === "function") window.__resetIosGuide();
-      if(typeof window.__playIosDemo === "function") window.__playIosDemo();
       return;
     }
 
@@ -3939,8 +3789,6 @@
     if(gate){ gate.classList.remove("show", "ios-step1"); }
     document.getElementById("iosPointer")?.classList.remove("show");
     document.body.style.overflow = "";
-    // نوقف مؤقتات العرض حتى ما تظل تشتغل بالخلفية
-    if(typeof window.__stopIosDemo === "function") window.__stopIosDemo();
   }
 
   // الرفض ينتهي بعد أسبوع — قبل، ضغطة وحدة على "تصفّح بدون تثبيت"
@@ -4057,84 +3905,17 @@
     });
 
     // --- السهم اللي يأشّر على زر المشاركة الحقيقي بشريط سفاري ---
+    // بالآيباد الزر بالشريط الأعلى، فسهم يأشّر لتحت يضيّع الزبون —
+    // لهيچ buildIosSteps تعلّم عليه data-hide وإحنا نحترمها.
     window.__resetIosGuide = ()=>{
       const ptr  = document.getElementById("iosPointer");
       const gate = document.getElementById("installGate");
       const on = gate?.classList.contains("show")
-                 && document.getElementById("igIos")?.classList.contains("show");
+                 && document.getElementById("igIos")?.classList.contains("show")
+                 && ptr?.dataset.hide !== "1";
       ptr?.classList.toggle("show", !!on);
       gate?.classList.toggle("ios-step1", !!on);
     };
-
-    // --- العرض المتحرك: يمثّل التثبيت كاملاً ويعيد لحاله ---
-    // الزبون ما يقرا التعليمات — بس يشوف الحركة ويقلّدها.
-    (function iosDemo(){
-      const phone  = document.getElementById("demoPhone");
-      const capEl  = document.getElementById("demoCap");
-      if(!phone || !capEl) return;
-
-      const finger = phone.querySelector(".ph-finger");
-      const share  = phone.querySelector(".ph-share");
-      const sheet  = phone.querySelector(".ph-sheet");
-      const target = phone.querySelector(".sh-row.target");
-      const dialog = phone.querySelector(".ph-dialog");
-      const addBtn = phone.querySelector(".dl-add");
-      const home   = phone.querySelector(".ph-home");
-
-      let timers = [];
-      const at = (ms, fn)=> timers.push(setTimeout(fn, ms));
-
-      function reset(){
-        timers.forEach(clearTimeout); timers = [];
-        finger.className = "ph-finger";
-        finger.style.left = "50%"; finger.style.top = "100%";
-        share.classList.remove("lit");
-        sheet.style.transform = "translateY(105%)";
-        target.classList.remove("lit");
-        dialog.style.opacity = "0"; dialog.style.visibility = "hidden";
-        home.classList.remove("on");
-        home.style.opacity = "0"; home.style.visibility = "hidden";
-        capEl.textContent = " ";
-      }
-
-      function moveTo(left, top){ finger.style.left = left; finger.style.top = top; }
-      function press(){
-        finger.classList.add("press");
-        at(200, ()=> finger.classList.remove("press"));
-      }
-
-      function play(){
-        reset();
-        // ١) الإصبع يطلع ويروح لزر المشاركة
-        at(600,  ()=>{ finger.classList.add("on"); moveTo("50%", "86%");
-                       capEl.textContent = "① اضغط زر المشاركة"; });
-        at(1500, ()=>{ press(); share.classList.add("lit"); });
-        // ٢) القائمة تطلع من تحت
-        at(1900, ()=>{ sheet.style.transform = "translateY(0)";
-                       capEl.textContent = "② تطلع لك قائمة المشاركة"; });
-        at(2600, ()=> moveTo("50%", "62%"));
-        // ٣) الصف المطلوب يضوّي والإصبع يضغطه
-        at(3300, ()=>{ target.classList.add("lit");
-                       capEl.textContent = "③ اختار «إضافة إلى الشاشة الرئيسية»"; });
-        at(4200, press);
-        // ٤) نافذة الإضافة
-        at(4600, ()=>{ dialog.style.opacity = "1"; dialog.style.visibility = "visible";
-                       sheet.style.transform = "translateY(105%)";
-                       capEl.textContent = "④ اضغط «إضافة» بالأعلى"; });
-        at(5000, ()=> moveTo("78%", "22%"));
-        at(5800, ()=>{ press(); addBtn.classList.add("lit"); });
-        // ٥) التطبيق يطلع بالشاشة الرئيسية
-        at(6300, ()=>{ finger.classList.remove("on");
-                       home.style.opacity = "1"; home.style.visibility = "visible";
-                       home.classList.add("on");
-                       capEl.textContent = "✅ صار التطبيق بشاشة موبايلك"; });
-        at(9300, play);            // يعيد لحاله
-      }
-
-      window.__playIosDemo = play;
-      window.__stopIosDemo = ()=>{ timers.forEach(clearTimeout); timers = []; };
-      document.getElementById("demoReplay")?.addEventListener("click", play);
-    })();
 
     showInstallBtnForIOS();
 
