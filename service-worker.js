@@ -1,5 +1,5 @@
 /* ==========================================================
-   جنة الفواكه والخضار — Service Worker  (v26)
+   جنة الفواكه والخضار — Service Worker  (v27)
    1) كاش للملفات الأساسية حتى التطبيق يفتح بدون نت
    2) يضيف <script src="bottom-nav.js"> لصفحة الزبون فقط
       ⚠️ صفحات الإدارة (control / admin / dashboard) مستثناة تماماً —
@@ -8,7 +8,7 @@
    4) ملفات البيانات (products/settings): نت أولاً، حتى الأسعار تبقى محدثة
    ========================================================== */
 
-const CACHE_NAME = "janat-store-cache-v26";
+const CACHE_NAME = "janat-store-cache-v27";
 const CORE_ASSETS = [
   "./index.html",
   "./products.json",
@@ -22,22 +22,51 @@ const CORE_ASSETS = [
 // أي صفحة اسمها يحتوي واحد من هذي = صفحة إدارة، ممنوع أي حشر فيها
 const ADMIN_PAGES = ["control", "admin", "dashboard"];
 
+/* ═════════════ التحديث: النسخة الجديدة تنتظر إذن الزبون ═════════════
+ *
+ * ⚠️ قبل، كان install ينادي skipWaiting() فوراً — النسخة الجديدة تشتغل
+ * بينما الصفحة المفتوحة لسه قديمة، وشريط «صدر تحديث» يطلع بلا ما يقدر
+ * الزبون يسوي شي مفيد. الحين ننتظر رسالة من الصفحة (يعني الزبون ضغط
+ * «حدّث الآن») وبعدها نشتغل ونمسح الكاش القديم، فالتحميل الجاي يجيب
+ * النسخة الجديدة فعلاً.
+ *
+ * بس أكو حالة لازم ننتبه لها: الزباين اللي بأجهزتهم الصفحة القديمة ما
+ * يعرفون يدزّون هذي الرسالة. لو انتظرناهم للأبد راح ينعلكون بالنسخة
+ * القديمة. لهيچ: نستنى خمس ثواني — إذا سلّمت علينا صفحة تعرف البروتوكول
+ * الجديد ننتظر ضغطتها، وإذا ماكو أحد نشتغل لحالنا.
+ */
+let newClientPresent = false;
+
+self.addEventListener("message", (event) => {
+  const d = event.data;
+  if (!d) return;
+  if (d.type === "CLIENT_READY") newClientPresent = true;   // صفحة تعرف تنتظر
+  if (d.type === "SKIP_WAITING") self.skipWaiting();        // الزبون ضغط الزر
+});
+
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) =>
-      // نخزنهم واحد واحد حتى لا يفشل الكل إذا فشل ملف واحد
-      //
-      // ⚠️ "no-cache" مو "reload". الاثنين يتأكدون إن الملف محدّث، بس
-      // "reload" يجبر تنزيل كامل حتى لو الملف نفسه اللي هسه انتزّل —
-      // يعني أول زيارة كانت تنزّل index.html مرتين (٥١ كيلو مضغوطة
-      // زيادة على نت الموبايل). "no-cache" يسأل السيرفر "تغيّر؟"
-      // ويكتفي بـ304 إذا ما تغيّر.
-      Promise.all(
-        CORE_ASSETS.map((url) => cache.add(new Request(url, { cache: "no-cache" })).catch(() => null))
-      )
-    )
-  );
-  self.skipWaiting();
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    // نخزنهم واحد واحد حتى لا يفشل الكل إذا فشل ملف واحد
+    //
+    // ⚠️ "no-cache" مو "reload". الاثنين يتأكدون إن الملف محدّث، بس
+    // "reload" يجبر تنزيل كامل حتى لو الملف نفسه اللي هسه انتزّل —
+    // يعني أول زيارة كانت تنزّل index.html مرتين (٥١ كيلو مضغوطة
+    // زيادة على نت الموبايل). "no-cache" يسأل السيرفر "تغيّر؟"
+    // ويكتفي بـ304 إذا ما تغيّر.
+    await Promise.all(
+      CORE_ASSETS.map((url) => cache.add(new Request(url, { cache: "no-cache" })).catch(() => null))
+    );
+
+    // ⚠️ includeUncontrolled ضروري: النسخة اللي لسه تتنصّب ما تسيطر على
+    // أي صفحة بعد، فبدونها القائمة تطلع فارغة دائماً وننادي skipWaiting
+    // بكل تحديث — يعني نرجع لنفس الباگ اللي نصلّحه.
+    const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    if (windows.length === 0) { self.skipWaiting(); return; }   // ماكو صفحة مفتوحة
+
+    await new Promise((r) => setTimeout(r, 3000));
+    if (!newClientPresent) self.skipWaiting();
+  })());
 });
 
 self.addEventListener("activate", (event) => {

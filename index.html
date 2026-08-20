@@ -4252,33 +4252,85 @@
   // تحديث يشوف الزبون النسخة القديمة والجديدة تتنزّل بالخلفية. بدون
   // تنبيه، الواحد يظن إن التعديل ما انطبق ويعيد ويزيد.
   // الحل: أول ما تجهز نسخة جديدة، نطلع شريط يخليه يحدّث بضغطة.
-  function showUpdateBar(){
+  function showUpdateBar(onApply){
     if(document.getElementById("swUpdateBar")) return;
     const bar = document.createElement("div");
     bar.id = "swUpdateBar";
     bar.innerHTML = `<span>✨ صدر تحديث جديد للتطبيق</span>
       <button type="button">حدّث الآن</button>`;
-    bar.querySelector("button").addEventListener("click", ()=> location.reload());
+    const btn = bar.querySelector("button");
+    btn.addEventListener("click", ()=>{
+      btn.disabled = true;
+      btn.textContent = "⏳ لحظة...";
+      onApply();
+    });
     document.body.appendChild(bar);
     requestAnimationFrame(()=> bar.classList.add("show"));
   }
 
+  /* ═══════════════ تحديث التطبيق ═══════════════
+   *
+   * ⚠️ الباگ اللي كان: شريط «صدر تحديث جديد» يطلع كل مرة يفتح الزبون
+   * التطبيق، ولمن يضغط «حدّث الآن» ما يتغيّر شي فيرجع يطلع.
+   *
+   * السبب سببين مترابطين:
+   *  ١) عامل الخدمة كان ينادي skipWaiting() فوراً بالتنصيب، يعني
+   *     النسخة الجديدة تشتغل بلا ما ينضغط الزر أصلاً.
+   *  ٢) الزر كان يسوي location.reload() بس. والصفحة تنعرض «الكاش
+   *     أولاً»، فالتحديث يجيب نفس النسخة القديمة من الكاش — الزبون
+   *     يضغط ويشوف نفس الشي، فيظن إن الشريط عالق.
+   *
+   * الصح: النسخة الجديدة تنتظر بالطابور، والزر هو اللي يقلّها تشتغل.
+   * لمن تشتغل تمسح الكاش القديم (بحدث activate) وتتسلّم الصفحة، وهذا
+   * يطلق controllerchange فنعيد التحميل — وهنا الكاش فاضي فالصفحة
+   * تجي من النت جديدة فعلاً.
+   */
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
+      // مهم: ننقرا الحالة قبل أي تسجيل. أول زيارة ماكو مسيطر أصلاً،
+      // وclients.claim() راح يطلق controllerchange — بلا هذا الشرط
+      // كانت الصفحة تعيد تحميل نفسها بأول فتحة بلا سبب.
+      const hadController = !!navigator.serviceWorker.controller;
+      let reloading = false;
+
+      navigator.serviceWorker.addEventListener("controllerchange", ()=>{
+        if(!hadController || reloading) return;
+        reloading = true;
+        location.reload();
+      });
+
       navigator.serviceWorker.register("service-worker.js").then((reg)=>{
-        // نسخة جديدة انتنزّلت وعدنا نسخة شغّالة أصلاً = بيه تحديث
+        // نقول للنسخة الجديدة «آني هنا وأعرف أنتظر ضغطة الزبون».
+        // بدونها تشتغل لحالها بعد خمس ثواني — وهذا مقصود، عشان
+        // الأجهزة اللي بيها الصفحة القديمة ما تنعلك بالنسخة القديمة.
+        const tellReady = (w)=> w && w.postMessage({ type: "CLIENT_READY" });
+        tellReady(reg.installing); tellReady(reg.waiting);
+
+        const offerUpdate = (worker)=>{
+          if(!worker || !hadController) return;   // أول تنصيب مو تحديث
+          showUpdateBar(()=> worker.postMessage({ type: "SKIP_WAITING" }));
+        };
+
+        // نسخة جاهزة تنتظر من فتحة سابقة
+        if(reg.waiting) offerUpdate(reg.waiting);
+
         reg.addEventListener("updatefound", ()=>{
           const nw = reg.installing;
           if(!nw) return;
+          tellReady(nw);
           nw.addEventListener("statechange", ()=>{
-            if(nw.state === "installed" && navigator.serviceWorker.controller){
-              showUpdateBar();
-            }
+            if(nw.state === "installed") offerUpdate(reg.waiting || nw);
           });
         });
-        // ندوّر على تحديث كل مرة يرجع الزبون للتطبيق
+
+        // ندوّر على تحديث مرة بالساعة بس — قبل كان كل مرة يرجع الزبون
+        // للتطبيق، يعني عشرات الطلبات بالجلسة الوحدة على نت الموبايل.
+        let lastCheck = Date.now();
         document.addEventListener("visibilitychange", ()=>{
-          if(!document.hidden) reg.update().catch(()=>{});
+          if(document.hidden) return;
+          if(Date.now() - lastCheck < 3600000) return;
+          lastCheck = Date.now();
+          reg.update().catch(()=>{});
         });
       }).catch((err) => {
         console.warn("Service worker registration failed:", err);
