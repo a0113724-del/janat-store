@@ -1,5 +1,5 @@
 /* ==========================================================
-   جنة الفواكه والخضار — Service Worker  (v25)
+   جنة الفواكه والخضار — Service Worker  (v26)
    1) كاش للملفات الأساسية حتى التطبيق يفتح بدون نت
    2) يضيف <script src="bottom-nav.js"> لصفحة الزبون فقط
       ⚠️ صفحات الإدارة (control / admin / dashboard) مستثناة تماماً —
@@ -8,7 +8,7 @@
    4) ملفات البيانات (products/settings): نت أولاً، حتى الأسعار تبقى محدثة
    ========================================================== */
 
-const CACHE_NAME = "janat-store-cache-v25";
+const CACHE_NAME = "janat-store-cache-v26";
 const CORE_ASSETS = [
   "./index.html",
   "./products.json",
@@ -26,8 +26,14 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
       // نخزنهم واحد واحد حتى لا يفشل الكل إذا فشل ملف واحد
+      //
+      // ⚠️ "no-cache" مو "reload". الاثنين يتأكدون إن الملف محدّث، بس
+      // "reload" يجبر تنزيل كامل حتى لو الملف نفسه اللي هسه انتزّل —
+      // يعني أول زيارة كانت تنزّل index.html مرتين (٥١ كيلو مضغوطة
+      // زيادة على نت الموبايل). "no-cache" يسأل السيرفر "تغيّر؟"
+      // ويكتفي بـ304 إذا ما تغيّر.
       Promise.all(
-        CORE_ASSETS.map((url) => cache.add(new Request(url, { cache: "reload" })).catch(() => null))
+        CORE_ASSETS.map((url) => cache.add(new Request(url, { cache: "no-cache" })).catch(() => null))
       )
     )
   );

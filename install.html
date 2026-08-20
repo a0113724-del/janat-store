@@ -34,6 +34,18 @@
   }
 
   /* ===== الملصق ===== */
+  /* الملصق مقاسه ثابت بالمليمتر عشان الطباعة تطلع A5 بالضبط، بس على
+     شاشة موبايل ١٤٨ ملم = ٥٥٩ بكسل يعني يطلع بره الشاشة والصفحة
+     تتمرمر يمين وشمال. نصغّره بصرياً على الشاشات الضيقة والطباعة
+     تبقى بمقاسها الأصلي. */
+  @media screen and (max-width:600px){
+    .poster{ zoom:.62; }
+  }
+  @supports not (zoom:1){                 /* متصفح ما يدعم zoom */
+    @media screen and (max-width:600px){
+      .poster{ transform:scale(.62); transform-origin:top center; margin-bottom:-80mm; }
+    }
+  }
   .poster{
     width:148mm; min-height:210mm;      /* A5 — نصف ورقة A4 */
     background:var(--paper); position:relative; overflow:hidden;

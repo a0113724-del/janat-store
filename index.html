@@ -18,6 +18,8 @@
   });
 </script>
 
+<meta name="description" content="جنة الفواكه والخضار — أبو صخير. فواكه وخضروات طازة توصل لباب دارك، أسعار تتجدد يومياً ونقاط على كل طلب.">
+
 <!-- Social sharing preview -->
 <meta property="og:title" content="جنة الفواكه والخضار">
 <meta property="og:description" content="فواكه وخضروات طازجة توصل لباب بيتك 🚴 اطلب الآن عبر واتساب — أبو صخير، قرب مستشفى المناذرة العام">
@@ -471,6 +473,11 @@
   }
   .install-guide h2{ font-size:1.3rem; margin-bottom:6px; }
   .install-guide .sub{ font-size:.82rem; color:#DCE7DA; opacity:.85; margin-bottom:20px; }
+  .guide-open-btn{
+    margin-top:18px; background:var(--gold); color:#153122; border:none;
+    border-radius:13px; padding:13px 24px; font-family:inherit;
+    font-weight:900; font-size:.9rem; cursor:pointer;
+  }
   .device-tabs{ display:flex; gap:10px; justify-content:center; margin-bottom:20px; }
   .device-tabs button{
     background:rgba(255,255,255,.08); border:1.5px solid rgba(233,205,134,.35);
@@ -541,6 +548,12 @@
     display:flex; flex-direction:column;
     transition:.2s;
     position:relative;
+    /* المتصفح ما يحسب تنسيق ورسم البطاقات اللي بره الشاشة إلا لمن
+       توصلها. عدنا ٤٥ بطاقة وأغلبها تحت — هذا يقصّ شغل الفتحة الأولى.
+       contain-intrinsic-size يحجز ارتفاع تقريبي حتى شريط التمرير
+       ما ينط لمن تنرسم البطاقة فعلياً. */
+    content-visibility:auto;
+    contain-intrinsic-size:auto 320px;
   }
   .card:hover{ box-shadow:0 10px 24px rgba(21,49,34,.1); }
   .card .img-wrap{
@@ -1419,12 +1432,17 @@
     <div class="install-steps" id="steps-iphone">
       <ol>
         <li>افتح الرابط بمتصفح <b>Safari</b> (لازم Safari، مو كروم)</li>
-        <li>اضغط زر <b>المشاركة</b> <span class="icon-inline">⬆️</span> بالأسفل</li>
-        <li>مرّر لتحت ودور على <b>"إضافة إلى الشاشة الرئيسية"</b> (Add to Home Screen)</li>
-        <li>اضغط <b>"إضافة"</b> فوق يمين الشاشة</li>
+        <li>اضغط زر <b>المشاركة</b> <span class="icon-inline">⬆️</span> — بالآيفون أسفل الشاشة، وبالآيباد أعلاها</li>
+        <li>مرّر لتحت ودور على <b>"إضافة إلى الصفحة الرئيسية"</b> (Add to Home Screen)</li>
+        <!-- ⚠️ يسار مو يمين: بواجهة عربية زر «إضافة» يطلع أعلى اليسار
+             و«إلغاء» أعلى اليمين — بالإنكليزية بالعكس -->
+        <li>اضغط <b>"إضافة"</b> أعلى النافذة على اليسار (لو جهازك إنكليزي راح تلگاه يمين)</li>
         <li>راح تطلع أيقونة المتجر على شاشتك 🎉</li>
       </ol>
     </div>
+    <!-- الشرح المصوّر التفاعلي أوضح بمرّات من قائمة نصوص — نخلي زر
+         يفتحه بدل ما نكرر نفس الكلام بمكانين -->
+    <button type="button" class="guide-open-btn" id="openGuideBtn">🖼️ شوف الشرح بالصور خطوة خطوة</button>
   </section>
 
   <!-- ================= REFERRAL / INVITE FRIEND ================= -->
@@ -1894,8 +1912,11 @@
       if(already) return;
       try{ sessionStorage.setItem("janat-visit-logged", "1"); }catch(e){}
     }
-    let myPhone = "";
-    try{ myPhone = localStorage.getItem("janat-my-phone") || ""; }catch(e){}
+    let myPhone = "", myName = "";
+    try{
+      myPhone = localStorage.getItem("janat-my-phone") || "";
+      myName  = localStorage.getItem("janat-my-name")  || "";
+    }catch(e){}
     fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
       mode: "no-cors",
@@ -1904,7 +1925,12 @@
         type: "analytics", eventType,
         approxLocation: approxLocationText,
         visitorId: getVisitorId(),
-        phone: myPhone            // يربط الجهاز بالزبون بقائمة النشطين
+        phone: myPhone,           // يربط الجهاز بالزبون بقائمة النشطين
+        // ⚠️ بدون هذا السطر خانة الاسم بجدول الزيارات تبقى فارغة للأبد.
+        // السيرفر (touchVisitor) يقرا data.name من زمان، بس الصفحة
+        // كانت تدز الرقم بس — فصاحب المحل يشوف أرقام بلا أسماء حتى
+        // للزباين اللي كاتبين أسماءهم بالطلب.
+        name: myName
       })
     }).catch(()=>{});
   }
@@ -1973,7 +1999,11 @@
   const cart = {}; // id -> qty (kg)
   let gpsCoords = null;
 
-  function money(n){ return Math.round(n).toLocaleString('en-US') + " د.ع"; }
+  // ⚠️ لازم يبقى مُنسّق واحد مُعاد استعماله. قبل كانت الدالة تنادي
+  // toLocaleString() لكل رقم، وهذي تبني مُنسّق Intl جديد بكل استدعاء —
+  // ٤٥ بطاقة × عدة أسعار = ٧١ مللي ثانية ضايعة بالفتح على موبايل عادي.
+  const MONEY_FMT = new Intl.NumberFormat("en-US");
+  function money(n){ return MONEY_FMT.format(Math.round(n)) + " د.ع"; }
 
   // ---------- توحيد صيغة رقم الهاتف ----------
   // الزبون ممكن يكتبه بأي صيغة: 07801234567 · 7801234567 · +9647801234567
@@ -2703,7 +2733,6 @@
     const notes = document.getElementById("custNotes").value.trim();
     const customRequestEl = document.getElementById("customRequestInput");
     const customRequest = customRequestEl ? customRequestEl.value.trim() : "";
-    const isFirstOrder = isFirstOrderFreeDelivery();   // من السستم، مو من مربع يعلّمه الزبون
     const usePointsEl = document.getElementById("usePointsCheck");
     const usingPoints = !!(usePointsEl && usePointsEl.checked && currentRedeemableValue > 0);
     // النقاط تنشتق من الخصم المطبّق فعلاً — مو من الرصيد كامل
@@ -2731,6 +2760,19 @@
     }
     formErr.classList.remove("show");
 
+    // نتأكد من «أول طلب» قبل ما نحسب الأجرة. الزبون اللي يكتب رقمه
+    // ويضغط فوراً ما كان الفحص يلحق يخلص، فتطلعله أجرة ١٠٠٠ بينما
+    // السيرفر يحفظ الطلب مجاني.
+    if(firstOrderVerified === null){
+      sendBtn.disabled = true;
+      sendBtn.textContent = "⏳ نتأكد من الرقم...";
+      await verifyFirstOrder(phone, 3000);
+      sendBtn.disabled = false;
+      sendBtn.textContent = "✅ تأكيد وحفظ الطلب";
+      updateCartUI();
+    }
+    const isFirstOrder = isFirstOrderFreeDelivery();   // من السستم، مو من مربع يعلّمه الزبون
+
     let msg = "🌿 طلب جديد من جنة الفواكه والخضار\n\n";
     msg += `👤 الاسم: ${name}\n`;
     msg += `📞 الهاتف: ${phone}\n`;
@@ -2741,7 +2783,6 @@
       if(usedSavedLocation) msg += `ℹ️ الموقع محفوظ من طلب سابق (الزبون ما حدّثه بهذا الطلب)\n`;
     }
     if(approxLocationText) msg += `🌐 الموقع التقريبي (شبكة الإنترنت): ${approxLocationText}\n`;
-    if(isFirstOrder) msg += `\n🎁 هذا أول طلب — التوصيل مجاني\n`;
     const itemsSummaryLines = [];
     if(entries.length){
       msg += `\n🧺 المنتجات:\n`;
@@ -2773,25 +2814,54 @@
 
     const deliveryFee = deliveryFeeFor(subtotal);
     const pointsDiscount = pointsDiscountFor(subtotal);
-    msg += `\nمجموع المنتجات: ${money(subtotal)}`;
-    if(usingPoints){
-      msg += `\n⭐ خصم النقاط (${pointsUsedCount} نقطة): - ${money(pointsDiscount)}`;
-    }
-    const feeText = subtotal <= 0
-      ? "تُحدد عند تأكيد الطلب"
-      : (deliveryFee === 0 ? (isFirstOrderFreeDelivery() ? "مجاني (أول طلب 🎁)" : "مجاني") : money(deliveryFee));
-    msg += `\n🚴 أجرة التوصيل: ${feeText}`;
-    msg += `\nالمجموع النهائي: ${money(finalTotal())}`;
-    if(customRequest) msg += `\n(+ سعر الطلب الخاص يُحدد عند التأكيد)`;
 
+    /**
+     * كتلة الأرقام برسالة الواتساب.
+     *
+     * ⚠️ ليش دالة مو نص مباشر؟
+     * الرسالة كانت تنبني قبل ما يرد السيرفر، ومين يقرر «التوصيل الأول
+     * مجاني» هو السيرفر لأنه هو اللي يعرف تاريخ الرقم. إذا فحص الرقم
+     * ما خلص بعد (أو فشل الاتصال) تطلع الأجرة ١٠٠٠ بالرسالة، بينما
+     * السيرفر يحفظ الطلب بتوصيل مجاني — فيوصل صاحب المحل رسالة تكول
+     * ١٠٠٠ والطلب المحفوظ صفر. لهيچ نعيد بناء الكتلة بأرقام السيرفر
+     * بعد ما يرد، قبل ما نفتح الواتساب.
+     */
+    const totalsBlock = (t)=>{
+      const sub  = Number(t.subtotal) || 0;
+      const fee  = Number(t.deliveryFee) || 0;
+      const used = Number(t.pointsUsed) || 0;
+      const disc = Number(t.pointsDiscount) || 0;
+      let s = "";
+      // الأجرة صفر والمجموع فوق حد الإعفاء؟ يعني مجاني بسبب المجموع.
+      // غير هيچ، المجاني سببه إنه أول طلب.
+      const freeByTotal = STORE.freeDeliveryOver && sub >= STORE.freeDeliveryOver;
+      if(sub > 0 && fee === 0 && !freeByTotal) s += `\n🎁 هذا أول طلب — التوصيل مجاني\n`;
+      s += `\nمجموع المنتجات: ${money(sub)}`;
+      if(disc > 0) s += `\n⭐ خصم النقاط (${used} نقطة): - ${money(disc)}`;
+      const feeText = sub <= 0 ? "تُحدد عند تأكيد الطلب"
+        : (fee === 0 ? (freeByTotal ? "مجاني" : "مجاني (أول طلب 🎁)") : money(fee));
+      s += `\n🚴 أجرة التوصيل: ${feeText}`;
+      s += `\nالمجموع النهائي: ${money(Number(t.total) || 0)}`;
+      if(customRequest) s += `\n(+ سعر الطلب الخاص يُحدد عند التأكيد)`;
+      return s;
+    };
+
+    const localTotals = { subtotal, deliveryFee, total: finalTotal(),
+                          pointsUsed: pointsUsedCount, pointsDiscount };
+
+    // الذيل ثابت ما يتغيّر بأرقام السيرفر، فنخزنه لحاله حتى نعيد التركيب
+    let msgTail = "";
     const pointsEarnedThisOrder = STORE.pointsPerOrder;
     if(entries.length > 0 || usingPoints){
-      msg += `\n\n⭐ راح تحصل على ${pointsEarnedThisOrder} نقطة بعد تأكيد استلام الطلب`;
-      msg += `\n💰 رصيدك الحالي: ${currentPointsBalance} نقطة`;
+      msgTail += `\n\n⭐ راح تحصل على ${pointsEarnedThisOrder} نقطة بعد تأكيد استلام الطلب`;
+      msgTail += `\n💰 رصيدك الحالي: ${currentPointsBalance} نقطة`;
     }
-    if(notes) msg += `\n\n📝 ملاحظات: ${notes}`;
+    if(notes) msgTail += `\n\n📝 ملاحظات: ${notes}`;
     const afterHours = !isStoreOpen();
-    if(afterHours) msg += `\n\n🌙 الطلب انسجّل خارج أوقات العمل — يُجهّز أول ما نفتح ${fmtHour(STORE.openHour)}`;
+    if(afterHours) msgTail += `\n\n🌙 الطلب انسجّل خارج أوقات العمل — يُجهّز أول ما نفتح ${fmtHour(STORE.openHour)}`;
+
+    const msgHead = msg;                 // الاسم والعنوان والمنتجات
+    msg = msgHead + totalsBlock(localTotals) + msgTail;
 
     let referredByPhone = "";
     try{ referredByPhone = localStorage.getItem("janat-referred-by") || ""; }catch(e){}
@@ -2880,6 +2950,17 @@
                 total: data.total, pointsUsed: data.pointsUsed,
                 pointsBalance: data.pointsBalance
               };
+              // نعيد تركيب رسالة الواتساب بأرقام السيرفر. أهم حالة:
+              // «التوصيل الأول مجاني» — السيرفر هو اللي يعرف إذا الرقم
+              // جديد، فبدون هذا السطر توصل الرسالة بأجرة ١٠٠٠ والطلب
+              // المحفوظ صفر.
+              msg = msgHead + totalsBlock({
+                subtotal: data.subtotal,
+                deliveryFee: data.deliveryFee,
+                total: data.total,
+                pointsUsed: data.pointsUsed,
+                pointsDiscount: (Number(data.pointsUsed) || 0) / 10 * IQD_PER_10_POINTS
+              }) + msgTail;
             }
           }
         }catch(parseErr){
@@ -3000,6 +3081,31 @@
   // number — more reliable than device storage (works even from a new phone
   // or after clearing browser data).
   let phoneCheckTimer = null;
+
+  /**
+   * يسأل السيرفر إذا الرقم عنده طلبات سابقة، ويثبّت firstOrderVerified.
+   *
+   * ⚠️ لازم تنستدعى قبل إرسال الطلب بعد. الفحص كان يشتغل بس بعد ٦٠٠
+   * مللي من آخر حرف، والرد يحتاج ثانية أو ثنتين من قوقل. الزبون اللي
+   * يكتب رقمه ويضغط «تأكيد» بسرعة كان يشوف أجرة ١٠٠٠ بالشاشة وبرسالة
+   * الواتساب، بينما السيرفر يحفظ الطلب بتوصيل مجاني لأنه يعرف إن
+   * الرقم جديد. النتيجة رقمين مختلفين لنفس الطلب.
+   */
+  async function verifyFirstOrder(phone, ms){
+    if(firstOrderVerified !== null) return;              // متحقق أصلاً
+    if(!GOOGLE_SCRIPT_URL || !isValidPhone(phone)) return;
+    try{
+      const ctrl = new AbortController();
+      const t = setTimeout(()=> ctrl.abort(), ms || 3000);
+      const res = await fetch(`${GOOGLE_SCRIPT_URL}?checkPhone=${encodeURIComponent(phone)}`,
+                              { signal: ctrl.signal });
+      clearTimeout(t);
+      const data = await res.json();
+      if(data.hasOrdered) hideFirstOrderPromo();
+      else { showFirstOrderPromoIfEligible(); markVerifiedFirstOrder(); }
+    }catch(e){ /* ما وصل رد — نكمل بالحساب المحلي، والسيرفر يصحّح بعدين */ }
+  }
+
   const custPhoneInput = document.getElementById("custPhone");
   if(custPhoneInput){
     custPhoneInput.addEventListener("input", ()=>{
@@ -4069,6 +4175,16 @@
       }catch(err){
         e.target.textContent = url;
       }
+    });
+
+    // زر «شوف الشرح بالصور» بأسفل الصفحة يفتح نفس المرشد المصوّر
+    document.getElementById("openGuideBtn")?.addEventListener("click", ()=>{
+      try{ sessionStorage.removeItem(WZ_STEP_KEY); }catch(e){}   // يبدي من الخطوة الأولى
+      const gate = document.getElementById("installGate");
+      if(!gate) return;
+      gate.classList.add("show");
+      document.body.style.overflow = "hidden";
+      refreshInstallGatePane();
     });
 
     document.getElementById("igSkip")?.addEventListener("click", ()=>{
