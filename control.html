@@ -670,6 +670,7 @@
 
   // ================= STATE =================
   let token = null;
+  let canWrite = null;      // هل المفتاح عنده صلاحية الكتابة؟ null = ما تأكدنا
   let products = [];
   let productsSha = null;
   let dirty = false;
@@ -777,6 +778,19 @@
     const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g,""))));
     products = JSON.parse(decoded);
     products.forEach((p,i)=>{ if(p.order===undefined) p.order=i; if(p.visible===undefined) p.visible=true; });
+
+    // ⚠️ مفتاح قراءة-بس يدخّلك عادي ويعرضلك كل منتجاتك — وما تكتشف
+    // إنه ناقص صلاحية إلا لمن تعدّل عشر أسعار وتضغط حفظ ويرفض.
+    // GitHub يرجّع permissions.push بمعلومات المستودع، فنسأله من
+    // لحظة الدخول ونحذّر قبل ما يضيع شغل صاحب المحل.
+    canWrite = null;
+    try{
+      const repoRes = await ghFetch(`/repos/${OWNER}/${REPO}`);
+      if(repoRes.ok){
+        const info = await repoRes.json();
+        canWrite = !!(info.permissions && info.permissions.push);
+      }
+    }catch(e){ /* ما گدرنا نتأكد — نخليها بلا تحذير بدل تحذير غلط */ }
   }
 
   document.getElementById("loginBtn").addEventListener("click", async ()=>{
@@ -802,9 +816,33 @@
 
   document.getElementById("logoutBtn").addEventListener("click", ()=>{ clearToken(); clearAdminKey(); location.reload(); });
 
+  /**
+   * تحذير ثابت بأعلى اللوحة لو المفتاح قراءة-بس. أهم من رسالة تطلع
+   * وتختفي: صاحب المحل لازم يشوفه قبل ما يبدي يعدّل، مو بعدها.
+   */
+  function warnIfReadOnly(){
+    const old = document.getElementById("roWarn");
+    if(canWrite !== false){ if(old) old.remove(); return; }
+    if(old) return;
+    const box = document.createElement("div");
+    box.id = "roWarn";
+    box.style.cssText = "background:#fdeeea; border:1.5px solid #d9534f; color:#8a2b22;" +
+      "border-radius:12px; padding:12px 14px; margin:12px; font-size:.86rem;" +
+      "font-weight:700; line-height:1.8; text-align:right;";
+    box.innerHTML =
+      "⚠️ <b>مفتاحك قراءة بس — الحفظ ما راح يشتغل</b><br>" +
+      "افتح <span style='direction:ltr;display:inline-block'>github.com/settings/tokens?type=beta</span> " +
+      "← اضغط اسم المفتاح ← <b>Permissions</b> ← <b>Repository permissions</b> ← " +
+      "<b>Contents</b> خلّيها <b>Read and write</b> ← <b>Update token</b>." +
+      "<br>وبعدها سجّل خروج من اللوحة وادخل بنفس المفتاح.";
+    const app = document.getElementById("app");
+    app.insertBefore(box, app.firstChild);
+  }
+
   function showApp(){
     document.getElementById("loginGate").style.display = "none";
     document.getElementById("app").style.display = "block";
+    warnIfReadOnly();
     renderProductList();
     loadOrdersData();
     setInterval(loadOrdersData, REFRESH_INTERVAL);
