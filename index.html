@@ -159,8 +159,11 @@
   /* ---------- CATEGORY NAV ---------- */
   .catnav{
     position:sticky; top:0; z-index:30;
-    background:rgba(251,248,239,.95);
-    backdrop-filter:blur(6px);
+    /* ⚠️ ما نستعمل backdrop-filter هنا. الشريط لاصق بأعلى الشاشة طول
+       ما الزبون يمرّر، والضبابية تجبر المتصفح يعيد حساب الخلفية بكل
+       إطار — أثقل شي بالصفحة على موبايل رخيص. وفوق هذا الخلفية معتمة
+       ٩٧٪ فالضبابية ما كانت تبان أصلاً. */
+    background:rgba(251,248,239,.97);
     border-bottom:1px solid rgba(62,122,68,.18);
     display:flex; align-items:center; gap:8px;
     padding:12px 16px;
@@ -183,16 +186,6 @@
   .points-badge.show{ display:flex; }
   /* الزبون الجديد يشوفها بصفر — تعريف بالنظام من أول زيارة */
   .points-badge.zero{ opacity:.8; }
-
-  .subcat-tabs{
-    display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:18px;
-  }
-  .subcat-tabs button{
-    flex:0 0 auto; font-size:.78rem; font-weight:700;
-    border:1.5px solid var(--card-border); background:var(--card-bg); color:var(--ink);
-    padding:7px 16px; border-radius:100px; cursor:pointer; white-space:nowrap;
-  }
-  .subcat-tabs button.active{ background:var(--leaf); color:#fff; border-color:var(--leaf); }
 
   .custom-request-box{
     margin-top:24px; background:var(--card-bg); border:1.5px dashed var(--leaf);
@@ -304,13 +297,23 @@
   /* زر تتبّع الطلب — ما يبين إلا لو عنده طلب فعلاً */
   .track-toggle{ display:none; border-color:rgba(62,122,68,.5); color:var(--leaf); }
   .track-toggle.show{ display:flex; }
+  /* ⚠️ النبضة على حلقة منفصلة تكبر وتخفت (transform + opacity) مو على
+     box-shadow. تحريك الظل يجبر المتصفح يعيد رسم العنصر بكل إطار، وهذي
+     النبضة تشتغل طول ما عند الزبون طلب شغّال — يعني رسم متواصل بالوقت
+     اللي هو فاتح التطبيق وينطر طلبه. الحركة على الطبقة ما تكلّف رسم. */
   .track-toggle.live{
     border-color:var(--pomegranate); color:var(--pomegranate);
-    animation:tt-pulse 1.8s ease-in-out infinite;
+    position:relative;
+  }
+  .track-toggle.live::after{
+    content:""; position:absolute; inset:-1px; border-radius:inherit;
+    border:2px solid var(--pomegranate); pointer-events:none;
+    animation:tt-pulse 1.8s ease-out infinite;
   }
   @keyframes tt-pulse{
-    0%,100%{ box-shadow:0 0 0 0 rgba(161,58,46,.5); }
-    70%{ box-shadow:0 0 0 9px rgba(161,58,46,0); }
+    0%  { transform:scale(1);    opacity:.55; }
+    70% { transform:scale(1.28); opacity:0; }
+    100%{ transform:scale(1.28); opacity:0; }
   }
 
   /* ---------- بطاقة تتبّع الطلب ---------- */
@@ -348,7 +351,12 @@
   .trk-st.on::before{ background:var(--leaf); }
   .trk-st.now .dot{
     background:var(--gold); color:#153122;
-    animation:tt-pulse 1.6s ease-in-out infinite;
+    position:relative;
+  }
+  .trk-st.now .dot::after{
+    content:""; position:absolute; inset:0; border-radius:inherit;
+    border:2px solid var(--gold); pointer-events:none;
+    animation:tt-pulse 1.6s ease-out infinite;
   }
   .trk-st.now .lbl{ color:var(--gold); }
 
@@ -659,7 +667,6 @@
     display:flex; align-items:center; justify-content:center;
   }
   .ig-hl{ color:var(--gold-light); font-weight:800; }
-  .ig-ic{ font-size:1.1rem; }
   /* ---------- دليل التثبيت: خطوة وحدة بالمرة ----------
      السكرينات مصوّرة من نفس التطبيق والزر المطلوب عليه مربّع ذهبي.
      قبل، كانت الخطوات الثلاثة فوق بعض بصفحة وحدة طويلة — الزبون
@@ -790,20 +797,7 @@
   /* بالخطوة الأولى نرفع صندوق الشرح لفوق حتى ما يغطي السهم */
   #installGate.ios-step1 .ig-box{ padding-bottom:96px; }
 
-  .ios-nav{ display:flex; gap:9px; margin-top:18px; }
-  .ios-nav button{
-    flex:1; border:none; border-radius:13px; padding:14px;
-    font-family:inherit; font-weight:800; font-size:.92rem; cursor:pointer;
-    background:var(--gold); color:#153122;
-  }
-  .ios-nav button.alt{
-    background:none; border:1.5px solid rgba(233,205,134,.35); color:var(--gold-light);
-    flex:0 0 34%;
-  }
-  .ios-nav button.alt:disabled{ opacity:.3; cursor:not-allowed; }
-
-  .ig-arrow{ font-size:1.6rem; animation:ig-bounce 1.4s ease-in-out infinite; }
-  @keyframes ig-bounce{ 0%,100%{ transform:translateY(0); opacity:.5; } 50%{ transform:translateY(6px); opacity:1; } }
+ 50%{ transform:translateY(6px); opacity:1; } }
   .ig-warn{
     background:rgba(161,58,46,.25); border:1px solid rgba(161,58,46,.5);
     border-radius:12px; padding:11px; font-size:.85rem; font-weight:800;
@@ -824,7 +818,8 @@
   #notifGate{
     position:fixed; inset:0; z-index:300; display:none;
     align-items:center; justify-content:center; padding:20px;
-    background:rgba(21,49,34,.94); backdrop-filter:blur(4px);
+    /* معتمة ٩٦٪ — الضبابية كانت تكلّف طبقة رسم كاملة بلا ما تبان */
+    background:rgba(21,49,34,.96);
   }
   #notifGate.show{ display:flex; }
   .ng-box{
@@ -1068,11 +1063,6 @@
   }
   footer .display{ font-size:1.4rem; margin-bottom:6px; }
   footer p{ color:#DCE7DA; font-size:.82rem; opacity:.85; }
-  footer .admin-link{
-    display:inline-block; margin-top:16px; color:rgba(233,205,134,.55);
-    text-decoration:none; font-size:.72rem; border:1px dashed rgba(233,205,134,.3);
-    padding:6px 14px; border-radius:100px;
-  }
 
   /* ---------- FIXED CART BAR ---------- */
   .cart-bar{

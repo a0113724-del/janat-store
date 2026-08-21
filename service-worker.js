@@ -1,5 +1,5 @@
 /* ==========================================================
-   جنة الفواكه والخضار — Service Worker  (v27)
+   جنة الفواكه والخضار — Service Worker  (v28)
    1) كاش للملفات الأساسية حتى التطبيق يفتح بدون نت
    2) يضيف <script src="bottom-nav.js"> لصفحة الزبون فقط
       ⚠️ صفحات الإدارة (control / admin / dashboard) مستثناة تماماً —
@@ -8,7 +8,7 @@
    4) ملفات البيانات (products/settings): نت أولاً، حتى الأسعار تبقى محدثة
    ========================================================== */
 
-const CACHE_NAME = "janat-store-cache-v27";
+const CACHE_NAME = "janat-store-cache-v28";
 const CORE_ASSETS = [
   "./index.html",
   "./products.json",
