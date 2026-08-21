@@ -857,22 +857,6 @@
   #ngSkip.show{ display:block; }
 
   /* شريط "صدر تحديث" — يطلع لمن تجهز نسخة جديدة بالخلفية */
-  #swUpdateBar{
-    position:fixed; left:12px; right:12px; z-index:400;
-    bottom:calc(var(--bar-h) + 16px + env(safe-area-inset-bottom, 0px));
-    background:var(--forest); color:var(--gold-light);
-    border:1px solid rgba(233,205,134,.35); border-radius:14px;
-    padding:12px 14px; display:flex; align-items:center; justify-content:space-between;
-    gap:10px; font-size:.85rem; font-weight:800;
-    box-shadow:0 10px 30px rgba(0,0,0,.35);
-    transform:translateY(140%); transition:transform .35s cubic-bezier(.2,.8,.25,1);
-  }
-  #swUpdateBar.show{ transform:translateY(0); }
-  #swUpdateBar button{
-    flex:0 0 auto; background:var(--gold); color:#153122; border:none;
-    border-radius:100px; padding:8px 16px; font-family:inherit;
-    font-weight:900; font-size:.8rem; cursor:pointer;
-  }
 
   /* ---------- شريط تقييمات الزبائن ---------- */
   /* أول زيارة ما بيها كاش، فالشريط يجي متأخر. نخليه ينفتح بهدوء بدل
@@ -4236,93 +4220,24 @@
     box.classList.add("show");
   }
 
-  // ---------- PWA: SERVICE WORKER ----------
-  //
-  // ⚠️ الصفحة تنعرض من الكاش فوراً (عشان السرعة)، يعني أول فتحة بعد أي
-  // تحديث يشوف الزبون النسخة القديمة والجديدة تتنزّل بالخلفية. بدون
-  // تنبيه، الواحد يظن إن التعديل ما انطبق ويعيد ويزيد.
-  // الحل: أول ما تجهز نسخة جديدة، نطلع شريط يخليه يحدّث بضغطة.
-  function showUpdateBar(onApply){
-    if(document.getElementById("swUpdateBar")) return;
-    const bar = document.createElement("div");
-    bar.id = "swUpdateBar";
-    bar.innerHTML = `<span>✨ صدر تحديث جديد للتطبيق</span>
-      <button type="button">حدّث الآن</button>`;
-    const btn = bar.querySelector("button");
-    btn.addEventListener("click", ()=>{
-      btn.disabled = true;
-      btn.textContent = "⏳ لحظة...";
-      onApply();
-    });
-    document.body.appendChild(bar);
-    requestAnimationFrame(()=> bar.classList.add("show"));
-  }
-
-  /* ═══════════════ تحديث التطبيق ═══════════════
+  /* ═══════════════ تحديث التطبيق — بالخفاء ═══════════════
    *
-   * ⚠️ الباگ اللي كان: شريط «صدر تحديث جديد» يطلع كل مرة يفتح الزبون
-   * التطبيق، ولمن يضغط «حدّث الآن» ما يتغيّر شي فيرجع يطلع.
+   * ماكو شريط ولا زر ولا أي شي يشوفه الزبون. صاحب المتجر محق: الزبون
+   * ما يهمه «صدر تحديث»، يهمه يتسوّق. الشريط كان يقطع عليه ويطلعله
+   * بكل نشر — وأغلب النشرات تعديلات ما تخصّه أصلاً.
    *
-   * السبب سببين مترابطين:
-   *  ١) عامل الخدمة كان ينادي skipWaiting() فوراً بالتنصيب، يعني
-   *     النسخة الجديدة تشتغل بلا ما ينضغط الزر أصلاً.
-   *  ٢) الزر كان يسوي location.reload() بس. والصفحة تنعرض «الكاش
-   *     أولاً»، فالتحديث يجيب نفس النسخة القديمة من الكاش — الزبون
-   *     يضغط ويشوف نفس الشي، فيظن إن الشريط عالق.
+   * كيف يوصله الجديد إذن؟
+   *  ١) أول ما تجهز نسخة جديدة نشغّلها فوراً بلا ما نسأله ولا نعيد
+   *     تحميل الصفحة — جلسته الحالية تكمل بهدوء بالنسخة اللي بيدها.
+   *  ٢) النسخة الجديدة تمسح الكاش القديم وتخزّن الصفحة الجديدة مكانه
+   *     (بحدث activate) — فالفتحة الجاية تفتح فوراً وبالنسخة الجديدة.
    *
-   * الصح: النسخة الجديدة تنتظر بالطابور، والزر هو اللي يقلّها تشتغل.
-   * لمن تشتغل تمسح الكاش القديم (بحدث activate) وتتسلّم الصفحة، وهذا
-   * يطلق controllerchange فنعيد التحميل — وهنا الكاش فاضي فالصفحة
-   * تجي من النت جديدة فعلاً.
+   * والأسعار ما تنتظر أي تحديث أصلاً: تجي من products.json بالنت
+   * أولاً، يعني أي تعديل سعر يوصل بنفس اللحظة.
    */
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-      // مهم: ننقرا الحالة قبل أي تسجيل. أول زيارة ماكو مسيطر أصلاً،
-      // وclients.claim() راح يطلق controllerchange — بلا هذا الشرط
-      // كانت الصفحة تعيد تحميل نفسها بأول فتحة بلا سبب.
-      const hadController = !!navigator.serviceWorker.controller;
-      let reloading = false;
-
-      navigator.serviceWorker.addEventListener("controllerchange", ()=>{
-        if(!hadController || reloading) return;
-        reloading = true;
-        location.reload();
-      });
-
-      navigator.serviceWorker.register("service-worker.js").then((reg)=>{
-        // نقول للنسخة الجديدة «آني هنا وأعرف أنتظر ضغطة الزبون».
-        // بدونها تشتغل لحالها بعد خمس ثواني — وهذا مقصود، عشان
-        // الأجهزة اللي بيها الصفحة القديمة ما تنعلك بالنسخة القديمة.
-        const tellReady = (w)=> w && w.postMessage({ type: "CLIENT_READY" });
-        tellReady(reg.installing); tellReady(reg.waiting);
-
-        const offerUpdate = (worker)=>{
-          if(!worker || !hadController) return;   // أول تنصيب مو تحديث
-          showUpdateBar(()=> worker.postMessage({ type: "SKIP_WAITING" }));
-        };
-
-        // نسخة جاهزة تنتظر من فتحة سابقة
-        if(reg.waiting) offerUpdate(reg.waiting);
-
-        reg.addEventListener("updatefound", ()=>{
-          const nw = reg.installing;
-          if(!nw) return;
-          tellReady(nw);
-          nw.addEventListener("statechange", ()=>{
-            if(nw.state === "installed") offerUpdate(reg.waiting || nw);
-          });
-        });
-
-        // ندوّر على تحديث مرة بالساعة بس — قبل كان كل مرة يرجع الزبون
-        // للتطبيق، يعني عشرات الطلبات بالجلسة الوحدة على نت الموبايل.
-        let lastCheck = Date.now();
-        document.addEventListener("visibilitychange", ()=>{
-          if(document.hidden) return;
-          if(Date.now() - lastCheck < 3600000) return;
-          lastCheck = Date.now();
-          reg.update().catch(()=>{});
-        });
-      }).catch((err) => {
+      navigator.serviceWorker.register("service-worker.js").catch((err) => {
         console.warn("Service worker registration failed:", err);
       });
     });
