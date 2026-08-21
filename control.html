@@ -1122,16 +1122,44 @@
       });
       const content = JSON.stringify(products, null, 2);
       const base64 = btoa(unescape(encodeURIComponent(content)));
-      const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${PRODUCTS_PATH}`, {
+
+      const put = ()=> ghFetch(`/repos/${OWNER}/${REPO}/contents/${PRODUCTS_PATH}`, {
         method: "PUT",
         body: JSON.stringify({ message: "تحديث المنتجات من لوحة التحكم", content: base64, sha: productsSha, branch: BRANCH })
       });
-      if(!res.ok) throw new Error("save failed");
+
+      let res = await put();
+
+      // ⚠️ 409 = الملف تغيّر من مكان ثاني بعد ما فتحنا اللوحة (تعديل من
+      // جهاز ثاني أو تحديث للتطبيق). الرقم اللي بيدنا صار قديم فGitHub
+      // يرفض. نجيب الرقم الجديد ونعيد المحاولة مرة وحدة — بدونها كان
+      // صاحب المحل يخسر كل تعديلاته ويشوف «تأكد من الإنترنت».
+      if(res.status === 409){
+        const cur = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${PRODUCTS_PATH}?ref=${BRANCH}`);
+        if(cur.ok){
+          productsSha = (await cur.json()).sha;
+          res = await put();
+        }
+      }
+
+      if(!res.ok){
+        // نفس منطق شاشة الدخول: كل حالة إلها سبب واضح بدل جملة وحدة
+        const why = res.status === 403
+          ? "⚠️ مفتاحك ما عنده صلاحية الكتابة — لازم تعطيه Contents: Read and write"
+          : res.status === 401 ? "⚠️ المفتاح منتهي أو ملغي — سوّي مفتاح جديد"
+          : res.status === 409 ? "⚠️ الملف تغيّر من مكان ثاني — حدّث الصفحة وأعد التعديل"
+          : res.status === 404 ? "⚠️ المفتاح ما يشوف المستودع — تأكد إنك اخترت janat-store"
+          : "⚠️ تعذّر الحفظ (" + res.status + ") — حاول مرة ثانية";
+        const e = new Error(why); e.friendly = true; throw e;
+      }
       const data = await res.json();
       productsSha = data.content.sha; dirty = false;
       setStatus("saved", "✅ تم الحفظ — التغييرات راح تطلع بالموقع خلال دقيقة");
     }catch(err){
-      console.error(err); setStatus("error", "⚠️ تعذّر الحفظ، تأكد من اتصال الإنترنت وحاول مجدداً"); btn.disabled = false;
+      console.error(err);
+      setStatus("error", err && err.friendly ? err.message
+        : "⚠️ تعذّر الحفظ، تأكد من اتصال الإنترنت وحاول مجدداً");
+      btn.disabled = false;
     }
   });
 
