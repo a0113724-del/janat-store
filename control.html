@@ -171,6 +171,63 @@
   .stat-card .val{ font-size:1.35rem; font-weight:900; color:var(--forest); }
   .stat-card .val.money{ color:var(--pomegranate); }
   .section-h{ font-size:1rem; color:var(--forest); margin-bottom:12px; font-weight:800; }
+
+  /* ---------- تقويم الزيارات ---------- */
+  .cal-wrap{
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:12px; margin:0 12px 10px;
+  }
+  .cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .cal-head b{ font-size:.95rem; color:var(--forest); }
+  .cal-head button{
+    width:34px; height:34px; border-radius:10px; border:1px solid var(--line);
+    background:#fff; font-size:1.1rem; font-weight:900; color:var(--forest); cursor:pointer;
+  }
+  .cal-head button:disabled{ opacity:.35; cursor:not-allowed; }
+  .cal-dow, .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .cal-dow span{ text-align:center; font-size:.62rem; font-weight:700; color:#8a8a7c; padding-bottom:4px; }
+  .cal-cell{
+    aspect-ratio:1; border-radius:9px; border:1px solid transparent;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-size:.8rem; font-weight:700; color:#3a3a3c; background:#f6f6f2; cursor:pointer;
+    padding:2px; line-height:1.1;
+  }
+  .cal-cell.blank{ background:none; cursor:default; }
+  .cal-cell.none{ color:#b9b9ae; }
+  /* كل ما زاد عدد الزوار غمّق اللون — يبين الفرق بنظرة وحدة */
+  .cal-cell.l1{ background:#e3efe3; }
+  .cal-cell.l2{ background:#c2e0c4; }
+  .cal-cell.l3{ background:#8fc994; color:#123a19; }
+  .cal-cell.l4{ background:#4e9c57; color:#fff; }
+  .cal-cell.today{ border-color:var(--gold); }
+  .cal-cell.sel{ outline:2.5px solid var(--forest); outline-offset:-2px; }
+  .cal-cell i{ font-style:normal; font-size:.58rem; font-weight:800; opacity:.85; }
+  .cal-legend{ font-size:.65rem; color:#8a8a7c; text-align:center; margin-top:9px; line-height:1.7; }
+
+  #calDayBox{ margin:0 12px 14px; }
+  .cal-day-h{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    background:var(--forest); color:#fff; border-radius:12px 12px 0 0;
+    padding:10px 13px; font-size:.85rem; font-weight:800;
+  }
+  .cal-day-h span{ font-size:.72rem; opacity:.85; font-weight:700; }
+  .cal-day-list{
+    background:#fff; border:1px solid var(--line); border-top:none;
+    border-radius:0 0 12px 12px; overflow:hidden;
+  }
+  .cal-row{
+    display:flex; align-items:center; gap:10px; padding:10px 13px;
+    border-bottom:1px solid var(--line); font-size:.82rem;
+  }
+  .cal-row:last-child{ border-bottom:none; }
+  .cal-row .who{ flex:1; min-width:0; }
+  .cal-row .who b{ display:block; color:var(--forest); font-weight:800; }
+  .cal-row .who small{ color:#8a8a7c; font-size:.7rem; direction:ltr; display:block; }
+  .cal-row .meta{ text-align:left; font-size:.68rem; color:#6b6b5e; white-space:nowrap; }
+  .cal-row .tag{
+    background:rgba(62,122,68,.12); color:var(--leaf); border-radius:100px;
+    padding:2px 8px; font-size:.62rem; font-weight:800;
+  }
   .bar-chart{ display:flex; align-items:flex-end; gap:8px; height:130px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:24px; }
   .bar-chart .bar-col{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
   .bar-chart .bar{ width:100%; max-width:26px; background:var(--leaf); border-radius:4px 4px 0 0; min-height:2px; }
@@ -497,6 +554,23 @@
       <div class="section-h">📲 استخدام التطبيق</div>
       <div class="stats-row" id="appStatsRow"></div>
 
+      <!-- تقويم الزيارات: يختار يوم ويشوف مين زار بيه -->
+      <div class="section-h">🗓️ تقويم الزيارات</div>
+      <div class="cal-wrap">
+        <div class="cal-head">
+          <button type="button" id="calPrev" aria-label="الشهر السابق">‹</button>
+          <b id="calTitle">—</b>
+          <button type="button" id="calNext" aria-label="الشهر الجاي">›</button>
+        </div>
+        <div class="cal-dow">
+          <span>أحد</span><span>اثنين</span><span>ثلاثاء</span><span>أربعاء</span>
+          <span>خميس</span><span>جمعة</span><span>سبت</span>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-legend">الرقم الصغير = كم شخص فتح التطبيق بذاك اليوم · اضغط اليوم تشوف مين</div>
+      </div>
+      <div id="calDayBox"></div>
+
       <div class="section-h">🟢 مين فاتح التطبيق الآن</div>
       <div class="stats-row" id="liveStatsRow"></div>
       <div class="scroll-x">
@@ -820,6 +894,119 @@
    * تحذير ثابت بأعلى اللوحة لو المفتاح قراءة-بس. أهم من رسالة تطلع
    * وتختفي: صاحب المحل لازم يشوفه قبل ما يبدي يعدّل، مو بعدها.
    */
+  /* ═══════════ تقويم الزيارات ═══════════
+   * الشهر يجي بطلب واحد (عدّاد لكل يوم)، واليوم المضغوط بطلب ثاني
+   * (مين زار بيه). ما نجيب كل شي دفعة وحدة — سجل الزيارات ينمو
+   * للأبد وصاحب المحل أغلب وقته يشوف شهر واحد.
+   */
+  let calMonth = null;            // Date على أول الشهر المعروض
+  let calDays  = {};              // "YYYY-MM-DD" → {visits, installs, people}
+  let calPicked = null;
+  const AR_MONTHS = ["كانون الثاني","شباط","آذار","نيسان","أيار","حزيران",
+                     "تموز","آب","أيلول","تشرين الأول","تشرين الثاني","كانون الأول"];
+
+  const ymKey  = (d)=> d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0");
+  const ymdKey = (d)=> ymKey(d) + "-" + String(d.getDate()).padStart(2,"0");
+
+  async function loadCalMonth(){
+    if(!calMonth) calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    document.getElementById("calTitle").textContent =
+      AR_MONTHS[calMonth.getMonth()] + " " + calMonth.getFullYear();
+    // ما نخلي يتصفح مستقبل — ماكو زيارات هناك
+    const now = new Date();
+    document.getElementById("calNext").disabled =
+      calMonth.getFullYear() > now.getFullYear() ||
+      (calMonth.getFullYear() === now.getFullYear() && calMonth.getMonth() >= now.getMonth());
+
+    calDays = {};
+    renderCalGrid();                                   // نرسم فوراً والأرقام تجي بعدين
+    try{
+      const d = await fetchJson(adminUrl("?visitsCalendar=" + ymKey(calMonth)), "تقويم الزيارات");
+      if(!checkAuth(d)) return;
+      calDays = (d && d.days) || {};
+      renderCalGrid();
+    }catch(e){ /* الشبكة — الشبكة تبقى الأيام فاضية بلا ما تنكسر اللوحة */ }
+  }
+
+  function calLevel(people){
+    if(!people) return "none";
+    if(people <= 2) return "l1";
+    if(people <= 5) return "l2";
+    if(people <= 12) return "l3";
+    return "l4";
+  }
+
+  function renderCalGrid(){
+    const grid = document.getElementById("calGrid");
+    if(!grid || !calMonth) return;
+    const y = calMonth.getFullYear(), m = calMonth.getMonth();
+    const firstDow = new Date(y, m, 1).getDay();       // 0 = أحد
+    const total = new Date(y, m + 1, 0).getDate();
+    const todayK = ymdKey(new Date());
+    let html = "";
+    for(let i = 0; i < firstDow; i++) html += '<div class="cal-cell blank"></div>';
+    for(let d = 1; d <= total; d++){
+      const k = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      const info = calDays[k];
+      const people = info ? info.people : 0;
+      html += `<div class="cal-cell ${calLevel(people)}${k===todayK?" today":""}${k===calPicked?" sel":""}" data-k="${k}">
+                 ${d}${people ? `<i>${people}</i>` : ""}
+               </div>`;
+    }
+    grid.innerHTML = html;
+  }
+
+  async function showCalDay(k){
+    calPicked = k; renderCalGrid();
+    const box = document.getElementById("calDayBox");
+    const [yy, mm, dd] = k.split("-");
+    const label = `${Number(dd)} ${AR_MONTHS[Number(mm)-1]} ${yy}`;
+    box.innerHTML = `<div class="cal-day-h"><b>${label}</b><span>⏳ جاري الجلب...</span></div>`;
+    try{
+      const d = await fetchJson(adminUrl("?visitsByDay=" + k), "زوار اليوم");
+      if(!checkAuth(d)) return;
+      const users = (d && d.users) || [];
+      if(!users.length){
+        box.innerHTML = `<div class="cal-day-h"><b>${label}</b><span>ماكو زيارات</span></div>`;
+        return;
+      }
+      box.innerHTML =
+        `<div class="cal-day-h"><b>${label}</b><span>${users.length} شخص</span></div>` +
+        `<div class="cal-day-list">` + users.map(u=>{
+          const name = esc(u.name || "");
+          const phone = esc(u.phone || "");
+          const who = name || phone || ("زائر " + esc(u.id));
+          return `<div class="cal-row">
+            <div class="who"><b>${who}</b>${name && phone ? `<small>${phone}</small>` : ""}</div>
+            ${u.installed ? '<span class="tag">📲 مثبّت</span>' : ""}
+            <!-- bdi/ltr: بدونها "08:12 – 19:40" تنقلب بالعرض العربي وتصير الساعة
+                 المتأخرة أول — صاحب المحل يقراها معكوسة -->
+            <div class="meta"><bdi dir="ltr">${esc(u.firstAt)}${u.lastAt !== u.firstAt ? " – " + esc(u.lastAt) : ""}</bdi><br>${u.visits} فتحة</div>
+          </div>`;
+        }).join("") + `</div>`;
+    }catch(e){
+      box.innerHTML = `<div class="cal-day-h"><b>${label}</b><span>⚠️ ما وصلت البيانات</span></div>`;
+    }
+  }
+
+  document.getElementById("calGrid").addEventListener("click", (e)=>{
+    const cell = e.target.closest(".cal-cell");
+    if(!cell || cell.classList.contains("blank")) return;
+    showCalDay(cell.dataset.k);
+  });
+  document.getElementById("calPrev").addEventListener("click", ()=>{
+    if(!calMonth) return loadCalMonth();
+    calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1);
+    calPicked = null; document.getElementById("calDayBox").innerHTML = "";
+    loadCalMonth();
+  });
+  document.getElementById("calNext").addEventListener("click", ()=>{
+    if(!calMonth) return loadCalMonth();
+    calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1);
+    calPicked = null; document.getElementById("calDayBox").innerHTML = "";
+    loadCalMonth();
+  });
+
   function warnIfReadOnly(){
     const old = document.getElementById("roWarn");
     if(canWrite !== false){ if(old) old.remove(); return; }
@@ -896,6 +1083,9 @@
       document.getElementById("view-"+btn.dataset.view).classList.add("active");
       if(btn.dataset.view === "orders") document.getElementById("ordersDot").classList.remove("show");
       if(btn.dataset.view === "reviews") document.getElementById("reviewsDot").classList.remove("show");
+      // التقويم يتحمّل أول ما يفتح التبويب مو مع تحميل اللوحة — طلب
+      // زيادة ما نحتاجه إذا صاحب المحل ما دخل التقارير أصلاً
+      if(btn.dataset.view === "reports" && !calMonth) loadCalMonth();
     });
   });
 

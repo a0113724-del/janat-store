@@ -373,6 +373,10 @@ function getVisitorsSheet() {
   }
   return sheet;
 }
+// توقيت بغداد — بدونه Utilities.formatDate يستعمل توقيت السكربت،
+// فيوم ٣١ بالليل ينحسب على اليوم اللي بعده بتقويم الزيارات.
+const TIMEZONE = "Asia/Baghdad";
+
 const VCOL_ID = 1, VCOL_PHONE = 2, VCOL_NAME = 3, VCOL_FIRST = 4,
       VCOL_LAST = 5, VCOL_VISITS = 6, VCOL_INSTALLED = 7, VCOL_LOC = 8;
 const VISITORS_NUM_COLS = 8;
@@ -1700,6 +1704,112 @@ function doGet(e) {
       onlineWindowMinutes: ONLINE_WINDOW_MINUTES,
       users: users.slice(0, 200)
     });
+  }
+
+  /* ═══════════ تقويم الزيارات ═══════════
+   *
+   * ?visitsCalendar=YYYY-MM  → عدد الزيارات والتثبيتات لكل يوم بالشهر
+   * ?visitsByDay=YYYY-MM-DD  → مين زار بذاك اليوم بالضبط (اسم/رقم/جهاز)
+   *
+   * سجل Analytics ينمو للأبد، وقراءته كامل بكل طلب تصير بطيئة. بس
+   * أسطره مرتّبة بالوقت — فنقرا عمود الوقت لحاله (رخيص) ونحدد أول
+   * وآخر سطر داخل المدى، وبعدها نقرا تلك الأسطر بس.
+   */
+  if (e.parameter.visitsCalendar || e.parameter.visitsByDay) {
+    if (!isAuthorized(adminKey)) return denied();
+
+    const byDay = !!e.parameter.visitsByDay;
+    const key = String(e.parameter.visitsByDay || e.parameter.visitsCalendar || "").trim();
+    // YYYY-MM-DD أو YYYY-MM
+    const m = key.match(/^(\d{4})-(\d{2})(?:-(\d{2}))?$/);
+    if (!m) return jsonOut({ status: "error", message: "تاريخ غير صالح" });
+
+    const y = Number(m[1]), mo = Number(m[2]) - 1, d = m[3] ? Number(m[3]) : null;
+    // نوسّع المدى يوم قبل ويوم بعد، وبعدين نصفّي بمفتاح التاريخ بتوقيت
+    // بغداد. سبب هذا: new Date(...) يستعمل توقيت السكربت، ولو ما كان
+    // نفس توقيت بغداد ينضيع علينا سطر أو سطرين بحدود اليوم.
+    const from = byDay ? new Date(y, mo, d - 1) : new Date(y, mo, 0);
+    const to   = byDay ? new Date(y, mo, d + 2) : new Date(y, mo + 1, 2);
+
+    const aSheet = getAnalyticsSheet();
+    const aLast = aSheet.getLastRow();
+    if (aLast < 2) return jsonOut(byDay ? { day: key, users: [] } : { month: key, days: {} });
+
+    const times = aSheet.getRange(2, 1, aLast - 1, 1).getValues();
+    let start = -1, end = -1;
+    for (let i = 0; i < times.length; i++) {
+      const t = times[i][0] ? new Date(times[i][0]) : null;
+      if (!t) continue;
+      if (t >= from && t < to) { if (start === -1) start = i; end = i; }
+      else if (start !== -1 && t >= to) break;      // مرتّبة بالوقت، خلصنا
+    }
+    if (start === -1) return jsonOut(byDay ? { day: key, users: [] } : { month: key, days: {} });
+
+    const rows = aSheet.getRange(2 + start, 1, end - start + 1, 4).getValues();
+
+    if (!byDay) {
+      // عدّاد لكل يوم: زيارات + تثبيتات + أجهزة مختلفة
+      const days = {};
+      rows.forEach(function (r) {
+        if (!r[0]) return;
+        const k = Utilities.formatDate(new Date(r[0]), TIMEZONE, "yyyy-MM-dd");
+        if (k.indexOf(key + "-") !== 0) return;          // من توسعة المدى
+        if (!days[k]) days[k] = { visits: 0, installs: 0, devices: {} };
+        if (String(r[1]) === "install") days[k].installs++;
+        else days[k].visits++;
+        if (r[3]) days[k].devices[String(r[3])] = 1;
+      });
+      const out = {};
+      Object.keys(days).forEach(function (k) {
+        out[k] = { visits: days[k].visits, installs: days[k].installs,
+                   people: Object.keys(days[k].devices).length };
+      });
+      return jsonOut({ month: key, days: out });
+    }
+
+    // يوم واحد: نجمع حسب الجهاز ونجيب اسمه ورقمه من ورقة Visitors
+    const perDevice = {};
+    rows.forEach(function (r) {
+      const id = String(r[3] || "").trim();
+      if (!id || !r[0]) return;
+      if (Utilities.formatDate(new Date(r[0]), TIMEZONE, "yyyy-MM-dd") !== key) return;
+      if (!perDevice[id]) perDevice[id] = { id: id, visits: 0, installed: false,
+                                            first: r[0], last: r[0], loc: "" };
+      const rec = perDevice[id];
+      if (String(r[1]) === "install") rec.installed = true; else rec.visits++;
+      if (new Date(r[0]) < new Date(rec.first)) rec.first = r[0];
+      if (new Date(r[0]) > new Date(rec.last))  rec.last  = r[0];
+      if (r[2] && String(r[2]) !== "غير معروف") rec.loc = String(r[2]);
+    });
+
+    // نربط الأجهزة بأسماء وأرقام الزبائن
+    const vSheet = getVisitorsSheet();
+    const vLast = vSheet.getLastRow();
+    const known = {};
+    if (vLast >= 2) {
+      const vRows = vSheet.getRange(2, 1, vLast - 1, VISITORS_NUM_COLS).getValues();
+      vRows.forEach(function (v) {
+        const id = String(v[VCOL_ID - 1] || "").trim();
+        if (id) known[id] = { name: String(v[VCOL_NAME - 1] || ""),
+                              phone: String(v[VCOL_PHONE - 1] || ""),
+                              installed: String(v[VCOL_INSTALLED - 1] || "").trim() === "نعم" };
+      });
+    }
+
+    const users = Object.keys(perDevice).map(function (id) {
+      const rec = perDevice[id], k = known[id] || {};
+      return {
+        id: id.slice(0, 8),
+        name: k.name || "", phone: k.phone || "",
+        visits: rec.visits,
+        installed: rec.installed || !!k.installed,
+        firstAt: Utilities.formatDate(new Date(rec.first), TIMEZONE, "HH:mm"),
+        lastAt:  Utilities.formatDate(new Date(rec.last),  TIMEZONE, "HH:mm"),
+        loc: rec.loc
+      };
+    }).sort(function (a, b) { return a.firstAt < b.firstAt ? -1 : 1; });
+
+    return jsonOut({ day: key, users: users, total: users.length });
   }
 
   // ملخّص الاستخدام — يجي من ورقة Visitors الجاهزة (سريع)
