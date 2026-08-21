@@ -2,19 +2,23 @@
   {
     "id": "tomato",
     "name": "طماطة",
-    "price": 750,
+    "price": 850,
     "cat": "veg",
     "emoji": "🍅",
     "image": "images/tomato-1785117823924.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 0,
-    "onSale": false
+    "onSale": false,
+    "bundle": {
+      "qty": 3,
+      "price": 2500
+    }
   },
   {
     "id": "cucumber",
     "name": "خيار",
-    "price": 750,
+    "price": 850,
     "cat": "veg",
     "emoji": "🥒",
     "image": "images/cucumber-1785117845595.jpg",
@@ -22,7 +26,11 @@
     "onSale": false,
     "visible": true,
     "order": 1,
-    "oldPrice": 0
+    "oldPrice": 0,
+    "bundle": {
+      "qty": 3,
+      "price": 2500
+    }
   },
   {
     "id": "potato",
