@@ -42,6 +42,11 @@
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- سيرفر الطلبات: نفتح الاتصال (DNS + TLS) من أول ثانية بالصفحة بدل
+     ما ننتظره لمن يضغط الزبون «تأكيد». على نت موبايل هذا يوفّر
+     نص ثانية لين ثانية من انتظار إرسال الطلب. -->
+<link rel="preconnect" href="https://script.google.com" crossorigin>
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <!-- ⚠️ الخطوط تتحمّل بلا ما توقف الرسم.
      قبل، وسم <link rel="stylesheet"> عادي كان يمنع الصفحة تنرسم لحد ما
      يوصل ملف الخطوط من جوجل. لو الشبكة بطيئة أو جوجل محجوب، الزبون يظل
@@ -1179,6 +1184,33 @@
     display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:8px;
   }
   .send-btn:disabled{ background:#b9c9bd; cursor:not-allowed; }
+
+  /* شريط تقدّم يمشي داخل زر الإرسال أثناء الحفظ.
+     قبل كان الزر يعدّ «١، ٢، ٣...» — والعدّاد الصاعد يخلّي الانتظار
+     يحس أطول لأنه يذكّر الزبون بكل ثانية تمر. الشريط يمشي بسرعة أول
+     شي وبعدين يهدّي، فيحس إنه ماشي حتى وهو ينتظر رد قوقل. */
+  .send-btn{ position:relative; overflow:hidden; }
+  .send-btn > *{ position:relative; z-index:1; }
+  .send-btn.sending::before{
+    content:""; position:absolute; inset:0; z-index:0;
+    background:rgba(255,255,255,.28);
+    transform-origin:right;              /* يمشي من اليمين لليسار مثل القراءة */
+    transform:scaleX(0);
+    animation:send-fill 9s cubic-bezier(.12,.72,.24,1) forwards;
+  }
+  .send-btn.sending.done::before{
+    animation:none; transform:scaleX(1);
+    transition:transform .18s ease-out;
+  }
+  @keyframes send-fill{
+    0%  { transform:scaleX(0);   }
+    12% { transform:scaleX(.45); }   /* قفزة سريعة تطمّنه إن الضغطة وصلت */
+    45% { transform:scaleX(.78); }
+    100%{ transform:scaleX(.94); }   /* ما توصل ١٠٠٪ إلا لمن يرد السيرفر */
+  }
+  @media (prefers-reduced-motion: reduce){
+    .send-btn.sending::before{ animation:none; transform:scaleX(.5); }
+  }
   .err{ color:var(--pomegranate); font-size:.76rem; margin-bottom:8px; display:none; }
   .err.show{ display:block; }
 
@@ -2568,6 +2600,7 @@
     document.getElementById("orderFailBox").style.display = "none";
     sendBtn.style.display = "flex";
     sendBtn.disabled = false;
+    sendBtn.classList.remove("sending", "done");   // نطفّي شريط التقدّم
     sendBtn.textContent = "✅ تأكيد وحفظ الطلب";
     openSheet(checkoutSheet);
   });
@@ -2734,17 +2767,11 @@
     }
     formErr.classList.remove("show");
 
-    // نتأكد من «أول طلب» قبل ما نحسب الأجرة. الزبون اللي يكتب رقمه
-    // ويضغط فوراً ما كان الفحص يلحق يخلص، فتطلعله أجرة ١٠٠٠ بينما
-    // السيرفر يحفظ الطلب مجاني.
-    if(firstOrderVerified === null){
-      sendBtn.disabled = true;
-      sendBtn.textContent = "⏳ نتأكد من الرقم...";
-      await verifyFirstOrder(phone, 3000);
-      sendBtn.disabled = false;
-      sendBtn.textContent = "✅ تأكيد وحفظ الطلب";
-      updateCartUI();
-    }
+    // ⚠️ ما ننتظر فحص «أول طلب» هنا عمداً.
+    // السيرفر يقرر أجرة التوصيل بنفسه (customerHasPriorOrders) وما
+    // يعتمد على أي شي نرسله، والرسالة تنبني من أرقامه بعد ما يرد.
+    // يعني الانتظار كان تأخير صافي على الزبون بلا أي فايدة — لين
+    // ٣ ثواني ينطر بيهن قبل ما يبدي الحفظ أصلاً.
     const isFirstOrder = isFirstOrderFreeDelivery();   // من السستم، مو من مربع يعلّمه الزبون
 
     let msg = "🌿 طلب جديد من جنة الفواكه والخضار\n\n";
@@ -2840,19 +2867,22 @@
     let referredByPhone = "";
     try{ referredByPhone = localStorage.getItem("janat-referred-by") || ""; }catch(e){}
 
+    // ⚠️ النص ثابت والشريط هو اللي يتحرك. قبل كان عدّاد يكتب «١، ٢، ٣»
+    // — والعدّاد الصاعد يخلّي الانتظار يحس أطول لأنه يعدّ الثواني
+    // بوجه الزبون. الشريط يمشي بسرعة أول شي ويهدّي، فيطمّنه إن
+    // الضغطة وصلت والشغل ماشي.
     sendBtn.disabled = true;
-    sendBtn.textContent = "⏳ جاري حفظ الطلب...";
-
-    // عدّاد يطمّن الزبون إن الطلب ماشي — بدون شي متحرك، الانتظار
-    // الصامت يخليه يظن إن الضغطة ما وصلت فيضغط مرة ثانية
-    let waited = 0;
-    const waitTimer = setInterval(()=>{
-      waited++;
-      sendBtn.textContent = waited < 4
-        ? `⏳ جاري حفظ الطلب... ${waited}`
-        : `⏳ لحظات، جاري التأكيد... ${waited}`;
-    }, 1000);
-    const stopTimer = ()=>{ clearInterval(waitTimer); };
+    sendBtn.innerHTML = "<span>⏳ جاري حفظ الطلب...</span>";
+    sendBtn.classList.add("sending");
+    // بعد ٦ ثواني ننبّهه إن النت بطيء — أحسن من صمت يخليه يضغط مرتين
+    const slowTimer = setTimeout(()=>{
+      const s = sendBtn.querySelector("span");
+      if(s) s.textContent = "⏳ النت بطيء شوية — لا تسكّر الصفحة";
+    }, 6000);
+    const stopTimer = ()=>{
+      clearTimeout(slowTimer);
+      sendBtn.classList.add("done");        // الشريط يكمل لـ١٠٠٪
+    };
 
     let seqNo = 0;
     let savedOrderId = "";    // معرّف الطلب من السيرفر — نربط بيه التقييم
@@ -2963,9 +2993,15 @@
       document.getElementById("orderSeqNo").textContent = "#" + seqNo;
       document.getElementById("orderSuccessBox").style.display = "block";
       document.getElementById("sendWhatsappBtn").onclick = openWhatsappWithOrder;
-      if(window.silentlyEnableCustomerNotifications) window.silentlyEnableCustomerNotifications(phone);
-      resetRateBox({ orderId: savedOrderId, seqNo: seqNo, name: name, phone: phone });
-      showPostOrderInstall();   // هسه الزبون مبسوط ويعرفنا — وقت الطلب الصح
+
+      // ⚠️ هذي الثلاثة مو مستعجلة، ونخليها بعد ما تنرسم شاشة النجاح.
+      // تفعيل الإشعارات لحاله ينزّل مكتبة فايربيس (٢٠٠ كيلو) — لو
+      // ظل بنفس المهمة، الزبون يضل ينطر شاشة بيضة بعد ما وصل طلبه.
+      whenIdle(()=>{
+        if(window.silentlyEnableCustomerNotifications) window.silentlyEnableCustomerNotifications(phone);
+        resetRateBox({ orderId: savedOrderId, seqNo: seqNo, name: name, phone: phone });
+        showPostOrderInstall();   // هسه الزبون مبسوط ويعرفنا — وقت الطلب الصح
+      });
 
       // نعرض رقم السيرفر مو رقم الصفحة، وننبّه لو اختلفوا
       if(serverTotals){
@@ -3007,6 +3043,7 @@
       document.getElementById("orderSuccessBox").style.display = "none";
       sendBtn.style.display = "flex";
       sendBtn.disabled = false;
+      sendBtn.classList.remove("sending", "done");   // نطفّي شريط التقدّم
       sendBtn.textContent = "🔄 حاول حفظ الطلب مرة ثانية";
       failBox.scrollIntoView({ behavior:"smooth", block:"center" });
     }
@@ -3055,30 +3092,6 @@
   // number — more reliable than device storage (works even from a new phone
   // or after clearing browser data).
   let phoneCheckTimer = null;
-
-  /**
-   * يسأل السيرفر إذا الرقم عنده طلبات سابقة، ويثبّت firstOrderVerified.
-   *
-   * ⚠️ لازم تنستدعى قبل إرسال الطلب بعد. الفحص كان يشتغل بس بعد ٦٠٠
-   * مللي من آخر حرف، والرد يحتاج ثانية أو ثنتين من قوقل. الزبون اللي
-   * يكتب رقمه ويضغط «تأكيد» بسرعة كان يشوف أجرة ١٠٠٠ بالشاشة وبرسالة
-   * الواتساب، بينما السيرفر يحفظ الطلب بتوصيل مجاني لأنه يعرف إن
-   * الرقم جديد. النتيجة رقمين مختلفين لنفس الطلب.
-   */
-  async function verifyFirstOrder(phone, ms){
-    if(firstOrderVerified !== null) return;              // متحقق أصلاً
-    if(!GOOGLE_SCRIPT_URL || !isValidPhone(phone)) return;
-    try{
-      const ctrl = new AbortController();
-      const t = setTimeout(()=> ctrl.abort(), ms || 3000);
-      const res = await fetch(`${GOOGLE_SCRIPT_URL}?checkPhone=${encodeURIComponent(phone)}`,
-                              { signal: ctrl.signal });
-      clearTimeout(t);
-      const data = await res.json();
-      if(data.hasOrdered) hideFirstOrderPromo();
-      else { showFirstOrderPromoIfEligible(); markVerifiedFirstOrder(); }
-    }catch(e){ /* ما وصل رد — نكمل بالحساب المحلي، والسيرفر يصحّح بعدين */ }
-  }
 
   const custPhoneInput = document.getElementById("custPhone");
   if(custPhoneInput){
