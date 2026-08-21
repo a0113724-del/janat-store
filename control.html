@@ -628,8 +628,26 @@
   </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js";
+  /* ⚠️ فايربيس ينتزّل عند الحاجة، مو باستيراد ثابت بأعلى الملف.
+     لمن كان الاستيراد ثابت وسيرفر قوقل (gstatic) ما يوصل — نت ضعيف أو
+     محجوب — الملف كله ما يشتغل: ولا زر دخول، ولا أسعار، ولا طلبات.
+     يعني إشعارات ما تخص التسعير كانت تقدر توقّف اللوحة كاملة.
+     الحين اللوحة تفتح وتشتغل بأي حال، والإشعارات بس هي اللي تتعطّل. */
+  let getToken = null, onMessage = null, messaging = null;
+  let fbPromise = null;
+  function loadFirebase(){
+    if(fbPromise) return fbPromise;
+    fbPromise = (async ()=>{
+      const [{ initializeApp }, msg] = await Promise.all([
+        import("https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js"),
+        import("https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging.js")
+      ]);
+      getToken = msg.getToken; onMessage = msg.onMessage;
+      messaging = msg.getMessaging(initializeApp(firebaseConfig));
+      return messaging;
+    })().catch((e)=>{ fbPromise = null; throw e; });
+    return fbPromise;
+  }
 
   // ================= CONFIG =================
   const OWNER = "a0113724-del";
@@ -649,8 +667,6 @@
     appId: "1:262111878623:web:6f26ec354fe4c205d2386a"
   };
   const VAPID_KEY = "BBQ3ouOvUisn2yOROxBi4ZKeRIU-GQXIga4_KnLWViEMxgTdQOmOXc-wzGm32nyGr6aGZ-OQKPMtANAJvLnpU2Y";
-  const fbApp = initializeApp(firebaseConfig);
-  const messaging = getMessaging(fbApp);
 
   // ================= STATE =================
   let token = null;
@@ -730,9 +746,32 @@
     });
   }
 
+  /**
+   * ⚠️ قبل، أي فشل كان يطلّع نفس الجملة «المفتاح غير صحيح» — حتى لو
+   * السبب النت مقطوع أو المفتاح منتهي أو GitHub ألغاه. صاحب المحل
+   * يظل يعيد كتابة نفس المفتاح ويحاول بلا ما يعرف السبب.
+   * الحين كل حالة إلها رسالة تكلّه شنو يسوي بالضبط.
+   */
+  function ghReason(status){
+    if(status === 401) return "المفتاح غلط أو منتهي أو GitHub ألغاه — لازم تسوي مفتاح جديد";
+    if(status === 403) return "المفتاح صحيح بس ما عنده صلاحية على المستودع — تأكد من صلاحية Contents: Read and write";
+    if(status === 404) return "المفتاح ما يشوف المستودع — تأكد إنك اخترت janat-store لمن سويته";
+    if(status === 429) return "GitHub رفض بسبب كثرة المحاولات — انتظر دقيقة وحاول";
+    return "تعذّر الاتصال بـGitHub (" + status + ")";
+  }
+
   async function verifyTokenAndLoad(){
-    const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${PRODUCTS_PATH}?ref=${BRANCH}`);
-    if(!res.ok) throw new Error("auth failed");
+    let res;
+    try{
+      res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${PRODUCTS_PATH}?ref=${BRANCH}`);
+    }catch(netErr){
+      const e = new Error("شكله النت مقطوع — تأكد من الاتصال وحاول");
+      e.friendly = true; throw e;
+    }
+    if(!res.ok){
+      const e = new Error(ghReason(res.status));
+      e.friendly = true; throw e;
+    }
     const data = await res.json();
     productsSha = data.sha;
     const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g,""))));
@@ -752,7 +791,10 @@
       storeToken(val);
       showApp();
     }catch(e){
-      document.getElementById("loginErr").classList.add("show");
+      const box = document.getElementById("loginErr");
+      box.textContent = e && e.friendly ? e.message
+        : "المفتاح غير صحيح أو ما عنده صلاحية — تأكد إنك نسخته كامل";
+      box.classList.add("show");
       token = null;
     }
     btn.textContent = "دخول"; btn.disabled = false;
@@ -770,15 +812,16 @@
 
     // إشعار يوصل واللوحة مفتوحة قدامك. كان مربوط بضغطة زر التفعيل،
     // فما يشتغل إلا بنفس الجلسة اللي ضغطت بيها — الحين يشتغل دائماً.
-    try{
-      onMessage(messaging, (payload)=>{
+    // ينتظر تنزيل فايربيس بالخلفية، ولو فشل التنزيل اللوحة تكمل شغل.
+    loadFirebase().then((m)=>{
+      onMessage(m, (payload)=>{
         const n = payload.notification || {};
         setStatus("saved", "🛒 " + (n.title || "طلب جديد") + " — " + (n.body || ""));
         playBeep(10, true);                       // صفارة حتى لو الصوت مطفي
         document.getElementById("ordersDot").classList.add("show");
         loadOrdersData();                          // يجيب الطلب فوراً بدون انتظار
       });
-    }catch(e){ console.warn("onMessage ما اشتغل", e); }
+    }).catch((e)=> console.warn("فايربيس ما انتزّل — الإشعارات معطّلة واللوحة شغالة", e));
   }
 
   // ================= TAB NAVIGATION =================
@@ -1851,7 +1894,11 @@
       // كان يدوّر على جذر الدومين فيفشل التسجيل بصمت وما يوصل ولا إشعار
       const registration = await navigator.serviceWorker.register("firebase-messaging-sw.js");
       await navigator.serviceWorker.ready;
-      const tk = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
+      // ننزّل فايربيس هنا — الزبون ضغط الزر يعني هو يريد الإشعارات فعلاً
+      const m = await loadFirebase().catch(()=>{
+        throw new Error("ما گدرنا نوصل لسيرفر فايربيس — تأكد من النت وحاول");
+      });
+      const tk = await getToken(m, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
       if(!tk) throw new Error("فايربيس ما أعطى رمز للجهاز");
 
       // يرسل رمز الجهاز لجدول Devices — نقرأ الرد حتى نتأكد إنه انحفظ فعلاً
