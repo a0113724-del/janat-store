@@ -839,6 +839,31 @@
     app.insertBefore(box, app.firstChild);
   }
 
+  /**
+   * يعيد سؤال GitHub عن الصلاحية. ينستدعى لمن يرجع صاحب المحل للوحة
+   * بعد ما يعدّل صلاحيات مفتاحه بتبويب ثاني — فالتحذير يختفي لحاله
+   * بدل ما يظل طالع ويخليه يظن إن التعديل ما نفع. ومهم إنه ما يحتاج
+   * يسجّل خروج: تعديل صلاحية المفتاح ما يغيّر المفتاح نفسه، يعني
+   * تعديلاته اللي ما انحفظت تبقى بمكانها.
+   */
+  async function recheckWritePermission(){
+    if(!token) return;
+    try{
+      const r = await ghFetch(`/repos/${OWNER}/${REPO}`);
+      if(!r.ok) return;
+      const info = await r.json();
+      const now = !!(info.permissions && info.permissions.push);
+      if(now !== canWrite){
+        canWrite = now;
+        warnIfReadOnly();
+        if(now) setStatus("saved", "✅ صلاحية الكتابة انفعّلت — تگدر تحفظ هسه");
+      }
+    }catch(e){ /* ماكو نت — نتركها بحالها */ }
+  }
+  document.addEventListener("visibilitychange", ()=>{
+    if(!document.hidden && canWrite === false) recheckWritePermission();
+  });
+
   function showApp(){
     document.getElementById("loginGate").style.display = "none";
     document.getElementById("app").style.display = "block";
