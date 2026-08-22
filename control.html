@@ -675,13 +675,12 @@
       <div class="rank-list" id="dormList"></div>
       <p class="note-line">كل واحد بيه زر واتساب جاهز — تفتح المحادثة وتدز عرض يرجّعه.</p>
 
-      <div class="section-h">📣 رسالة لكل الزبائن</div>
+      <div class="section-h">📣 عرض اليوم لكل الزبائن</div>
       <div style="margin:0 12px 8px;">
-        <button class="ghost-btn" id="blastBtn">✍️ اكتب رسالة ودزها</button>
+        <button class="ghost-btn" id="blastBtn">📣 افتح عرض اليوم</button>
       </div>
       <p class="note-line">
-        واتساب ما يخلي أي تطبيق يدز رسائل جماعية لحاله — فاللوحة تفتحلك محادثة
-        كل زبون بالرسالة جاهزة وانته تضغط إرسال. وتأشّر لك منو انرسل حتى ما تعيد.
+        النص ينكتب لحاله من أسعارك الحالية — ما تكتب ولا سعر بيدك.
       </p>
     </div>
 
@@ -769,6 +768,15 @@
         <div id="pushStatus" class="notif-status off">غير مفعّلة على هذا الجهاز</div><br>
         <button class="notif-btn" id="enablePushBtn">تفعيل إشعارات هذا الجهاز</button>
         <div class="token-box" id="tokenBox" style="display:none;"></div>
+      </div>
+      <div class="notif-card">
+        <div class="ic">📣</div>
+        <h3>عرض اليوم — بضغطة زر</h3>
+        <p>
+          النص ينكتب لحاله من أسعارك وعروضك الحالية — ما تكتب ولا سعر بيدك،
+          ومستحيل يطلع سعر قديم. ومنه تدزه إشعار لكل الزبائن أو تنسخه لواتساب.
+        </p>
+        <button class="notif-btn" id="offerBtn">📣 افتح عرض اليوم</button>
       </div>
       <div class="notif-card">
         <div class="ic">🧪</div>
@@ -1439,20 +1447,156 @@
    * وقانوني: نفتح محادثة كل زبون والرسالة مكتوبة، وهو يضغط إرسال.
    */
   const BLAST_KEY = "janat-blast-sent";
-  function blastSheet(){
-    const saved = localStorage.getItem("janat-blast-msg") ||
-      "مرحبا 🌿\nعرض اليوم بجنة الفواكه والخضار:\n\nاطلب من التطبيق: https://a0113724-del.github.io/janat-store/";
-    openSheet("📣 رسالة لكل الزبائن", `
-      <textarea id="blastMsg">${esc(saved)}</textarea>
-      <p class="note-line" style="margin:9px 0 12px">
-        اكتب رسالتك فوق، وبعدين اضغط «واتساب» عند كل زبون. اللي ينرسل يصير باهت
-        حتى ما تعيده — والعلامة تنمسح لمن تبدل الرسالة.
-      </p>
+  const STORE_URL = "https://a0113724-del.github.io/janat-store/";
+
+  /* ═══════════ نص «عرض اليوم» ينكتب لحاله ═══════════
+   * صاحب المحل ما يكتب ولا سعر — ناخذ الأسعار من نفس القائمة اللي
+   * يشوفها الزبون، فمستحيل ينرسل سعر قديم أو عرض انتهى.
+   */
+  let offerSettings = null;
+  function fmtIQD(n){ return Math.round(Number(n)||0).toLocaleString('en-US'); }
+
+  function buildOffer(mode){
+    const visible = [...products].filter(p=> p.visible !== false)
+                                 .sort((a,b)=> (a.order??999) - (b.order??999));
+    const dealsOf = (p)=>{
+      const out = [];
+      if(p.onSale && Number(p.oldPrice) > Number(p.price))
+        out.push(`${fmtIQD(p.price)} د.ع بدل ${fmtIQD(p.oldPrice)}`);
+      if(p.bundle && p.bundle.qty >= 2 && p.bundle.price > 0)
+        out.push(`${p.bundle.qty} ${p.unit||"كغم"} بـ ${fmtIQD(p.bundle.price)} د.ع`);
+      return out;
+    };
+    const deals = visible.filter(p=> dealsOf(p).length);
+    const today = new Date().toLocaleDateString('ar-IQ',
+      { weekday:'long', day:'numeric', month:'long' });
+
+    let full = `🌿 *جنة الفواكه والخضار*\n📅 أسعار ${today}\n`;
+
+    if(deals.length){
+      full += `\n🔥 *عروض اليوم:*\n`;
+      deals.forEach(p=>{
+        full += `${p.emoji || "•"} ${p.name} — ${dealsOf(p).join(" · ")}\n`;
+      });
+    }
+
+    if(mode === "all"){
+      [["veg","🥬 *الخضروات:*"], ["fruit","🍉 *الفواكه:*"]].forEach(([cat,head])=>{
+        const rows = visible.filter(p=> p.cat === cat);
+        if(!rows.length) return;
+        full += `\n${head}\n`;
+        rows.forEach(p=>{
+          full += `${p.emoji || "•"} ${p.name} — ${fmtIQD(p.price)} د.ع / ${p.unit || "كغم"}\n`;
+        });
+      });
+    }
+
+    const s = offerSettings || {};
+    full += `\n`;
+    if(Number(s.deliveryFee) > 0) full += `🚴 التوصيل ${fmtIQD(s.deliveryFee)} د.ع`;
+    if(s.firstOrderFreeDelivery) full += `${Number(s.deliveryFee) > 0 ? " — " : "🚴 "}أول طلب توصيله مجاني 🎁`;
+    if(Number(s.deliveryFee) > 0 || s.firstOrderFreeDelivery) full += `\n`;
+    full += `📱 اطلب من التطبيق: ${STORE_URL}`;
+
+    // نص الإشعار غير — الإشعار يعرض سطرين بس، فما ينفع نحشره بالقائمة
+    let short;
+    if(deals.length){
+      const head = deals.slice(0,2).map(p=> `${p.name} ${dealsOf(p)[0]}`).join(" · ");
+      short = `🔥 ${head}` + (deals.length > 2 ? ` و${deals.length - 2} عرض غيرها` : "") + " — افتح التطبيق";
+    }else{
+      short = `🌿 أسعار اليوم وصلت — ${visible.slice(0,3).map(p=> `${p.name} ${fmtIQD(p.price)}`).join(" · ")} — افتح التطبيق تشوف الكل`;
+    }
+    return { full, short, deals: deals.length, items: visible.length };
+  }
+
+  async function offerSheet(){
+    if(!offerSettings){
+      // ملف عام، ما يحتاج مفتاح — ومنه ناخذ أجرة التوصيل حتى تنكتب صح
+      try{ offerSettings = await (await fetch("settings.json", {cache:"no-store"})).json(); }
+      catch(e){ offerSettings = {}; }
+    }
+    let mode = "deals";
+    const o = buildOffer(mode);
+    openSheet("📣 عرض اليوم", `
+      <div class="chips" style="margin:0 0 10px">
+        <button class="on" data-mode="deals">العروض بس</button>
+        <button data-mode="all">العروض + كل الأسعار</button>
+      </div>
+      <textarea id="blastMsg" style="min-height:190px">${esc(o.full)}</textarea>
+      <p class="note-line" id="offerInfo" style="margin:7px 0 14px"></p>
+
+      <div class="notif-card" style="margin:0 0 12px; text-align:right; padding:14px">
+        <b style="font-size:.9rem">📢 إشعار لكل الزبائن</b>
+        <p class="note-line" style="margin:6px 0 10px">
+          ضغطة وحدة ويوصل لكل زبون مثبّت التطبيق — بلا ما تفتح واتساب أصلاً.
+        </p>
+        <button class="notif-btn" id="offerPushBtn" style="width:100%">📢 دزها الآن لكل الزبائن</button>
+      </div>
+
+      <div class="notif-card" style="margin:0 0 12px; text-align:right; padding:14px">
+        <b style="font-size:.9rem">💬 نفس النص على واتساب</b>
+        <p class="note-line" style="margin:6px 0 10px">
+          واتساب ما يخلي أي موقع يدز رسائل جماعية — بس عدك طريقتين:
+          <br>① <b>انسخ النص</b> وافتح واتساب ← <b>قائمة بث (Broadcast)</b> واحدة تدز
+          لـ٢٥٦ زبون بضغطة وحدة. تسوّي القائمة مرة وحدة وتبقى إلك.
+          <br>② أو دزها واحد واحد من القائمة تحت.
+        </p>
+        <button class="notif-btn" id="offerCopyBtn" style="width:100%; background:#25D366">📋 انسخ النص</button>
+      </div>
+
       <div style="display:flex;gap:8px;margin-bottom:12px">
         <button class="ghost-btn" id="blastReset">🔄 امسح العلامات</button>
         <span class="note-line" id="blastCount" style="margin:0;align-self:center"></span>
       </div>
       <div id="blastList"></div>`);
+
+    const info = ()=>{
+      const cur = buildOffer(mode);
+      document.getElementById("offerInfo").textContent =
+        `${cur.deals} عرض · ${mode === "all" ? cur.items + " منتج بالقائمة" : "الأسعار الكاملة مو مضمّنة"}`
+        + " · النص مكتوب من أسعارك الحالية — تكدر تعدّله قبل ما تدزه."
+        + " · النجمات * ما تنشاف بواتساب، هي تخلي الكلمة غامقة.";
+    };
+    info();
+    document.querySelector("#sheetBody .chips").addEventListener("click",(e)=>{
+      const b = e.target.closest("button"); if(!b) return;
+      document.querySelectorAll("#sheetBody .chips button").forEach(x=>x.classList.remove("on"));
+      b.classList.add("on"); mode = b.dataset.mode;
+      document.getElementById("blastMsg").value = buildOffer(mode).full;
+      info(); draw();
+    });
+
+    document.getElementById("offerCopyBtn").addEventListener("click", async (e)=>{
+      const txt = document.getElementById("blastMsg").value;
+      const btn = e.currentTarget;
+      let done = false;
+      try{ await navigator.clipboard.writeText(txt); done = true; }
+      catch(err){
+        // متصفحات قديمة أو صفحة بلا https — نرجع للطريقة القديمة
+        const ta = document.getElementById("blastMsg");
+        ta.select(); ta.setSelectionRange(0, 999999);
+        try{ done = document.execCommand("copy"); }catch(e2){}
+      }
+      btn.textContent = done ? "✅ انتسخ — افتح واتساب والصقه" : "⚠️ ما انتسخ — علّم عليه بيدك";
+      setTimeout(()=>{ btn.textContent = "📋 انسخ النص"; }, 4000);
+    });
+
+    document.getElementById("offerPushBtn").addEventListener("click", async (e)=>{
+      const btn = e.currentTarget;
+      const cur = buildOffer(mode);
+      if(!confirm("راح يوصل إشعار لكل زبون مثبّت التطبيق:\n\n" + cur.short + "\n\nأدزها؟")) return;
+      btn.disabled = true; btn.textContent = "⏳ جاري الإرسال...";
+      try{
+        const res = await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST", headers: { "Content-Type": "text/plain" },
+          body: adminBody({ action: "sendCustomerBroadcast",
+                            title: "🌿 جنة الفواكه والخضار", body: cur.short })
+        });
+        btn.textContent = notifyResultText(await res.json());
+      }catch(err){ btn.textContent = "⚠️ تعذّر الإرسال"; }
+      setTimeout(()=>{ btn.disabled = false; btn.textContent = "📢 دزها الآن لكل الزبائن"; }, 5000);
+    });
+
     const draw = ()=>{
       let sent = {};
       try{ sent = JSON.parse(localStorage.getItem(BLAST_KEY) || "{}"); }catch(e){}
@@ -1469,10 +1613,7 @@
         `${Object.keys(sent).length} من ${withPhone.length} انرسلت`;
     };
     draw();
-    document.getElementById("blastMsg").addEventListener("input",(e)=>{
-      localStorage.setItem("janat-blast-msg", e.target.value);
-      draw();
-    });
+    document.getElementById("blastMsg").addEventListener("input", draw);
     document.getElementById("blastReset").addEventListener("click",()=>{
       localStorage.removeItem(BLAST_KEY); draw();
     });
@@ -1489,7 +1630,8 @@
         `${n} من ${document.querySelectorAll("#blastList .wa-row").length} انرسلت`;
     });
   }
-  document.getElementById("blastBtn").addEventListener("click", blastSheet);
+  document.getElementById("blastBtn").addEventListener("click", offerSheet);
+  document.getElementById("offerBtn").addEventListener("click", offerSheet);
 
   /* ═══════════ طلبات زبون واحد ═══════════ */
   function customerSheet(phone){
