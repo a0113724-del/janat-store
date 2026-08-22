@@ -401,6 +401,25 @@ function getCustomerDevicesSheet() {
   return sheet;
 }
 
+/**
+ * ورقة Costs: سعر شراء كل منتج — يدخل بحساب صافي الربح.
+ *
+ * ⚠️ ليش هنا ومو بـproducts.json؟ لأن products.json ملف عام على
+ * GitHub وينزل على جهاز كل زبون. لو انحط سعر الشراء بيه، أي زبون
+ * (وأي منافس) يشوف بكم تشتري وبكم تبيع. هنا محمي بمفتاح الإدارة
+ * وما يوصله غير صاحب المحل.
+ */
+function getCostsSheet() {
+  const ss = ss_();
+  let sheet = ss.getSheetByName("Costs");
+  if (!sheet) sheet = ss.insertSheet("Costs");
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["معرّف المنتج", "اسم المنتج", "سعر الشراء", "آخر تحديث"]);
+  }
+  return sheet;
+}
+const CCOL_ID = 1, CCOL_NAME = 2, CCOL_COST = 3, CCOL_AT = 4, COSTS_NUM_COLS = 4;
+
 // ═══════════════════ مساعدات ═══════════════════
 /**
  * ⚠️ لازم تطابق normalizePhone بـ index.html و control.html حرفياً.
@@ -942,6 +961,38 @@ function doPost(e) {
         touchVisitor(data.visitorId, eventType, data.approxLocation, data.phone, data.name);
       } catch (vErr) { /* التتبّع ثانوي، ما يوقف شي */ }
       return jsonOut({ status: "ok" });
+    }
+
+    // حفظ أسعار الشراء (من لوحة التحكم) — تنكتب بورقة Costs السرّية
+    if (data.action === "saveCosts" && data.costs) {
+      if (!isAuthorized(data.adminKey)) return denied();
+      const cSheet = getCostsSheet();
+      const cLast = cSheet.getLastRow();
+      const rowOf = {};
+      if (cLast >= 2) {
+        cSheet.getRange(2, 1, cLast - 1, 1).getValues().forEach(function (r, i) {
+          const id = String(r[0] || "").trim();
+          if (id) rowOf[id] = i + 2;
+        });
+      }
+      const now = new Date();
+      let saved = 0;
+      Object.keys(data.costs).forEach(function (id) {
+        const item = data.costs[id] || {};
+        const cost = Number(item.cost) || 0;
+        const name = String(item.name || "");
+        const row = rowOf[id];
+        if (row) {
+          // سعر صفر = "ما أريد أحسبه" — نمسح السطر بدل ما نخلّي صفر
+          // يتحسب شراء ببلاش ويطلّع ربح وهمي
+          if (cost > 0) cSheet.getRange(row, 1, 1, COSTS_NUM_COLS).setValues([[id, name, cost, now]]);
+          else cSheet.getRange(row, CCOL_COST).setValue("");
+        } else if (cost > 0) {
+          cSheet.appendRow([id, name, cost, now]);
+        }
+        saved++;
+      });
+      return jsonOut({ status: "ok", saved: saved });
     }
 
     // تسجيل رمز جهاز الأدمن (من صفحة التحكم عند تفعيل الإشعارات)
@@ -1706,6 +1757,22 @@ function doGet(e) {
     });
   }
 
+  // أسعار الشراء — سرّية، ما تنزل بأي ملف عام
+  if (e.parameter.costs) {
+    if (!isAuthorized(adminKey)) return denied();
+    const cSheet = getCostsSheet();
+    const cLast = cSheet.getLastRow();
+    const costs = {};
+    if (cLast >= 2) {
+      cSheet.getRange(2, 1, cLast - 1, COSTS_NUM_COLS).getValues().forEach(function (r) {
+        const id = String(r[CCOL_ID - 1] || "").trim();
+        const c = Number(r[CCOL_COST - 1]);
+        if (id && c > 0) costs[id] = c;
+      });
+    }
+    return jsonOut({ costs: costs });
+  }
+
   /* ═══════════ تقويم الزيارات ═══════════
    *
    * ?visitsCalendar=YYYY-MM  → عدد الزيارات والتثبيتات لكل يوم بالشهر
@@ -1749,22 +1816,28 @@ function doGet(e) {
 
     if (!byDay) {
       // عدّاد لكل يوم: زيارات + تثبيتات + أجهزة مختلفة
+      // ومعاها توزيع الساعات — نفس الأسطر اللي قريناها، فما تكلّف طلب
+      // زيادة. تكلّه أي ساعة بالنهار الناس تفتح التطبيق أكثر.
       const days = {};
+      const hours = [];
+      for (let h = 0; h < 24; h++) hours.push(0);
       rows.forEach(function (r) {
         if (!r[0]) return;
-        const k = Utilities.formatDate(new Date(r[0]), TIMEZONE, "yyyy-MM-dd");
+        const t = new Date(r[0]);
+        const k = Utilities.formatDate(t, TIMEZONE, "yyyy-MM-dd");
         if (k.indexOf(key + "-") !== 0) return;          // من توسعة المدى
         if (!days[k]) days[k] = { visits: 0, installs: 0, devices: {} };
         if (String(r[1]) === "install") days[k].installs++;
         else days[k].visits++;
         if (r[3]) days[k].devices[String(r[3])] = 1;
+        hours[Number(Utilities.formatDate(t, TIMEZONE, "HH"))]++;
       });
       const out = {};
       Object.keys(days).forEach(function (k) {
         out[k] = { visits: days[k].visits, installs: days[k].installs,
                    people: Object.keys(days[k].devices).length };
       });
-      return jsonOut({ month: key, days: out });
+      return jsonOut({ month: key, days: out, hours: hours });
     }
 
     // يوم واحد: نجمع حسب الجهاز ونجيب اسمه ورقمه من ورقة Visitors

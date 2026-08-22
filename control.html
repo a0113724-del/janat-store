@@ -460,6 +460,124 @@
   .u-anon{ color:#999; font-style:italic; }
   .u-phone{ direction:ltr; display:block; font-size:.7rem; color:var(--leaf); }
   @media (prefers-reduced-motion: reduce){ .live-dot{ animation:none; } }
+
+  /* ---------- قوائم التقارير (الأكثر مبيعاً / الربح / المنقطعين) ---------- */
+  .rank-list{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    overflow:hidden; margin-bottom:8px;
+  }
+  .rank-row{
+    display:flex; align-items:center; gap:10px; padding:10px 13px;
+    border-bottom:1px solid var(--line); font-size:.84rem;
+  }
+  .rank-row:last-child{ border-bottom:none; }
+  .rank-row .num{
+    flex:0 0 24px; height:24px; border-radius:7px; background:var(--forest); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:.7rem; font-weight:800;
+  }
+  .rank-row .nm{ flex:1; font-weight:700; min-width:0; }
+  .rank-row .nm small{ display:block; font-weight:600; color:#8a8a7c; font-size:.68rem; }
+  .rank-row .qt{ font-weight:800; color:var(--leaf); white-space:nowrap; font-size:.8rem; }
+  .rank-row .qt.bad{ color:var(--pomegranate); }
+  .rank-bar{ height:4px; background:var(--gold-light); border-radius:3px; margin-top:4px; }
+
+  .chips{ display:flex; gap:7px; margin:0 12px 10px; flex-wrap:wrap; }
+  .chips button{
+    background:var(--card); border:1.5px solid var(--line); color:#5a5a4c;
+    border-radius:20px; padding:6px 13px; font-size:.75rem; font-weight:700;
+    font-family:inherit; cursor:pointer;
+  }
+  .chips button.on{ background:var(--forest); border-color:var(--forest); color:#fff; }
+
+  .note-line{ font-size:.68rem; color:#8a8a7c; margin:0 14px 18px; line-height:1.7; }
+  .note-line.warn{ color:var(--pomegranate); font-weight:700; }
+
+  /* ---------- ساعات الذروة ---------- */
+  .hours-chart{
+    display:flex; align-items:flex-end; gap:2px; height:110px;
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:12px 10px 6px; margin-bottom:6px;
+  }
+  .hours-chart .hc{ flex:1; display:flex; flex-direction:column; justify-content:flex-end; height:100%; }
+  .hours-chart .hb{ background:var(--leaf-light); border-radius:3px 3px 0 0; min-height:2px; }
+  .hours-chart .hc.peak .hb{ background:var(--gold); }
+  .hours-chart .hl{ font-size:.5rem; color:#a5a597; text-align:center; margin-top:3px; }
+
+  /* ---------- صافي الربح ---------- */
+  .profit-row{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:12px 14px; margin:0 12px 8px; font-size:.86rem; font-weight:700;
+  }
+  .profit-row b{ font-size:1rem; }
+  .profit-row.net{ background:var(--forest); color:#fff; border-color:var(--forest); }
+  .profit-row.net b{ color:var(--gold-light); }
+  .f-cost{ border-color:var(--gold) !important; }
+
+  /* ---------- نافذة منبثقة عامة (طلبات الزبون / النسخ السابقة / الرسائل) ---------- */
+  .sheet{
+    position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:60;
+    display:none; align-items:flex-end; justify-content:center;
+  }
+  .sheet.show{ display:flex; }
+  .sheet-box{
+    background:var(--paper); width:100%; max-width:520px; max-height:86vh;
+    border-radius:20px 20px 0 0; display:flex; flex-direction:column;
+  }
+  .sheet-h{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:14px 16px; border-bottom:1px solid var(--line); font-weight:800; font-size:.95rem;
+  }
+  .sheet-h button{
+    background:none; border:none; font-size:1.3rem; cursor:pointer; color:#8a8a7c; line-height:1;
+  }
+  .sheet-body{ overflow-y:auto; padding:12px 14px 22px; }
+  .sheet-body textarea{
+    width:100%; min-height:96px; border:1.5px solid var(--line); border-radius:12px;
+    padding:11px; font-family:inherit; font-size:.85rem; line-height:1.8; resize:vertical;
+  }
+
+  .mini-order{
+    background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:11px 13px; margin-bottom:9px; font-size:.8rem;
+  }
+  .mini-order .mo-top{ display:flex; justify-content:space-between; gap:8px; font-weight:800; margin-bottom:5px; }
+  .mini-order .mo-top span{ color:#8a8a7c; font-weight:600; font-size:.72rem; }
+  .mini-order .mo-items{ color:#5a5a4c; font-size:.75rem; line-height:1.8; white-space:pre-line; }
+
+  .wa-row{
+    display:flex; align-items:center; gap:9px; padding:9px 11px; font-size:.82rem;
+    background:var(--card); border:1px solid var(--line); border-radius:11px; margin-bottom:7px;
+  }
+  .wa-row .nm{ flex:1; font-weight:700; min-width:0; }
+  .wa-row .nm small{ display:block; color:#8a8a7c; font-weight:600; direction:ltr; text-align:right; font-size:.7rem; }
+  .wa-row a{
+    background:#25D366; color:#fff; text-decoration:none; border-radius:9px;
+    padding:7px 13px; font-weight:800; font-size:.75rem; white-space:nowrap;
+  }
+  .wa-row.done{ opacity:.5; }
+  .wa-row.done a{ background:#9aa39c; }
+
+  .ver-row{
+    display:flex; align-items:center; gap:9px; padding:11px 12px; font-size:.8rem;
+    background:var(--card); border:1px solid var(--line); border-radius:11px; margin-bottom:8px;
+  }
+  .ver-row .nm{ flex:1; font-weight:700; }
+  .ver-row .nm small{ display:block; color:#8a8a7c; font-weight:600; font-size:.7rem; }
+  .ver-row button{
+    background:var(--gold); color:#3a2b06; border:none; border-radius:9px;
+    padding:7px 13px; font-weight:800; font-size:.75rem; font-family:inherit; cursor:pointer;
+  }
+  .link-name{
+    background:none; border:none; padding:0; font-family:inherit; font-size:inherit;
+    font-weight:800; color:var(--forest); text-decoration:underline dotted;
+    text-underline-offset:3px; cursor:pointer; text-align:right;
+  }
+  .ghost-btn{
+    background:var(--card); border:1.5px solid var(--line); color:var(--forest);
+    border-radius:12px; padding:10px 15px; font-weight:800; font-size:.8rem;
+    font-family:inherit; cursor:pointer;
+  }
 </style>
 </head>
 <body>
@@ -515,6 +633,7 @@
       </div>
       <div class="toolbar" style="justify-content:space-between;">
         <button class="add-btn" id="addProductBtn">+ إضافة منتج</button>
+        <button class="ghost-btn" id="undoBtn">↩️ رجّع نسخة سابقة</button>
       </div>
       <div class="save-bar"><button class="save-btn" id="saveAllBtn" disabled>💾 حفظ كل التغييرات</button></div>
       <div class="product-list" id="productList"></div>
@@ -543,6 +662,26 @@
       <p class="empty-note" style="font-size:.72rem; padding:12px 4px;">
         اضغط <b>⭐ عدّل</b> عند أي زبون حتى تزيد أو تنقص نقاطه — كل تعديل ينحفظ بسجل
         مع سببه، وتكدر تدز إشعار للزبون بنفس اللحظة.
+        واضغط على <b>اسم الزبون</b> حتى تشوف كل طلباته وشنو يشتري دائماً.
+      </p>
+
+      <!-- الزبائن اللي انقطعوا: أهم قائمة بالصفحة — هدول زبائن جاهزين يرجعون -->
+      <div class="section-h">😴 زبائن انقطعوا</div>
+      <div class="chips" id="dormChips">
+        <button data-days="21">من ٣ أسابيع</button>
+        <button class="on" data-days="30">من شهر</button>
+        <button data-days="60">من شهرين</button>
+      </div>
+      <div class="rank-list" id="dormList"></div>
+      <p class="note-line">كل واحد بيه زر واتساب جاهز — تفتح المحادثة وتدز عرض يرجّعه.</p>
+
+      <div class="section-h">📣 رسالة لكل الزبائن</div>
+      <div style="margin:0 12px 8px;">
+        <button class="ghost-btn" id="blastBtn">✍️ اكتب رسالة ودزها</button>
+      </div>
+      <p class="note-line">
+        واتساب ما يخلي أي تطبيق يدز رسائل جماعية لحاله — فاللوحة تفتحلك محادثة
+        كل زبون بالرسالة جاهزة وانته تضغط إرسال. وتأشّر لك منو انرسل حتى ما تعيد.
       </p>
     </div>
 
@@ -551,6 +690,23 @@
       <div class="stats-row" id="statsRow"></div>
       <div class="section-h">📅 آخر 7 أيام</div>
       <div class="bar-chart" id="weekChart"></div>
+
+      <!-- شنو ينباع وشنو راكد — يكلّه شنو يجيب من السوق كل يوم -->
+      <div class="section-h">🔥 الأكثر مبيعاً</div>
+      <div class="chips" id="sellChips">
+        <button class="on" data-days="30">هذا الشهر</button>
+        <button data-days="7">آخر أسبوع</button>
+        <button data-days="0">كل المعروض</button>
+      </div>
+      <div class="rank-list" id="topSellers"></div>
+      <div class="section-h">🧊 ما انباع ولا مرة</div>
+      <div class="rank-list" id="deadStock"></div>
+      <p class="note-line" id="sellNote"></p>
+
+      <!-- صافي الربح -->
+      <div class="section-h">💰 صافي الربح</div>
+      <div id="profitBox"></div>
+      <p class="note-line" id="profitNote"></p>
       <div class="section-h">📲 استخدام التطبيق</div>
       <div class="stats-row" id="appStatsRow"></div>
 
@@ -570,6 +726,11 @@
         <div class="cal-legend">الرقم الصغير = كم شخص فتح التطبيق بذاك اليوم · اضغط اليوم تشوف مين</div>
       </div>
       <div id="calDayBox"></div>
+
+      <!-- أي ساعة الناس تفتح التطبيق أكثر — وقت نشر العرض -->
+      <div class="section-h">⏰ ساعات الذروة</div>
+      <div class="hours-chart" id="hoursChart"></div>
+      <p class="note-line" id="hoursNote">—</p>
 
       <div class="section-h">🟢 مين فاتح التطبيق الآن</div>
       <div class="stats-row" id="liveStatsRow"></div>
@@ -629,6 +790,14 @@
         <p>صفارة تشتغل بصفحة الطلبات وقت وصول طلب جديد — تحتاج تفعيلها من كل جهاز على حدة.</p>
         <button class="notif-btn" id="soundBtn2">🔔 تفعيل صوت التنبيه</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ========= لوح منبثق مشترك: طلبات الزبون / النسخ السابقة / الرسالة الجماعية ========= -->
+  <div class="sheet" id="sheet">
+    <div class="sheet-box">
+      <div class="sheet-h"><b id="sheetTitle">—</b><button type="button" id="sheetClose">✕</button></div>
+      <div class="sheet-body" id="sheetBody"></div>
     </div>
   </div>
 
@@ -925,6 +1094,7 @@
       if(!checkAuth(d)) return;
       calDays = (d && d.days) || {};
       renderCalGrid();
+      renderHours(d && d.hours);                       // نفس الرد، بلا طلب زيادة
     }catch(e){ /* الشبكة — الشبكة تبقى الأيام فاضية بلا ما تنكسر اللوحة */ }
   }
 
@@ -1007,6 +1177,405 @@
     loadCalMonth();
   });
 
+  /* ═══════════ لوح منبثق مشترك ═══════════ */
+  function openSheet(title, html){
+    document.getElementById("sheetTitle").textContent = title;
+    document.getElementById("sheetBody").innerHTML = html;
+    document.getElementById("sheet").classList.add("show");
+  }
+  function closeSheet(){ document.getElementById("sheet").classList.remove("show"); }
+  document.getElementById("sheetClose").addEventListener("click", closeSheet);
+  document.getElementById("sheet").addEventListener("click", (e)=>{
+    if(e.target.id === "sheet") closeSheet();          // ضغطة برّا الصندوق تسكّره
+  });
+
+  /* ═══════════ قراءة سطور الطلب ═══════════
+   * الطلب ينحفظ كنص: "طماطة × 2 كغم | خيار × 1 كغم [طلب خاص: ...]"
+   * ما بيه معرّف المنتج، فنطابق بالاسم مقابل قائمة المنتجات الحالية.
+   * ⚠️ لو غيّرت اسم منتج، طلباته القديمة ما تنطابق — تظل تنعد بالمبيعات
+   * الكلية بس ما تدخل بحساب كلفته. هذا مقصود: أهون من تخمين غلط.
+   */
+  function parseOrderItems(text){
+    if(!text) return [];
+    const out = [];
+    String(text).split("|").forEach(seg=>{
+      let s = seg.trim();
+      const sp = s.indexOf("[طلب خاص");
+      if(sp === 0) return;                             // طلب خاص لحاله، مو منتج
+      if(sp > 0) s = s.slice(0, sp).trim();
+      const m = s.match(/^(.+?)\s*[×xX*]\s*([\d.,]+)\s*(.*)$/);
+      if(!m) return;
+      const qty = Number(String(m[2]).replace(/,/g, ""));
+      if(!(qty > 0)) return;
+      out.push({ name: m[1].trim(), qty: qty, unit: (m[3] || "").trim() });
+    });
+    return out;
+  }
+  const isCancelled = (o)=> String(o.status || "").trim() === "ملغي";
+  function ordersWithin(days){
+    const live = allOrders.filter(o=> !isCancelled(o));
+    if(!days) return live;
+    const cutoff = Date.now() - days * 86400000;
+    return live.filter(o=> new Date(o.time).getTime() >= cutoff);
+  }
+  // اسم المنتج → المنتج نفسه (للمطابقة مع نص الطلب)
+  function productsByName(){
+    const map = {};
+    products.forEach(p=> { if(p.name) map[String(p.name).trim()] = p; });
+    return map;
+  }
+
+  /* ═══════════ الأكثر مبيعاً / الراكد ═══════════ */
+  let sellDays = 30;
+  function renderSellers(){
+    const orders = ordersWithin(sellDays);
+    const byName = productsByName();
+    const tally = {};                                  // اسم → {qty, orders, unit, id}
+    let unmatched = 0;
+    orders.forEach(o=>{
+      const seen = {};
+      parseOrderItems(o.items).forEach(it=>{
+        const p = byName[it.name];
+        if(!p) unmatched++;
+        const k = p ? p.id : "؟" + it.name;
+        if(!tally[k]) tally[k] = { name: it.name, qty:0, orders:0, unit: it.unit, known: !!p };
+        tally[k].qty += it.qty;
+        if(!seen[k]){ tally[k].orders++; seen[k] = 1; }
+      });
+    });
+    const list = Object.keys(tally).map(k=> tally[k]).sort((a,b)=> b.qty - a.qty);
+    const top = list.slice(0, 12);
+    const box = document.getElementById("topSellers");
+    if(!top.length){
+      box.innerHTML = `<div class="rank-row"><span class="nm">ماكو طلبات بهذي المدة</span></div>`;
+    }else{
+      const max = top[0].qty || 1;
+      box.innerHTML = top.map((t,i)=>`
+        <div class="rank-row">
+          <span class="num">${i+1}</span>
+          <span class="nm">${esc(t.name)}${t.known ? "" : " <small>مو بالقائمة الحالية</small>"}
+            <div class="rank-bar" style="width:${Math.max(6, Math.round(t.qty / max * 100))}%"></div>
+          </span>
+          <span class="qt">${(Math.round(t.qty*10)/10)} ${esc(t.unit || "")}<br>
+            <small style="font-weight:600;color:#8a8a7c">${t.orders} طلب</small></span>
+        </div>`).join("");
+    }
+
+    // الراكد: منتج ظاهر للزبون وما انطلب ولا مرة بهذي المدة
+    const soldIds = {};
+    Object.keys(tally).forEach(k=>{ if(k.indexOf("؟") !== 0) soldIds[k] = 1; });
+    const dead = products.filter(p=> p.visible !== false && !soldIds[p.id]);
+    const dbox = document.getElementById("deadStock");
+    dbox.innerHTML = dead.length
+      ? dead.map(p=>`<div class="rank-row">
+            <span class="num" style="background:#9aa39c">${esc(p.emoji || "•")}</span>
+            <span class="nm">${esc(p.name)}<small>${money(p.price)} · ${esc(p.unit||"كغم")}</small></span>
+            <span class="qt bad">ما انباع</span>
+          </div>`).join("")
+      : `<div class="rank-row"><span class="nm">✅ كل منتجاتك الظاهرة انباعت</span></div>`;
+
+    document.getElementById("sellNote").textContent =
+      `${orders.length} طلب داخل الحساب` +
+      (unmatched ? ` · ${unmatched} سطر ما انطابق مع منتج حالي (اسمه تغيّر أو انحذف)` : "") +
+      ` · الطلبات الملغية مستثناة.`;
+  }
+  document.getElementById("sellChips").addEventListener("click",(e)=>{
+    const b = e.target.closest("button"); if(!b) return;
+    document.querySelectorAll("#sellChips button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on"); sellDays = Number(b.dataset.days) || 0;
+    renderSellers(); renderProfit();
+  });
+
+  /* ═══════════ صافي الربح ═══════════
+   * سعر الشراء ما ينحفظ بـproducts.json — ذاك ملف عام ينزل على جهاز
+   * كل زبون. ينحفظ بورقة Costs بالشيت، محمي بمفتاح الإدارة.
+   */
+  let productCosts = {};
+  let costsDirty = false;
+  let costsReady = false;
+
+  async function loadCosts(){
+    try{
+      const d = await fetchJson(adminUrl("?costs=1"), "أسعار الشراء");
+      if(!d || d.unauthorized) return;
+      productCosts = d.costs || {};
+      costsReady = true;
+      renderProductList();                             // حتى تنملي خانات الشراء
+      renderProfit();
+    }catch(e){ /* السيرفر لسه ما انتشر — الربح يبقى معطّل والباقي شغال */ }
+  }
+
+  function renderProfit(){
+    const box = document.getElementById("profitBox");
+    const note = document.getElementById("profitNote");
+    const withCost = products.filter(p=> Number(productCosts[p.id]) > 0).length;
+    if(!withCost){
+      box.innerHTML = `<div class="profit-row"><span>لسه ما دخّلت أسعار الشراء</span></div>`;
+      note.className = "note-line";
+      note.textContent = costsReady
+        ? "روح لتبويب «منتجات» واكتب سعر الشراء بالخانة الذهبية عند كل منتج، وبعدها هنا يطلعلك ربحك الصافي. الأسعار محفوظة بالشيت مو بالملف العام — ولا زبون يشوفها."
+        : "⏳ ما وصلت أسعار الشراء من السيرفر — تأكد إنك نشرت آخر نسخة من apps-script.gs.";
+      return;
+    }
+
+    const orders = ordersWithin(sellDays);
+    const byName = productsByName();
+    let revenue = 0, cost = 0, ptsDisc = 0, covered = 0, uncovered = 0;
+    orders.forEach(o=>{
+      const sub = Number(o.subtotal);
+      revenue += Number.isFinite(sub) && sub > 0 ? sub : Number(o.total) || 0;
+      ptsDisc += pointsToIqd(Number(o.pointsUsed) || 0);
+      parseOrderItems(o.items).forEach(it=>{
+        const p = byName[it.name];
+        const c = p ? Number(productCosts[p.id]) : 0;
+        if(c > 0){ cost += c * it.qty; covered++; } else uncovered++;
+      });
+    });
+    const net = revenue - ptsDisc - cost;
+    const pct = revenue > 0 ? Math.round(net / revenue * 100) : 0;
+    box.innerHTML = `
+      <div class="profit-row"><span>مبيعات البضاعة</span><b>${money(revenue)}</b></div>
+      <div class="profit-row"><span>خصم النقاط</span><b style="color:var(--pomegranate)">− ${money(ptsDisc)}</b></div>
+      <div class="profit-row"><span>كلفة الشراء</span><b style="color:var(--pomegranate)">− ${money(cost)}</b></div>
+      <div class="profit-row net"><span>صافي الربح</span><b>${money(net)}
+        <small style="font-size:.72rem"><bdi dir="ltr">(${pct}%)</bdi></small></b></div>`;
+    const total = covered + uncovered;
+    const ratio = total ? Math.round(covered / total * 100) : 0;
+    note.className = ratio >= 90 ? "note-line" : "note-line warn";
+    note.textContent =
+      `محسوب على ${covered} سطر من ${total} (${ratio}%)` +
+      (uncovered ? ` — ${products.length - withCost} منتج بلا سعر شراء، فربحهم محسوب كأنه كامل والرقم أعلى من الحقيقة.` : ".") +
+      ` أجور التوصيل مو داخلة بالحساب.`;
+  }
+
+  async function saveCosts(){
+    const payload = {};
+    products.forEach(p=>{ payload[p.id] = { cost: Number(productCosts[p.id]) || 0, name: p.name || "" }; });
+    const res = await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST", body: adminBody({ action: "saveCosts", costs: payload })
+    });
+    const d = await res.json().catch(()=> null);
+    if(!d || d.status !== "ok") throw new Error("أسعار الشراء ما انحفظت");
+    costsDirty = false;
+  }
+
+  /* ═══════════ ساعات الذروة ═══════════ */
+  function renderHours(hours){
+    const box = document.getElementById("hoursChart");
+    const note = document.getElementById("hoursNote");
+    const h = Array.isArray(hours) && hours.length === 24 ? hours.map(n=> Number(n)||0) : null;
+    if(!h || !h.some(n=> n > 0)){
+      box.innerHTML = "";
+      note.className = "note-line";
+      note.textContent = "ماكو زيارات بهذا الشهر.";
+      return;
+    }
+    const max = Math.max.apply(null, h);
+    box.innerHTML = h.map((n,i)=>`
+      <div class="hc ${n === max ? "peak" : ""}" title="${i}:00 — ${n} فتحة">
+        <div class="hb" style="height:${Math.round(n / max * 100)}%"></div>
+        <div class="hl">${i % 3 === 0 ? i : ""}</div>
+      </div>`).join("");
+    const peak = h.indexOf(max);
+    // أحسن ٣ ساعات متتالية = أفضل وقت تنشر بيه العرض
+    let bestStart = 0, bestSum = -1;
+    for(let i = 0; i < 22; i++){
+      const s = h[i] + h[i+1] + h[i+2];
+      if(s > bestSum){ bestSum = s; bestStart = i; }
+    }
+    const fmt = (n)=> `${n}:00`;
+    note.className = "note-line";
+    note.textContent =
+      `أعلى ساعة: ${fmt(peak)} (${max} فتحة) · أحسن وقت تنشر بيه العرض: ` +
+      `بين ${fmt(bestStart)} و ${fmt(bestStart + 3)} — بيها ${bestSum} فتحة، ` +
+      `${Math.round(bestSum / h.reduce((a,b)=>a+b,0) * 100)}% من فتحات الشهر كله.`;
+  }
+
+  /* ═══════════ زبائن انقطعوا ═══════════ */
+  let dormDays = 30;
+  function dormantCustomers(days){
+    const cutoff = Date.now() - days * 86400000;
+    return allCustomers.filter(c=>{
+      if(!(Number(c.ordersCount) > 0)) return false;   // ما طلب أصلاً، مو "انقطع"
+      const t = c.lastOrderAt ? new Date(c.lastOrderAt).getTime() : 0;
+      return t > 0 && t < cutoff;
+    }).sort((a,b)=> Number(b.totalSpend||0) - Number(a.totalSpend||0));
+  }
+  function waLink(phone, text){
+    let d = normalizePhone(phone);
+    if(!d) return "";
+    if(d.startsWith("0")) d = d.slice(1);
+    return `https://wa.me/964${d}?text=${encodeURIComponent(text)}`;
+  }
+  function renderDormant(){
+    const box = document.getElementById("dormList");
+    if(!box) return;
+    const list = dormantCustomers(dormDays);
+    if(!list.length){
+      box.innerHTML = `<div class="rank-row"><span class="nm">✅ ماكو زبون منقطع بهذي المدة</span></div>`;
+      return;
+    }
+    box.innerHTML = list.slice(0, 40).map(c=>{
+      const nm = c.name || "بدون اسم";
+      const msg = `مرحبا ${c.name || ""}\nاشتقنالك 🌿 جنة الفواكه والخضار — عدنا خضار وفواكه طازة اليوم.\nاطلب من التطبيق: https://a0113724-del.github.io/janat-store/`;
+      const link = waLink(c.phone, msg);
+      return `<div class="rank-row">
+        <span class="num" style="background:var(--gold);color:#3a2b06">${Math.floor((Date.now()-new Date(c.lastOrderAt).getTime())/86400000)}</span>
+        <span class="nm">${esc(nm)}<small>${esc(showPhone(c.phone))} · ${Number(c.ordersCount)||0} طلب · صرف ${money(c.totalSpend)}</small></span>
+        ${link ? `<a class="qt" href="${esc(link)}" target="_blank" rel="noopener"
+             style="background:#25D366;color:#fff;padding:6px 11px;border-radius:9px;text-decoration:none">واتساب</a>` : ""}
+      </div>`;
+    }).join("");
+  }
+  document.getElementById("dormChips").addEventListener("click",(e)=>{
+    const b = e.target.closest("button"); if(!b) return;
+    document.querySelectorAll("#dormChips button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on"); dormDays = Number(b.dataset.days) || 30;
+    renderDormant();
+  });
+
+  /* ═══════════ رسالة لكل الزبائن ═══════════
+   * واتساب ما يسمح لأي موقع يدز رسائل جماعية. الشي الوحيد المتاح
+   * وقانوني: نفتح محادثة كل زبون والرسالة مكتوبة، وهو يضغط إرسال.
+   */
+  const BLAST_KEY = "janat-blast-sent";
+  function blastSheet(){
+    const saved = localStorage.getItem("janat-blast-msg") ||
+      "مرحبا 🌿\nعرض اليوم بجنة الفواكه والخضار:\n\nاطلب من التطبيق: https://a0113724-del.github.io/janat-store/";
+    openSheet("📣 رسالة لكل الزبائن", `
+      <textarea id="blastMsg">${esc(saved)}</textarea>
+      <p class="note-line" style="margin:9px 0 12px">
+        اكتب رسالتك فوق، وبعدين اضغط «واتساب» عند كل زبون. اللي ينرسل يصير باهت
+        حتى ما تعيده — والعلامة تنمسح لمن تبدل الرسالة.
+      </p>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="ghost-btn" id="blastReset">🔄 امسح العلامات</button>
+        <span class="note-line" id="blastCount" style="margin:0;align-self:center"></span>
+      </div>
+      <div id="blastList"></div>`);
+    const draw = ()=>{
+      let sent = {};
+      try{ sent = JSON.parse(localStorage.getItem(BLAST_KEY) || "{}"); }catch(e){}
+      const msg = document.getElementById("blastMsg").value;
+      const withPhone = allCustomers.filter(c=> normalizePhone(c.phone));
+      document.getElementById("blastList").innerHTML = withPhone.map(c=>{
+        const ph = normalizePhone(c.phone);
+        return `<div class="wa-row ${sent[ph] ? "done" : ""}" data-ph="${esc(ph)}">
+          <span class="nm">${esc(c.name || "بدون اسم")}<small>${esc(showPhone(c.phone))}</small></span>
+          <a href="${esc(waLink(c.phone, msg))}" target="_blank" rel="noopener">واتساب</a>
+        </div>`;
+      }).join("") || `<p class="empty-note">ماكو زبائن بأرقام محفوظة</p>`;
+      document.getElementById("blastCount").textContent =
+        `${Object.keys(sent).length} من ${withPhone.length} انرسلت`;
+    };
+    draw();
+    document.getElementById("blastMsg").addEventListener("input",(e)=>{
+      localStorage.setItem("janat-blast-msg", e.target.value);
+      draw();
+    });
+    document.getElementById("blastReset").addEventListener("click",()=>{
+      localStorage.removeItem(BLAST_KEY); draw();
+    });
+    document.getElementById("blastList").addEventListener("click",(e)=>{
+      const a = e.target.closest("a"); if(!a) return;
+      const row = a.closest(".wa-row");
+      let sent = {};
+      try{ sent = JSON.parse(localStorage.getItem(BLAST_KEY) || "{}"); }catch(e2){}
+      sent[row.dataset.ph] = 1;
+      localStorage.setItem(BLAST_KEY, JSON.stringify(sent));
+      row.classList.add("done");
+      const n = Object.keys(sent).length;
+      document.getElementById("blastCount").textContent =
+        `${n} من ${document.querySelectorAll("#blastList .wa-row").length} انرسلت`;
+    });
+  }
+  document.getElementById("blastBtn").addEventListener("click", blastSheet);
+
+  /* ═══════════ طلبات زبون واحد ═══════════ */
+  function customerSheet(phone){
+    const key = normalizePhone(phone);
+    const c = allCustomers.find(x=> normalizePhone(x.phone) === key);
+    const mine = allOrders.filter(o=> normalizePhone(o.phone) === key)
+                          .sort((a,b)=> new Date(b.time) - new Date(a.time));
+    // شنو يشتري دائماً — يفيدك لمن يتصل ويكلك "دز لي المعتاد"
+    const fav = {};
+    mine.forEach(o=> parseOrderItems(o.items).forEach(it=>{
+      fav[it.name] = (fav[it.name] || 0) + it.qty;
+    }));
+    const favTop = Object.keys(fav).sort((a,b)=> fav[b] - fav[a]).slice(0, 5);
+    const head = `
+      <div class="profit-row" style="margin:0 0 8px"><span>الطلبات</span><b>${mine.length}</b></div>
+      <div class="profit-row" style="margin:0 0 8px"><span>إجمالي الصرف</span><b>${money(c ? c.totalSpend : mine.reduce((s,o)=>s+(Number(o.total)||0),0))}</b></div>
+      ${c ? `<div class="profit-row" style="margin:0 0 8px"><span>النقاط</span><b>⭐ ${Number(c.points)||0}</b></div>` : ""}
+      ${favTop.length ? `<p class="note-line" style="margin:10px 0 14px"><b>يشتري دائماً:</b> ${favTop.map(esc).join(" · ")}</p>` : ""}`;
+    const body = mine.length
+      ? mine.slice(0, 25).map(o=>{
+          const d = new Date(o.time);
+          return `<div class="mini-order">
+            <div class="mo-top">
+              <span style="color:var(--forest);font-weight:900">#${esc(o.seqNo || "—")} · ${money(o.total)}</span>
+              <span>${d.toLocaleDateString('ar-IQ',{day:'numeric',month:'short'})} · ${esc(String(o.status||"قيد المراجعة").trim())}</span>
+            </div>
+            <div class="mo-items">${esc(o.items).replace(/\s*\|\s*/g, "\n")}</div>
+          </div>`;
+        }).join("")
+      : `<p class="empty-note">ماكو طلبات محفوظة إله بآخر ٤٠ يوم</p>`;
+    openSheet(`🧾 ${(c && c.name) || showPhone(phone)}`, head + body);
+  }
+
+  /* ═══════════ رجّع نسخة سابقة من الأسعار ═══════════
+   * غلطة سعر وحدة بعد الحفظ ما كان إلها طريق رجوع إلا من GitHub نفسه.
+   * كل حفظة صارت نقطة رجوع — نجيب آخر النسخ ونحمّل اللي يختارها.
+   * ما نحفظ لحاله: نعبّي الأسعار باللوحة ويراجعها هو ويضغط حفظ.
+   */
+  document.getElementById("undoBtn").addEventListener("click", async ()=>{
+    openSheet("↩️ النسخ السابقة", `<p class="empty-note">⏳ جاري جلب النسخ...</p>`);
+    try{
+      const res = await ghFetch(`/repos/${OWNER}/${REPO}/commits?path=${PRODUCTS_PATH}&sha=${BRANCH}&per_page=20`);
+      if(!res.ok) throw new Error(ghReason(res.status));
+      const commits = await res.json();
+      if(!Array.isArray(commits) || !commits.length){
+        document.getElementById("sheetBody").innerHTML = `<p class="empty-note">ماكو نسخ سابقة</p>`;
+        return;
+      }
+      document.getElementById("sheetBody").innerHTML =
+        `<p class="note-line" style="margin:0 0 12px">
+           اختار نسخة — تنعبّى بالأسعار القديمة باللوحة وتراجعها، وما تنحفظ
+           إلا لمن تضغط <b>💾 حفظ كل التغييرات</b>.
+         </p>` +
+        commits.map((c,i)=>{
+          const d = new Date(c.commit.author.date);
+          const when = d.toLocaleString('ar-IQ',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+          return `<div class="ver-row">
+            <span class="nm">${i === 0 ? "النسخة الحالية" : "نسخة " + when}
+              <small>${i === 0 ? when : esc(String(c.commit.message||"").split("\n")[0]).slice(0,52)}</small></span>
+            ${i === 0 ? "" : `<button data-sha="${esc(c.sha)}">رجّعها</button>`}
+          </div>`;
+        }).join("");
+      document.getElementById("sheetBody").addEventListener("click", async (e)=>{
+        const b = e.target.closest("button[data-sha]"); if(!b) return;
+        b.disabled = true; b.textContent = "⏳";
+        try{
+          const r = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${PRODUCTS_PATH}?ref=${b.dataset.sha}`);
+          if(!r.ok) throw new Error(ghReason(r.status));
+          const data = await r.json();
+          const old = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g,"")))));
+          if(!Array.isArray(old) || !old.length) throw new Error("النسخة فاضية");
+          products = old;
+          products.forEach((p,i)=>{ if(p.order===undefined) p.order=i; if(p.visible===undefined) p.visible=true; });
+          renderProductList(); markDirty(); closeSheet();
+          setStatus("saving", "↩️ رجّعنا الأسعار القديمة — راجعها واضغط 💾 حفظ");
+        }catch(err){
+          b.disabled = false; b.textContent = "رجّعها";
+          setStatus("error", "⚠️ " + (err.message || "ما گدرنا نجيب النسخة"));
+        }
+      });
+    }catch(err){
+      document.getElementById("sheetBody").innerHTML =
+        `<p class="empty-note">⚠️ ${esc(err.message || "تعذّر جلب النسخ")}</p>`;
+    }
+  });
+
   function warnIfReadOnly(){
     const old = document.getElementById("roWarn");
     if(canWrite !== false){ if(old) old.remove(); return; }
@@ -1057,6 +1626,9 @@
     warnIfReadOnly();
     renderProductList();
     loadOrdersData();
+    // أسعار الشراء تنجلب مرة وحدة بس — مو مع كل دورة تحديث. لو
+    // انجلبت كل دقيقة چان دعست على التعديلات اللي لسه ما انحفظت
+    loadCosts();
     setInterval(loadOrdersData, REFRESH_INTERVAL);
     checkPushStatus();
 
@@ -1106,6 +1678,19 @@
   // أصغر ورقة بالعراق 250، فالمتجر يقرّب كل سطر لأقرب 250. سعر مو من
   // مضاعفات 250 معناه كل كيلو كامل ينقرّب — ربح أو خسارة صامتة كل طلب.
   const ROUND_TO = 250;
+  // ربح الكيلو الواحد — يبين لحظياً وانته تكتب، حتى تشوف إذا السعر يستاهل
+  function marginText(p){
+    const cost = Number(productCosts[p.id]) || 0;
+    const price = Number(p.price) || 0;
+    if(!(cost > 0) || !(price > 0)) return "—";
+    const diff = price - cost;
+    const pct = Math.round(diff / price * 100);
+    // الخانة ضيّقة، فنخليها أرقام بس بترتيب LTR — الجملة العربية داخل
+    // مربّع صغير تنقلب وتصير "41 — 350" وما تنقرا
+    return (diff < 0 ? "−" : "+") + Math.abs(diff).toLocaleString('en-US') +
+           " (" + Math.abs(pct) + "%)";
+  }
+
   function roundHint(p){
     const price = Number(p.price) || 0;
     if(!(price > 0) || ROUND_TO < 1 || price % ROUND_TO === 0) return "";
@@ -1187,6 +1772,20 @@
             <input type="text" class="f-unit" data-id="${p.id}" value="${p.unit||'كغم'}" placeholder="الوحدة">
           </label>
         </div>
+        <!-- سعر الشراء ينحفظ بالشيت مو بـproducts.json — ذاك ملف عام
+             ينزل على جهاز كل زبون، وما يصير يشوف بكم تشتري -->
+        <div class="row2">
+          <label class="fld">
+            <span class="lbl">سعر الشراء 🔒 (سرّي)</span>
+            <input type="number" class="f-cost" data-id="${p.id}"
+                   value="${productCosts[p.id] || ''}" placeholder="بكم تشتريه">
+          </label>
+          <label class="fld">
+            <span class="lbl">ربح الوحدة (د.ع)</span>
+            <input type="text" class="f-margin" data-margin="${p.id}" value="${marginText(p)}" readonly
+                   dir="ltr" style="background:#f6f6f2; font-weight:800; text-align:center;">
+          </label>
+        </div>
         <input type="text" class="desc f-desc" data-id="${p.id}" value="${(p.description||"").replace(/"/g,'&quot;')}" placeholder="وصف مختصر (اختياري)">
         <div class="toggle-row">
           <label><input type="checkbox" class="f-visible" data-id="${p.id}" ${p.visible!==false?'checked':''}> ظاهر للزبون</label>
@@ -1237,6 +1836,17 @@
     if(e.target.classList.contains("f-unit")) p.unit = e.target.value;
     if(e.target.classList.contains("f-desc")) p.description = e.target.value;
     if(e.target.classList.contains("f-oldprice")) p.oldPrice = Number(e.target.value)||0;
+    if(e.target.classList.contains("f-cost")){
+      const c = Number(e.target.value) || 0;
+      if(c > 0) productCosts[p.id] = c; else delete productCosts[p.id];
+      costsDirty = true; markDirty();
+      const m = document.querySelector(`[data-margin="${p.id}"]`);
+      if(m) m.value = marginText(p);
+    }
+    if(e.target.classList.contains("f-price")){
+      const m = document.querySelector(`[data-margin="${p.id}"]`);
+      if(m) m.value = marginText(p);
+    }
     if(e.target.classList.contains("f-bqty")){
       p.bundle = p.bundle || {};
       p.bundle.qty = Math.floor(Number(e.target.value)) || 0;
@@ -1407,6 +2017,18 @@
       }
       const data = await res.json();
       productsSha = data.content.sha; dirty = false;
+
+      // أسعار الشراء تروح للشيت مو لGitHub. فشلها ما يلغي حفظ الأسعار
+      // اللي توّه نجح — نكلّه انحفظ شنو وشنو لأ بدل رسالة وحدة مبهمة.
+      if(costsDirty){
+        try{ await saveCosts(); }
+        catch(e){
+          setStatus("error", "✅ الأسعار انحفظت — بس أسعار الشراء لأ (تأكد إنك نشرت apps-script.gs)");
+          renderProfit();
+          return;
+        }
+      }
+      renderProfit();
       setStatus("saved", "✅ تم الحفظ — التغييرات راح تطلع بالموقع خلال دقيقة");
     }catch(err){
       console.error(err);
@@ -1726,7 +2348,7 @@
       const ph = showPhone(c.phone);
       const last = c.lastOrderAt ? timeAgo(c.lastOrderAt) : "—";
       return `<tr>
-        <td>${esc(c.name || "—")}</td>
+        <td><button class="link-name" data-cust="${esc(ph)}">${esc(c.name || "—")}</button></td>
         <td style="direction:ltr; text-align:left;">${esc(ph)}</td>
         <td class="pts-cell">${Number(c.points) || 0}</td>
         <td>${Number(c.ordersCount) || 0}<div class="muted">${esc(last)}</div></td>
@@ -2019,7 +2641,9 @@
 
   document.getElementById("customersBody").addEventListener("click",(e)=>{
     const btn = e.target.closest("[data-edit-pts]");
-    if(btn) openPointsModal(btn.getAttribute("data-edit-pts"));
+    if(btn){ openPointsModal(btn.getAttribute("data-edit-pts")); return; }
+    const nm = e.target.closest("[data-cust]");
+    if(nm) customerSheet(nm.getAttribute("data-cust"));
   });
   document.querySelectorAll(".pm-chip").forEach(chip=>{
     chip.addEventListener("click",()=>{
@@ -2125,6 +2749,7 @@
       lastOrderCount = orders.length;
       allOrders = orders;
       renderStats(orders); renderWeekChart(orders); renderOrdersList(orders);
+      renderSellers(); renderProfit();
 
       // الثلاثة الباقية ثانوية — فشل أي وحدة ما يمنع عرض الطلبات
       if(summary && !summary._err && checkAuth(summary)) renderAppStats(summary);
@@ -2132,6 +2757,7 @@
       if(custData && !custData._err && Array.isArray(custData)){
         allCustomers = custData;
         renderCustomersTable(allCustomers, document.getElementById("customerSearch").value);
+        renderDormant();
       }
       if(revData && !revData._err && checkAuth(revData)) renderReviews(revData);
 
