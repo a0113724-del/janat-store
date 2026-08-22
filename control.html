@@ -702,6 +702,12 @@
       <div class="rank-list" id="deadStock"></div>
       <p class="note-line" id="sellNote"></p>
 
+      <!-- نتيجة عرض الباركود -->
+      <div class="section-h">📷 عرض الباركود</div>
+      <div class="stats-row" id="promoStatsRow"></div>
+      <div class="rank-list" id="promoLog"></div>
+      <p class="note-line" id="promoNote"></p>
+
       <!-- صافي الربح -->
       <div class="section-h">💰 صافي الربح</div>
       <div id="profitBox"></div>
@@ -1367,6 +1373,43 @@
     costsDirty = false;
   }
 
+  /* ═══════════ نتيجة عرض الباركود ═══════════ */
+  async function loadPromoStats(){
+    const row = document.getElementById("promoStatsRow");
+    const log = document.getElementById("promoLog");
+    const note = document.getElementById("promoNote");
+    if(!row) return;
+    try{
+      const d = await fetchJson(adminUrl("?promoStats=1"), "عرض الباركود");
+      if(!checkAuth(d)) return;
+      const items = (d && d.items) || [];
+      const count = Number(d.count) || 0;
+      row.innerHTML = [
+        { lbl:"عدد اللي استفادوا", val: count },
+        { lbl:"كلفة العرض", val: money(d.total) },
+        { lbl:"معدّل الخصم", val: count ? money((Number(d.total)||0) / count) : "—" }
+      ].map(s=>`<div class="stat-card"><div class="lbl">${s.lbl}</div><div class="val">${s.val}</div></div>`).join("");
+      log.innerHTML = items.length
+        ? items.map((u,i)=>{
+            const c = allCustomers.find(x=> normalizePhone(x.phone) === normalizePhone(u.phone));
+            const when = u.at ? new Date(u.at).toLocaleDateString('ar-IQ',{day:'numeric',month:'short'}) : "—";
+            return `<div class="rank-row">
+              <span class="num">${i+1}</span>
+              <span class="nm">${esc((c && c.name) || showPhone(u.phone))}
+                <small>${esc(showPhone(u.phone))} · طلب #${esc(u.seqNo)} · ${esc(when)}</small></span>
+              <span class="qt">−${money(u.amount)}</span>
+            </div>`;
+          }).join("")
+        : `<div class="rank-row"><span class="nm">لسه ما استفاد أحد من العرض</span></div>`;
+      note.className = "note-line";
+      note.textContent = "كل رقم هاتف مرة وحدة بس — تبديل الجهاز أو مسح بيانات المتصفح ما ينفع. " +
+                         "تشغيل العرض وقيمته وحده الأدنى من تبويب ⚙️ إعدادات.";
+    }catch(e){
+      note.className = "note-line";
+      note.textContent = "⏳ ما وصلت بيانات العرض — تأكد إنك نشرت آخر نسخة من apps-script.gs.";
+    }
+  }
+
   /* ═══════════ ساعات الذروة ═══════════ */
   function renderHours(hours){
     const box = document.getElementById("hoursChart");
@@ -1799,7 +1842,7 @@
       if(btn.dataset.view === "reviews") document.getElementById("reviewsDot").classList.remove("show");
       // التقويم يتحمّل أول ما يفتح التبويب مو مع تحميل اللوحة — طلب
       // زيادة ما نحتاجه إذا صاحب المحل ما دخل التقارير أصلاً
-      if(btn.dataset.view === "reports" && !calMonth) loadCalMonth();
+      if(btn.dataset.view === "reports" && !calMonth){ loadCalMonth(); loadPromoStats(); }
     });
   });
 

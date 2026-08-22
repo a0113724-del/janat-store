@@ -624,6 +624,30 @@
   html.dark .today-bar .inner .sub{ color:#9a9a90; }
 
   /* ---------- بوابة التثبيت ---------- */
+  /* ---------- بشارة عرض الباركود ---------- */
+  #promoBox{
+    position:fixed; inset:0; z-index:340; display:none;
+    align-items:center; justify-content:center; padding:22px;
+    background:rgba(10,26,17,.72);
+  }
+  #promoBox.show{ display:flex; }
+  .pb-card{
+    background:#fff; border-radius:22px; padding:30px 24px 24px;
+    max-width:360px; width:100%; text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);
+    animation:pb-pop .42s cubic-bezier(.2,1.2,.3,1) both;
+  }
+  @keyframes pb-pop{ from{ transform:scale(.82); opacity:0; } to{ transform:scale(1); opacity:1; } }
+  .pb-ic{ font-size:3.2rem; line-height:1; margin-bottom:10px; }
+  .pb-card h3{ font-size:1.35rem; color:#153122; margin-bottom:10px; font-weight:900; }
+  .pb-card p{ font-size:.88rem; color:#5a5a4c; line-height:1.9; margin-bottom:20px; }
+  .pb-card button{
+    width:100%; background:#3E7A44; color:#fff; border:none;
+    padding:14px; border-radius:14px; font-family:inherit;
+    font-weight:800; font-size:.95rem; cursor:pointer;
+  }
+  @media (prefers-reduced-motion: reduce){ .pb-card{ animation:none; } }
+
   #installGate{
     position:fixed; inset:0; z-index:320; display:none;
     align-items:center; justify-content:center; padding:20px;
@@ -1487,6 +1511,16 @@
     <button class="go-btn" id="openCheckout" disabled>🧺 إتمام الطلب</button>
   </div>
 
+  <!-- ========= بشارة عرض الباركود ========= -->
+  <div id="promoBox">
+    <div class="pb-card">
+      <div class="pb-ic" id="promoIc">🎉</div>
+      <h3 id="promoTtl">ربحت خصم!</h3>
+      <p id="promoTxt"></p>
+      <button type="button" id="promoOk">تمام، أشوف الأسعار</button>
+    </div>
+  </div>
+
   <!-- ========= بوابة التثبيت (تطلع للي يدخل من الباركود) ========= -->
   <div id="installGate">
     <div class="ig-box">
@@ -1663,6 +1697,9 @@
       </div>
       <div class="total-row discount-row" id="discountRow" style="display:none;">
         <span>خصم النقاط</span><span id="discountVal">- 0 د.ع</span>
+      </div>
+      <div class="total-row discount-row" id="promoRow" style="display:none;">
+        <span>📷 خصم الباركود</span><span id="promoVal">- 0 د.ع</span>
       </div>
       <div class="total-row fee-row" id="deliveryRow">
         <span>أجرة التوصيل</span><span id="deliveryVal">0 د.ع</span>
@@ -1867,6 +1904,81 @@
       }
     }catch(e){}
   })();
+
+  /* ---------- عرض الباركود: التقاط ?promo= من الرابط ----------
+   *
+   * الباركود يفتح الرابط ومعاه رمز العرض. نمسك الرمز ونسأل السيرفر
+   * عن حالته لهذا الرقم — إذا الزبون معروف عدنا رقمه، نكلّه الحقيقة
+   * من أول لحظة: إما "ربحت" أو "استفدت من قبل". أهون من إنه يفرح
+   * ويوصل للسلة ويتفاجأ إن ماكو خصم.
+   */
+  function capturePromo(){
+    let asked = "";
+    try{ asked = (new URLSearchParams(location.search).get("promo") || "").trim().toUpperCase(); }
+    catch(e){ return; }
+
+    const held = promoHeld();
+    if(!asked && !held) return;                     // ماكو شي نسويه
+    if(asked && asked !== PROMO_CODE) return;       // رمز مو مالنا
+
+    if(asked && !held){
+      try{ localStorage.setItem(PROMO_KEY, JSON.stringify({ code: PROMO_CODE, at: Date.now() })); }
+      catch(e){}
+    }
+
+    // نسأل السيرفر: العرض شغّال؟ وهذا الرقم استفاد؟
+    let phone = "";
+    try{ phone = localStorage.getItem("janat-my-phone") || ""; }catch(e){}
+    const url = GOOGLE_SCRIPT_URL + "?promoCheck=" + PROMO_CODE +
+                (phone ? "&phone=" + encodeURIComponent(phone) : "");
+    fetch(url, { cache: "no-store" })
+      .then(r=> r.json())
+      .then(d=>{
+        promoState = d || null;
+        if(typeof updateCartUI === "function") updateCartUI();
+        if(asked) showPromoBox(d);
+      })
+      .catch(()=>{
+        // ما وصل رد — ما نفرّحه بشي ما نعرف إذا إله. نخليه يشوف عند السلة
+        promoState = null;
+        if(asked) showPromoBox(null);
+      });
+  }
+
+  (function wirePromoBox(){
+    const ok = document.getElementById("promoOk");
+    const box = document.getElementById("promoBox");
+    if(!ok || !box) return;
+    ok.addEventListener("click", ()=> box.classList.remove("show"));
+    box.addEventListener("click", (e)=>{ if(e.target === box) box.classList.remove("show"); });
+  })();
+
+  function showPromoBox(d){
+    const box = document.getElementById("promoBox");
+    if(!box) return;
+    const ic = document.getElementById("promoIc");
+    const ttl = document.getElementById("promoTtl");
+    const txt = document.getElementById("promoTxt");
+
+    if(!d || !d.on){
+      ic.textContent = "📷"; ttl.textContent = "العرض مو شغّال هسه";
+      txt.textContent = "العرض موقّف مؤقتاً — بس أهلاً وسهلاً بيك، تفضّل شوف أسعارنا.";
+    }else if(d.used){
+      // ما نكذب عليه ولا نخليه ينتظر خصم ما راح يجي
+      ic.textContent = "✅"; ttl.textContent = "استفدت من هذا العرض من قبل";
+      txt.textContent = "خصم الباركود مرة وحدة لكل رقم. بس عدك نقاط تجمعها مع كل طلب وتنخصم من حسابك.";
+      try{ localStorage.removeItem(PROMO_KEY); }catch(e){}
+    }else{
+      const amt = Number(d.amount) || 0;
+      const min = Number(d.minOrder) || 0;
+      ic.textContent = "🎉"; ttl.textContent = `ربحت خصم ${money(amt)}!`;
+      txt.textContent =
+        (min ? `الخصم ينطبّق على طلب من ${money(min)} فما فوق. ` : "") +
+        "ينخصم لحاله عند تأكيد الطلب — ما تحتاج تسوي شي. " +
+        "(بدل التوصيل المجاني لأول طلب، مو معاه.)";
+    }
+    box.classList.add("show");
+  }
 
   // ---------- APPROXIMATE LOCATION (city-level, via IP — no permission popup) ----------
   // ملاحظة: هذا تقريبي بحدود المدينة اعتماداً على شركة الإنترنت، وليس دقيقاً
@@ -2450,8 +2562,42 @@
     if(!STORE.firstOrderFreeDelivery) return false;
     return firstOrderVerified === true;
   }
+  /* ═══════════ عرض «امسح الباركود» ═══════════
+   *
+   * ⚠️ كل اللي هنا عرض بس. الجهاز ما يقرر ولا دينار — القرار كله
+   * بالسيرفر لأنه هو الوحيد اللي يعرف إذا هذا الرقم استفاد من قبل.
+   * لو خلّينا الجهاز يقرر، مسح بيانات المتصفح أو نافذة خفية يرجّع
+   * الخصم من جديد كل مرة.
+   */
+  const PROMO_CODE = "SCAN1000";           // ⚠️ نفسه بـapps-script.gs وبالباركود
+  const PROMO_KEY  = "janat-promo";        // { code, at }
+  const PROMO_USED_KEY = "janat-promo-used";
+  let promoState = null;                   // { on, amount, minOrder, used }
+
+  function promoHeld(){
+    try{
+      const raw = localStorage.getItem(PROMO_KEY);
+      if(!raw) return null;
+      const o = JSON.parse(raw);
+      return o && o.code === PROMO_CODE ? o : null;
+    }catch(e){ return null; }
+  }
+  // الخصم اللي *نتوقعه* — للعرض بس، والسيرفر يثبّته أو يلغيه
+  function promoPreviewFor(subtotal){
+    if(!promoHeld()) return 0;
+    if(!promoState || !promoState.on || promoState.used) return 0;
+    if(subtotal < (Number(promoState.minOrder) || 0)) return 0;
+    const pts = pointsDiscountFor(subtotal);
+    return Math.max(0, Math.min(Number(promoState.amount) || 0, subtotal - pts));
+  }
+
   function deliveryFeeFor(subtotal){
     if(subtotal <= 0) return 0;
+    // العرضين ما ينجمعون: ماخذ خصم الباركود؟ التوصيل ينتحسب عادي
+    if(promoPreviewFor(subtotal) > 0) {
+      if(STORE.freeDeliveryOver && subtotal >= STORE.freeDeliveryOver) return 0;
+      return STORE.deliveryFee;
+    }
     if(isFirstOrderFreeDelivery()) return 0;
     if(STORE.freeDeliveryOver && subtotal >= STORE.freeDeliveryOver) return 0;
     return STORE.deliveryFee;
@@ -2484,7 +2630,7 @@
   }
   function finalTotal(){
     const base = cartTotal();
-    return Math.max(0, base - pointsDiscountFor(base)) + deliveryFeeFor(base);
+    return Math.max(0, base - pointsDiscountFor(base) - promoPreviewFor(base)) + deliveryFeeFor(base);
   }
 
   function updateCartUI(){
@@ -2520,6 +2666,14 @@
       discountRow.style.display = "none";
     }
 
+    const promoRow = document.getElementById("promoRow");
+    const promoVal = document.getElementById("promoVal");
+    const promoAmt = promoPreviewFor(total);
+    if(promoRow && promoVal){
+      promoRow.style.display = promoAmt > 0 ? "flex" : "none";
+      promoVal.textContent = "- " + money(promoAmt);
+    }
+
     const deliveryRow = document.getElementById("deliveryRow");
     const deliveryVal = document.getElementById("deliveryVal");
     if(deliveryRow && deliveryVal){
@@ -2535,8 +2689,13 @@
     const hint = document.getElementById("orderHint");
     if(hint){
       let t = "";
+      const pMin = promoState && promoState.on && !promoState.used && promoHeld()
+        ? (Number(promoState.minOrder) || 0) : 0;
       if(STORE.minOrderTotal && total > 0 && total < STORE.minOrderTotal){
         t = `🧺 أقل مجموع للطلب ${money(STORE.minOrderTotal)} — باقي ${money(STORE.minOrderTotal - total)}`;
+      }else if(pMin && total > 0 && total < pMin){
+        // نكلّه شكد باقي حتى يفتح خصم الباركود بدل ما يوصل للسلة ويتفاجأ
+        t = `📷 أضف ${money(pMin - total)} ويشتغل خصم الباركود ${money(promoState.amount)}`;
       }else if(fee > 0 && STORE.freeDeliveryOver && total < STORE.freeDeliveryOver){
         t = `🚴 أضف ${money(STORE.freeDeliveryOver - total)} وياخذ طلبك توصيل مجاني`;
       }
@@ -2836,9 +2995,12 @@
       // الأجرة صفر والمجموع فوق حد الإعفاء؟ يعني مجاني بسبب المجموع.
       // غير هيچ، المجاني سببه إنه أول طلب.
       const freeByTotal = STORE.freeDeliveryOver && sub >= STORE.freeDeliveryOver;
-      if(sub > 0 && fee === 0 && !freeByTotal) s += `\n🎁 هذا أول طلب — التوصيل مجاني\n`;
+      if(sub > 0 && fee === 0 && !freeByTotal && !(Number(t.promoDiscount) > 0))
+        s += `\n🎁 هذا أول طلب — التوصيل مجاني\n`;
       s += `\nمجموع المنتجات: ${money(sub)}`;
       if(disc > 0) s += `\n⭐ خصم النقاط (${used} نقطة): - ${money(disc)}`;
+      const promo = Number(t.promoDiscount) || 0;
+      if(promo > 0) s += `\n📷 خصم الباركود: - ${money(promo)}`;
       const feeText = sub <= 0 ? "تُحدد عند تأكيد الطلب"
         : (fee === 0 ? (freeByTotal ? "مجاني" : "مجاني (أول طلب 🎁)") : money(fee));
       s += `\n🚴 أجرة التوصيل: ${feeText}`;
@@ -2848,7 +3010,8 @@
     };
 
     const localTotals = { subtotal, deliveryFee, total: finalTotal(),
-                          pointsUsed: pointsUsedCount, pointsDiscount };
+                          pointsUsed: pointsUsedCount, pointsDiscount,
+                          promoDiscount: promoPreviewFor(subtotal) };
 
     // الذيل ثابت ما يتغيّر بأرقام السيرفر، فنخزنه لحاله حتى نعيد التركيب
     let msgTail = "";
@@ -2934,7 +3097,9 @@
             pointsUsed: pointsUsedCount,
             notes,
             firstOrder: isFirstOrder,
-            referralPhone: referredByPhone
+            referralPhone: referredByPhone,
+            // مجرد طلب — السيرفر هو اللي يقرر إذا يستاهل وبكم
+            promo: promoHeld() ? PROMO_CODE : ""
         }));
         try{
           const data = await res.json();
@@ -2963,8 +3128,20 @@
                 deliveryFee: data.deliveryFee,
                 total: data.total,
                 pointsUsed: data.pointsUsed,
-                pointsDiscount: (Number(data.pointsUsed) || 0) / 10 * IQD_PER_10_POINTS
+                pointsDiscount: (Number(data.pointsUsed) || 0) / 10 * IQD_PER_10_POINTS,
+                promoDiscount: Number(data.promoDiscount) || 0
               }) + msgTail;
+
+              // ⚠️ ما نأشّر «انصرف» إلا لمن السيرفر يكلنا إنه انصرف فعلاً.
+              // لو أشّرناه بمجرد إرسال الطلب، أي طلب فشل چان ضيّع على
+              // الزبون خصمه.
+              if(Number(data.promoDiscount) > 0){
+                try{
+                  localStorage.removeItem(PROMO_KEY);
+                  localStorage.setItem(PROMO_USED_KEY, String(data.promoDiscount));
+                }catch(e){}
+                if(promoState) promoState.used = true;
+              }
             }
           }
         }catch(parseErr){
@@ -4267,6 +4444,8 @@
     restoreCart();          // ترجع سلة الزبون لو سكّر التطبيق قبل ما يكمّل
     renderGrids();
     updateCartUI();
+    // بعد updateCartUI — يحتاج ثوابت العرض اللي تنعرّف بأسفل الكتلة
+    capturePromo();
     updateCountdown();
     updateStoreStatus();
     setInterval(updateStoreStatus, 60000);

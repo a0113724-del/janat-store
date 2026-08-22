@@ -101,8 +101,19 @@ const DEFAULT_SETTINGS = {
   firstOrderFreeDelivery: true,
   // تقريب الفلوس لأقرب مضاعف — 250 لأن أصغر ورقة بالعراق 250 دينار.
   // لازم يطابق نفس الرقم بـ index.html وإلا كل طلب ينتفلگ بعلامة حمراء.
-  roundTo: 250
+  roundTo: 250,
+
+  // ═══ عرض «امسح الباركود» ═══
+  // scanPromoMin أهم رقم بالعرض: بدونه أي واحد يطلب بـ1,000 دينار
+  // وياخذ 1,000 خصم — بضاعة ببلاش. الحد الأدنى يخلي الخصم دعاية
+  // مو خسارة.
+  scanPromoOn: false,
+  scanPromoAmount: 1000,
+  scanPromoMin: 5000
 };
+
+// رمز العرض — نفسه بالباركود وبـindex.html
+const SCAN_PROMO_CODE = "SCAN1000";
 
 /** يقرّب المبلغ لأقرب مضاعف قابل للدفع (250 افتراضياً) */
 function roundMoneyTo(n, step) {
@@ -402,6 +413,47 @@ function getCustomerDevicesSheet() {
 }
 
 /**
+ * ورقة Promos: سجل مين استفاد من عرض الباركود.
+ *
+ * ⚠️ هذي الورقة هي القفل الوحيد للعرض. أي قفل بجهاز الزبون (localStorage
+ * أو رقم الجهاز) ينكسر بمسح بيانات المتصفح أو بنافذة خفية أو بحذف
+ * التطبيق وتنصيبه — ثواني وياخذ الخصم مرة ثانية. الرقم هو الهوية
+ * الوحيدة اللي عندنا وما تنمسح، فالخصم ينصرف على الرقم مو على الجهاز.
+ *
+ * والكتابة تصير جوّه نفس القفل (LockService) اللي يسجّل الطلب، يعني
+ * طلبين بنفس اللحظة ما ياخذون الخصم مرتين.
+ */
+function getPromosSheet() {
+  const ss = ss_();
+  let sheet = ss.getSheetByName("Promos");
+  if (!sheet) sheet = ss.insertSheet("Promos");
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["التاريخ", "الهاتف", "الرمز", "المبلغ", "رقم الطلب", "رقم الجهاز"]);
+  }
+  forceTextColumn(sheet, 2);
+  return sheet;
+}
+const PCOL_AT = 1, PCOL_PHONE = 2, PCOL_CODE = 3, PCOL_AMOUNT = 4,
+      PCOL_SEQ = 5, PCOL_DEVICE = 6, PROMOS_NUM_COLS = 6;
+
+/** هل هذا الرقم استفاد من هذا العرض من قبل؟ */
+function promoUsedBy(phone, code) {
+  const p = normalizePhone(phone);
+  if (!p) return true;                       // بلا رقم ما نعرف منو، فما نعطي
+  const sheet = getPromosSheet();
+  const last = sheet.getLastRow();
+  if (last < 2) return false;
+  const rows = sheet.getRange(2, 1, last - 1, PROMOS_NUM_COLS).getValues();
+  for (let i = 0; i < rows.length; i++) {
+    if (normalizePhone(rows[i][PCOL_PHONE - 1]) === p &&
+        String(rows[i][PCOL_CODE - 1]).trim().toUpperCase() === String(code).trim().toUpperCase()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * ورقة Costs: سعر شراء كل منتج — يدخل بحساب صافي الربح.
  *
  * ⚠️ ليش هنا ومو بـproducts.json؟ لأن products.json ملف عام على
@@ -604,6 +656,7 @@ function telegramOrderText(o) {
   L.push("");
   L.push("المجموع الفرعي: " + o.subtotal + " د.ع");
   L.push("رسوم التوصيل: " + (Number(o.fee) === 0 ? "مجاني 🎁" : o.fee + " د.ع"));
+  if (Number(o.promoDiscount) > 0) L.push("📷 خصم الباركود: −" + o.promoDiscount + " د.ع");
   L.push("<b>الإجمالي: " + o.total + " د.ع</b>");
   if (o.firstOrder) { L.push(""); L.push("🎁 أول طلب لهذا الزبون"); }
   if (o.notes) { L.push(""); L.push("📝 " + tgEsc(o.notes)); }
@@ -1404,9 +1457,38 @@ function doPost(e) {
         flags.push("نقاط مرفوضة: طلب " + requestedPoints + " / رصيده " + balance);
       }
 
+      /* ═══ عرض «امسح الباركود» ═══
+       *
+       * الزبون يمسح الباركود فيوصله رمز العرض. الرمز نفسه ما يسوّي شي —
+       * هو مجرد طلب، والقرار كله هنا:
+       *   ١) العرض مفعّل بالإعدادات؟
+       *   ٢) السلة توصل الحد الأدنى؟ (بدونه بضاعة ببلاش)
+       *   ٣) هذا الرقم ما استفاد من قبل؟
+       *   ٤) الخصم ما يتجاوز قيمة البضاعة الباقية بعد خصم النقاط
+       *      (حتى ما يصير المتجر يرجّع فلوس)
+       * وإذا انطبّق، التوصيل المجاني لأول طلب ينشال — واحد بس مو الاثنين.
+       */
+      const promoSettings = getStoreSettings();
+      const wantsPromo = String(data.promo || "").trim().toUpperCase() === SCAN_PROMO_CODE;
+      let promoDiscount = 0;
+      let promoReason = "";
+      if (wantsPromo) {
+        const on = !!promoSettings.scanPromoOn;
+        const minOrder = Number(promoSettings.scanPromoMin) || 0;
+        if (!on) promoReason = "العرض موقّف";
+        else if (subtotal < minOrder) promoReason = "السلة أقل من " + minOrder;
+        else if (promoUsedBy(phone, SCAN_PROMO_CODE)) promoReason = "الرقم استفاد من قبل";
+        else {
+          const want = Math.max(0, Number(promoSettings.scanPromoAmount) || 0);
+          promoDiscount = Math.min(want, Math.max(0, subtotal - discount));
+          if (promoDiscount <= 0) promoReason = "ما بقى شي بالسلة للخصم";
+        }
+      }
+
       // ═══ رسوم التوصيل والمجموع النهائي ═══
-      const serverFee = computeDeliveryFee(subtotal, isGenuinelyFirstOrder);
-      const total = Math.max(0, subtotal + serverFee - discount);
+      // خصم الباركود يلغي التوصيل المجاني لأول طلب — العرضين ما ينجمعون
+      const serverFee = computeDeliveryFee(subtotal, isGenuinelyFirstOrder && promoDiscount <= 0);
+      const total = Math.max(0, subtotal + serverFee - discount - promoDiscount);
 
       // الواجهة تعرف "أول طلب" من checkPhone اللي ينتظر 600ms بعد ما يكتب
       // رقمه — لو ضغط تأكيد بسرعة، تحسب رسوم والسيرفر يعرف إنها مجانية.
@@ -1444,6 +1526,14 @@ function doPost(e) {
       if (pointsUsed > 0) {
         addPointsToCustomer(customersSheet, phone, data.name || "", -pointsUsed, 0,
           "خصم نقاط على طلب #" + seqNo);
+      }
+
+      // نسجّل استهلاك العرض جوّه نفس القفل — لو انكتب بعد فك القفل،
+      // طلبين بنفس الثانية ياخذون الخصم مرتين
+      if (promoDiscount > 0) {
+        getPromosSheet().appendRow([
+          new Date(), phone, SCAN_PROMO_CODE, promoDiscount, seqNo, data.visitorId || ""
+        ]);
       }
 
       ordersSheet.appendRow([
@@ -1494,6 +1584,7 @@ function doPost(e) {
         notes: data.notes || "",
         subtotal: subtotal,
         fee: serverFee,
+        promoDiscount: promoDiscount,
         total: total,
         seqNo: seqNo,
         firstOrder: isGenuinelyFirstOrder,
@@ -1510,6 +1601,8 @@ function doPost(e) {
         deliveryFee: serverFee,
         pointsUsed: pointsUsed,
         discount: discount,
+        promoDiscount: promoDiscount,
+        promoReason: promoReason,
         total: total,
         firstOrder: isGenuinelyFirstOrder,
         pointsBalance: Math.max(0, balance - pointsUsed + pointsEarned)
@@ -1755,6 +1848,44 @@ function doGet(e) {
       onlineWindowMinutes: ONLINE_WINDOW_MINUTES,
       users: users.slice(0, 200)
     });
+  }
+
+  /* حالة عرض الباركود لرقم معيّن — حتى التطبيق يكلّه الحقيقة من أول
+   * لحظة بدل ما يفرح ويتفاجأ بالحساب. مفتوح بلا مفتاح إدارة لأن
+   * الزبون نفسه ينادي عليه، وما يرجّع غير نعم/لا لرقمه هو. */
+  if (e.parameter.promoCheck) {
+    const s = getStoreSettings();
+    const code = String(e.parameter.promoCheck).trim().toUpperCase();
+    const phone = normalizePhone(e.parameter.phone);
+    const on = !!s.scanPromoOn && code === SCAN_PROMO_CODE;
+    return jsonOut({
+      on: on,
+      amount: on ? (Number(s.scanPromoAmount) || 0) : 0,
+      minOrder: Number(s.scanPromoMin) || 0,
+      // بلا رقم ما نگدر نجاوب — نخليها "لسه" مو "خلصت"
+      used: on && phone ? promoUsedBy(phone, code) : false,
+      known: !!phone
+    });
+  }
+
+  // نتيجة عرض الباركود — كم واحد استفاد وشكد كلّف
+  if (e.parameter.promoStats) {
+    if (!isAuthorized(adminKey)) return denied();
+    const sheet = getPromosSheet();
+    const last = sheet.getLastRow();
+    if (last < 2) return jsonOut({ count: 0, total: 0, items: [] });
+    const rows = sheet.getRange(2, 1, last - 1, PROMOS_NUM_COLS).getValues();
+    let total = 0;
+    const items = rows.map(function (r) {
+      total += Number(r[PCOL_AMOUNT - 1]) || 0;
+      return {
+        at: r[PCOL_AT - 1],
+        phone: String(r[PCOL_PHONE - 1] || ""),
+        amount: Number(r[PCOL_AMOUNT - 1]) || 0,
+        seqNo: r[PCOL_SEQ - 1]
+      };
+    }).reverse().slice(0, 60);
+    return jsonOut({ count: rows.length, total: total, items: items });
   }
 
   // أسعار الشراء — سرّية، ما تنزل بأي ملف عام

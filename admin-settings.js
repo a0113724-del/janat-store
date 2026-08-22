@@ -26,7 +26,10 @@
     requireNotifications: false,
     requireInstall: false,
     promoText: "🚴 التوصيل الأول مجاني لكل زبون جديد!",
-    announcement: ""
+    announcement: "",
+    scanPromoOn: false,
+    scanPromoAmount: 1000,
+    scanPromoMin: 5000
   };
 
   let settings = Object.assign({}, DEFAULTS);
@@ -114,6 +117,30 @@
           <input type="checkbox" id="setFirstFree">
           <span>🎁 التوصيل الأول مجاني لكل زبون جديد — يُلغى تلقائياً لأي زبون موجود بالسستم</span>
         </label>
+      </div>
+
+      <div class="set-card">
+        <h3>📷 عرض «امسح الباركود»</h3>
+        <div class="note">
+          الزبون يمسح الباركود فيوصله خصم — مرة وحدة لكل رقم هاتف مهما بدّل جهازه
+          أو مسح بيانات متصفحه. وياخذ الخصم <b>بدل</b> التوصيل المجاني لأول طلب، مو معاه.
+        </div>
+        <label class="set-check">
+          <input type="checkbox" id="setScanPromoOn">
+          <span>📷 شغّل عرض الباركود</span>
+        </label>
+        <div class="set-field">
+          <label>قيمة الخصم</label>
+          <input type="number" id="setScanPromoAmount" min="0" step="250">
+        </div>
+        <div class="set-field">
+          <label>أقل مجموع سلة يشتغل بيه الخصم</label>
+          <input type="number" id="setScanPromoMin" min="0" step="500">
+          <div class="sub">
+            ⚠️ خلّيه فوق قيمة الخصم بمرّات. لو خلّيته 0، أي واحد يطلب بقيمة الخصم
+            وياخذ بضاعته ببلاش.
+          </div>
+        </div>
       </div>
 
       <div class="set-card">
@@ -252,6 +279,9 @@
     document.getElementById("setClosedMsg").value = settings.closedMessage || "";
     document.getElementById("setPromoText").value = settings.promoText || "";
     document.getElementById("setAnnouncement").value = settings.announcement || "";
+    document.getElementById("setScanPromoOn").checked = !!settings.scanPromoOn;
+    document.getElementById("setScanPromoAmount").value = settings.scanPromoAmount ?? 1000;
+    document.getElementById("setScanPromoMin").value = settings.scanPromoMin ?? 5000;
 
     document.querySelectorAll(".set-presets button").forEach(b => {
       b.classList.toggle("on", Number(b.dataset.fee) === Number(settings.deliveryFee));
@@ -278,6 +308,9 @@
     settings.closedMessage = document.getElementById("setClosedMsg").value.trim();
     settings.promoText = document.getElementById("setPromoText").value.trim();
     settings.announcement = document.getElementById("setAnnouncement").value.trim();
+    settings.scanPromoOn = document.getElementById("setScanPromoOn").checked;
+    settings.scanPromoAmount = num("setScanPromoAmount");
+    settings.scanPromoMin = num("setScanPromoMin");
     document.querySelectorAll(".set-presets button").forEach(b => {
       b.classList.toggle("on", Number(b.dataset.fee) === Number(settings.deliveryFee));
     });
