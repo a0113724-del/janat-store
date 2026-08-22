@@ -149,7 +149,12 @@
     "image": "images/oniony-1785118290445.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 11
+    "order": 11,
+    "onSale": true,
+    "bundle": {
+      "qty": 3,
+      "price": 2000
+    }
   },
   {
     "id": "onionh",
@@ -187,7 +192,7 @@
   {
     "id": "bamia",
     "name": "بانيه (بامية)",
-    "price": 3000,
+    "price": 2700,
     "cat": "veg",
     "emoji": "🌿",
     "image": "images/bamia-1785118344047.jpg",
@@ -290,7 +295,7 @@
   {
     "id": "kojar",
     "name": "كوجه حمراء",
-    "price": 1500,
+    "price": 1250,
     "cat": "fruit",
     "emoji": "🔴",
     "image": "images/kojar-1786410953669.jpg",
@@ -303,7 +308,7 @@
   {
     "id": "kojay",
     "name": "كوجه صفراء",
-    "price": 1500,
+    "price": 1000,
     "cat": "fruit",
     "emoji": "🟡",
     "image": "images/kojay-1786410719479.jpg",
@@ -375,7 +380,7 @@
   {
     "id": "lemon",
     "name": "ليمون",
-    "price": 2000,
+    "price": 1750,
     "cat": "fruit",
     "emoji": "🍋",
     "image": "images/lemon-1785118635914.jpg",
@@ -386,7 +391,7 @@
   {
     "id": "apricot",
     "name": "مشمش",
-    "price": 2500,
+    "price": 2400,
     "cat": "fruit",
     "emoji": "🟠",
     "image": "images/apricot-1785118658898.jpg",
@@ -432,7 +437,7 @@
   {
     "id": "dates",
     "name": "تمر",
-    "price": 2500,
+    "price": 1750,
     "cat": "fruit",
     "emoji": "🌴",
     "image": "images/dates-1786410481883.jpg",
@@ -443,7 +448,7 @@
   {
     "id": "p1786409740968",
     "name": "رمان مصري ",
-    "price": 1500,
+    "price": 1000,
     "cat": "fruit",
     "unit": "كغم",
     "emoji": "🥬",
@@ -454,7 +459,7 @@
   {
     "id": "p1786409743164",
     "name": "رمان يمني ",
-    "price": 4000,
+    "price": 3000,
     "cat": "fruit",
     "unit": "كغم",
     "emoji": "🥬",
@@ -462,12 +467,16 @@
     "visible": true,
     "order": 40,
     "onSale": true,
-    "oldPrice": 5000
+    "oldPrice": 5000,
+    "bundle": {
+      "qty": 2,
+      "price": 5000
+    }
   },
   {
     "id": "p1786410724425",
     "name": "عنب اسود ",
-    "price": 1500,
+    "price": 1250,
     "cat": "fruit",
     "unit": "كغم",
     "emoji": "🥬",
