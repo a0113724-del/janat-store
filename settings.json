@@ -8,12 +8,12 @@
   "manualClosed": false,
   "closedMessage": "مغلق للصيانه",
   "pointsPerOrder": 2,
-  "roundTo": 250,
+  "roundTo": 0,
   "requireNotifications": false,
   "requireInstall": false,
   "promoText": "🚴 التوصيل الأول مجاني لكل زبون جديد!",
   "announcement": "",
-  "scanPromoOn": false,
+  "scanPromoOn": true,
   "scanPromoAmount": 1000,
   "scanPromoMin": 5000
 }
