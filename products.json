@@ -458,7 +458,9 @@
     "emoji": "🥬",
     "image": "images/p1786409740968-1786409982391.jpg",
     "visible": true,
-    "order": 39
+    "order": 39,
+    "onSale": true,
+    "oldPrice": 1500
   },
   {
     "id": "p1786409743164",
@@ -486,6 +488,8 @@
     "emoji": "🥬",
     "image": "images/p1786410724425-1786410742792.jpg",
     "visible": true,
-    "order": 41
+    "order": 41,
+    "onSale": true,
+    "oldPrice": 1500
   }
 ]
