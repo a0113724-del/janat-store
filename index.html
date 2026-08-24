@@ -2618,12 +2618,21 @@
     return !!promoHeld() && !!promoState && !!promoState.on && !promoState.used;
   }
 
+  // الرمز ما يبقى بالجهاز للأبد. لو بقى، واحد مسح قبل شهرين ينفتحله
+  // الخصم بأي وقت — والعرض المفتوح بلا نهاية يصير كلفة دائمة.
+  const PROMO_TTL_DAYS = 30;
   function promoHeld(){
     try{
       const raw = localStorage.getItem(PROMO_KEY);
       if(!raw) return null;
       const o = JSON.parse(raw);
-      return o && o.code === PROMO_CODE ? o : null;
+      if(!o || o.code !== PROMO_CODE) return null;
+      const age = Date.now() - (Number(o.at) || 0);
+      if(age > PROMO_TTL_DAYS * 86400000){
+        try{ localStorage.removeItem(PROMO_KEY); }catch(e){}
+        return null;
+      }
+      return o;
     }catch(e){ return null; }
   }
   // الخصم اللي *نتوقعه* — للعرض بس، والسيرفر يثبّته أو يلغيه

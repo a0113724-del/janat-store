@@ -29,7 +29,9 @@
     announcement: "",
     scanPromoOn: false,
     scanPromoAmount: 2000,
-    scanPromoMin: 10000
+    scanPromoMin: 10000,
+    scanPromoMax: 0,
+    scanPromoEnds: ""
   };
 
   let settings = Object.assign({}, DEFAULTS);
@@ -140,6 +142,20 @@
             ⚠️ خلّيه فوق قيمة الخصم بمرّات. لو خلّيته 0، أي واحد يطلب بقيمة الخصم
             وياخذ بضاعته ببلاش.
           </div>
+        </div>
+        <div class="set-field">
+          <label>سقف عدد المستفيدين</label>
+          <input type="number" id="setScanPromoMax" min="0" step="10">
+          <div class="sub">
+            ⚠️ <b>أهم مكبح</b>. الرابط ينمشي بالواتساب، فأي واحد يوصله ياخذ الخصم
+            حتى لو ما شاف البوستر. السقف يحدّد خسارتك برقم تعرفه من الأول.
+            <b>0 = بلا سقف</b>.
+          </div>
+        </div>
+        <div class="set-field">
+          <label>آخر يوم بالعرض</label>
+          <input type="date" id="setScanPromoEnds">
+          <div class="sub">بعد هذا اليوم يوقف لحاله. اتركه فاضي = بلا نهاية.</div>
         </div>
       </div>
 
@@ -282,6 +298,8 @@
     document.getElementById("setScanPromoOn").checked = !!settings.scanPromoOn;
     document.getElementById("setScanPromoAmount").value = settings.scanPromoAmount ?? 2000;
     document.getElementById("setScanPromoMin").value = settings.scanPromoMin ?? 10000;
+    document.getElementById("setScanPromoMax").value = settings.scanPromoMax ?? 0;
+    document.getElementById("setScanPromoEnds").value = settings.scanPromoEnds || "";
 
     document.querySelectorAll(".set-presets button").forEach(b => {
       b.classList.toggle("on", Number(b.dataset.fee) === Number(settings.deliveryFee));
@@ -311,6 +329,8 @@
     settings.scanPromoOn = document.getElementById("setScanPromoOn").checked;
     settings.scanPromoAmount = num("setScanPromoAmount");
     settings.scanPromoMin = num("setScanPromoMin");
+    settings.scanPromoMax = num("setScanPromoMax");
+    settings.scanPromoEnds = document.getElementById("setScanPromoEnds").value.trim();
     document.querySelectorAll(".set-presets button").forEach(b => {
       b.classList.toggle("on", Number(b.dataset.fee) === Number(settings.deliveryFee));
     });

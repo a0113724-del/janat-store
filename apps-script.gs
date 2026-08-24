@@ -109,7 +109,12 @@ const DEFAULT_SETTINGS = {
   // مو خسارة.
   scanPromoOn: false,
   scanPromoAmount: 2000,
-  scanPromoMin: 10000
+  scanPromoMin: 10000,
+  // ⚠️ الرابط ينمشي: أي واحد يدز الرابط ومعاه ?promo لصاحبه، وصاحبه
+  // ياخذ الخصم بلا ما يشوف البوستر. ما نگدر نمنعها (كوبون برابط ينتسخ
+  // دائماً)، بس نگدر نحدّد خسارتها: سقف لعدد المستفيدين وتاريخ نهاية.
+  scanPromoMax: 0,        // 0 = بلا سقف
+  scanPromoEnds: ""       // "YYYY-MM-DD" — فاضي = بلا نهاية
 };
 
 // رمز العرض — نفسه بالباركود وبـindex.html
@@ -441,6 +446,19 @@ function getPromosSheet() {
 }
 const PCOL_AT = 1, PCOL_PHONE = 2, PCOL_CODE = 3, PCOL_AMOUNT = 4,
       PCOL_SEQ = 5, PCOL_DEVICE = 6, PROMOS_NUM_COLS = 6;
+
+/** كم واحد استفاد من العرض لحد الآن — سطر لكل استفادة */
+function promoRedeemedCount() {
+  return Math.max(0, getPromosSheet().getLastRow() - 1);
+}
+
+/** انتهى تاريخ العرض؟ المقارنة بتوقيت بغداد حتى ما يوقف قبل يوم */
+function promoExpired(s) {
+  const end = String((s && s.scanPromoEnds) || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(end)) return false;      // ماكو تاريخ = ما ينتهي
+  const today = Utilities.formatDate(new Date(), TIMEZONE, "yyyy-MM-dd");
+  return today > end;                                       // آخر يوم داخل بالعرض
+}
 
 /** هل هذا الرقم استفاد من هذا العرض من قبل؟ */
 function promoUsedBy(phone, code) {
@@ -1481,7 +1499,11 @@ function doPost(e) {
       if (wantsPromo) {
         const on = !!promoSettings.scanPromoOn;
         const minOrder = Number(promoSettings.scanPromoMin) || 0;
+        const maxUses = Number(promoSettings.scanPromoMax) || 0;
+        const used = promoRedeemedCount();
         if (!on) promoReason = "العرض موقّف";
+        else if (promoExpired(promoSettings)) promoReason = "العرض انتهى";
+        else if (maxUses > 0 && used >= maxUses) promoReason = "خلص العدد (" + used + "/" + maxUses + ")";
         else if (subtotal < minOrder) promoReason = "السلة أقل من " + minOrder;
         else if (promoUsedBy(phone, SCAN_PROMO_CODE)) promoReason = "الرقم استفاد من قبل";
         else {
@@ -1863,9 +1885,24 @@ function doGet(e) {
     const s = getStoreSettings();
     const code = String(e.parameter.promoCheck).trim().toUpperCase();
     const phone = normalizePhone(e.parameter.phone);
-    const on = !!s.scanPromoOn && code === SCAN_PROMO_CODE;
+    const maxU = Number(s.scanPromoMax) || 0;
+    const usedCount = promoRedeemedCount();
+    const on = !!s.scanPromoOn && code === SCAN_PROMO_CODE &&
+               !promoExpired(s) && (maxU === 0 || usedCount < maxU);
+    /* ليش نرجّع سبب؟ لأن "موقّف" و"خلص العدد" و"انتهى التاريخ" كلهن
+     * يطلعن on:false، ومن لوحة التحكم ما تنميّز — وصاحب المحل يدور بالعمياني. */
+    let why = "";
+    if (code !== SCAN_PROMO_CODE) why = "code";
+    else if (!s.scanPromoOn) why = "off";
+    else if (promoExpired(s)) why = "expired";
+    else if (maxU > 0 && usedCount >= maxU) why = "capped";
     return jsonOut({
       on: on,
+      reason: why,
+      used_count: usedCount,
+      max: maxU,
+      ends: String(s.scanPromoEnds || ""),
+      left: maxU > 0 ? Math.max(0, maxU - usedCount) : null,
       amount: on ? (Number(s.scanPromoAmount) || 0) : 0,
       minOrder: Number(s.scanPromoMin) || 0,
       // بلا رقم ما نگدر نجاوب — نخليها "لسه" مو "خلصت"
@@ -1879,7 +1916,12 @@ function doGet(e) {
     if (!isAuthorized(adminKey)) return denied();
     const sheet = getPromosSheet();
     const last = sheet.getLastRow();
-    if (last < 2) return jsonOut({ count: 0, total: 0, items: [] });
+    const setg = getStoreSettings();
+    const cap = Number(setg.scanPromoMax) || 0;
+    const ends = String(setg.scanPromoEnds || "");
+    const amt = Number(setg.scanPromoAmount) || 0;
+    if (last < 2) return jsonOut({ count: 0, total: 0, items: [], max: cap, amount: amt,
+                                   ends: ends, expired: promoExpired(setg) });
     const rows = sheet.getRange(2, 1, last - 1, PROMOS_NUM_COLS).getValues();
     let total = 0;
     const items = rows.map(function (r) {
@@ -1891,7 +1933,8 @@ function doGet(e) {
         seqNo: r[PCOL_SEQ - 1]
       };
     }).reverse().slice(0, 60);
-    return jsonOut({ count: rows.length, total: total, items: items });
+    return jsonOut({ count: rows.length, total: total, items: items, amount: amt,
+                     max: cap, ends: ends, expired: promoExpired(setg) });
   }
 
   // أسعار الشراء — سرّية، ما تنزل بأي ملف عام

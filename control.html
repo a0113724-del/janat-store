@@ -1491,12 +1491,34 @@
         bar.innerHTML = "⛔ <b>السيرفر ما ينعرف على العرض</b> — لازم تنشر آخر نسخة من " +
                         "<b>apps-script.gs</b> (Deploy ← Manage deployments ← New version).";
       }else if(!st.on){
+        /* on:false له ثلاث أسباب مختلفة تماماً، وكل واحد علاجه غير:
+         * موقّف = أشّر بالإعدادات · خلص العدد = ارفع السقف · انتهى = بدّل التاريخ.
+         * السيرفر يرجّع reason حتى ما نخمّن. */
         bar.className = "promo-state warn";
-        bar.innerHTML = "⏸️ <b>العرض موقّف</b> — روح لتبويب ⚙️ إعدادات وأشّر «شغّل عرض الباركود» واحفظ. " +
-                        "<br><small>وإذا توّك حفظته، انتظر ٥ دقائق — السيرفر يخزّن الإعدادات ٥ دقائق قبل ما يعيد قراءتها.</small>";
+        if(st.reason === "capped"){
+          bar.innerHTML = `🛑 <b>خلص عدد المستفيدين</b> — وصل ${arNum(st.used_count)} من ` +
+            `${arNum(st.max)}، والعرض وقف تلقائياً. إذا تريد تكمّل، ارفع «سقف عدد المستفيدين» ` +
+            `من تبويب ⚙️ إعدادات.`;
+        }else if(st.reason === "expired"){
+          bar.innerHTML = `📅 <b>العرض انتهى</b> — آخر يوم كان <bdi dir="ltr">${esc(st.ends)}</bdi>. ` +
+            `استفاد منه ${arNum(st.used_count)}. غيّر «آخر يوم بالعرض» إذا تريد تمدّده.`;
+        }else{
+          bar.innerHTML = "⏸️ <b>العرض موقّف</b> — روح لتبويب ⚙️ إعدادات وأشّر «شغّل عرض الباركود» واحفظ. " +
+                          "<br><small>وإذا توّك حفظته، انتظر ٥ دقائق — السيرفر يخزّن الإعدادات ٥ دقائق قبل ما يعيد قراءتها.</small>";
+        }
       }else{
         bar.className = "promo-state ok";
-        bar.innerHTML = `✅ <b>العرض شغّال</b> — خصم ${money(st.amount)} على طلب من ${money(st.minOrder)} فما فوق.`;
+        let extra = "";
+        if(st.left !== null && st.left !== undefined){
+          extra += ` · باقي <b>${arNum(st.left)}</b> من ${arNum(st.max)}`;
+        }else{
+          extra += ` · <b>بلا سقف</b> لعدد المستفيدين`;
+        }
+        if(st.ends) extra += ` · لين <bdi dir="ltr">${esc(st.ends)}</bdi>`;
+        bar.innerHTML = `✅ <b>العرض شغّال</b> — خصم ${money(st.amount)} على طلب من ${money(st.minOrder)} فما فوق${extra}.` +
+          (st.left === null || st.left === undefined
+            ? `<br><small>⚠️ الرابط ينمشي بين الناس. حطّ سقف لعدد المستفيدين من ⚙️ إعدادات حتى تعرف أقصى كلفة العرض عليك.</small>`
+            : "");
       }
     }catch(e){
       const bar = document.getElementById("promoState");
@@ -1515,11 +1537,19 @@
       }
       const items = (d && d.items) || [];
       const count = Number(d.count) || 0;
-      row.innerHTML = [
-        { lbl:"عدد اللي استفادوا", val: count },
+      const cap = Number(d.max) || 0;
+      const cards = [
+        { lbl:"عدد اللي استفادوا", val: cap ? `${arNum(count)} / ${arNum(cap)}` : arNum(count) },
         { lbl:"كلفة العرض", val: money(d.total) },
         { lbl:"معدّل الخصم", val: count ? money((Number(d.total)||0) / count) : "—" }
-      ].map(s=>`<div class="stat-card"><div class="lbl">${s.lbl}</div><div class="val">${s.val}</div></div>`).join("");
+      ];
+      /* أهم رقم لصاحب المحل: أقصى شي ممكن يخسره لو انمشى الرابط
+       * على كل العالم. بلا سقف = ما نگدر نحسبه، وهذا بحدّ ذاته تحذير. */
+      cards.push({
+        lbl: "أقصى كلفة باقية",
+        val: cap ? money(Math.max(0, cap - count) * (Number(d.amount) || 0)) : "غير محدودة"
+      });
+      row.innerHTML = cards.map(s=>`<div class="stat-card"><div class="lbl">${s.lbl}</div><div class="val">${s.val}</div></div>`).join("");
       log.innerHTML = items.length
         ? items.map((u,i)=>{
             const c = allCustomers.find(x=> normalizePhone(x.phone) === normalizePhone(u.phone));
@@ -1532,9 +1562,13 @@
             </div>`;
           }).join("")
         : `<div class="rank-row"><span class="nm">لسه ما استفاد أحد من العرض</span></div>`;
-      note.className = "note-line";
-      note.textContent = "كل رقم هاتف مرة وحدة بس — تبديل الجهاز أو مسح بيانات المتصفح ما ينفع. " +
-                         "تشغيل العرض وقيمته وحده الأدنى من تبويب ⚙️ إعدادات.";
+      note.className = cap ? "note-line" : "note-line warn";
+      note.innerHTML = "🔒 كل رقم هاتف مرة وحدة بس — تبديل الجهاز أو مسح بيانات المتصفح ما ينفع، " +
+        "لأن القفل على الرقم مو على الجهاز." +
+        (cap
+          ? " والعرض يوقف لحاله لمن يوصل السقف."
+          : " <b>بس ماكو سقف لعدد المستفيدين</b> — الرابط ينمشي بين الناس بالواتساب، " +
+            "وأي واحد يفتحه ياخذ الخصم حتى لو ما صوّر الباركود. حطّ سقف من ⚙️ إعدادات.");
     }catch(e){
       note.className = "note-line";
       note.textContent = "⏳ ما وصلت بيانات العرض — تأكد إنك نشرت آخر نسخة من apps-script.gs.";
@@ -2452,6 +2486,8 @@
   }
 
   function money(n){ return Math.round(n||0).toLocaleString('en-US') + " د.ع"; }
+  /* أرقام بلا "د.ع" — للعدّ (كم واحد استفاد) مو للفلوس */
+  function arNum(n){ return Math.round(Number(n)||0).toLocaleString('en-US'); }
 
   // نفس منطق التوحيد الموجود بـ index.html — عشان البحث يلاقي الزبون
   // سواء انحفظ رقمه 07801234567 أو 7801234567 أو +9647801234567
