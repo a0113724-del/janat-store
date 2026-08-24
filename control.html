@@ -713,6 +713,14 @@
       <div class="rank-list" id="deadStock"></div>
       <p class="note-line" id="sellNote"></p>
 
+      <!-- فاحص الأمان -->
+      <div class="section-h">🔐 فحص الأمان</div>
+      <div class="promo-state" id="secState">⏳ نفحص...</div>
+      <p class="note-line">
+        يجرّب يسحب بيانات زبائنك <b>بلا أي مفتاح</b> — نفس اللي يكدر يسويه أي غريب
+        عنده رابط السيرفر. الرابط مكتوب داخل صفحة التطبيق، فهو مكشوف بطبيعته.
+      </p>
+
       <!-- نتيجة عرض الباركود -->
       <div class="section-h">📷 عرض الباركود</div>
       <div class="promo-state" id="promoState">⏳ نفحص حالة العرض...</div>
@@ -1385,6 +1393,56 @@
     costsDirty = false;
   }
 
+  /* ═══════════ فاحص الأمان ═══════════
+   *
+   * ننادي السيرفر بلا مفتاح إطلاقاً — بالضبط مثل أي غريب يفتح الرابط.
+   * لو رجّع بيانات، معناها ADMIN_KEY مو شغّال وأسماء الزبائن وأرقامهم
+   * وعناوين بيوتهم مكشوفة للكل.
+   *
+   * ⚠️ ما نستعمل adminUrl() هنا — هي تضيف المفتاح، ووقتها الفحص
+   * يطلع "محمي" دائماً حتى لو مكشوف.
+   */
+  async function checkSecurity(){
+    const bar = document.getElementById("secState");
+    if(!bar) return;
+    const probes = [
+      { q: "?customersList=1", what: "أسماء وأرقام الزبائن" },
+      { q: "?costs=1",         what: "أسعار الشراء السرّية" }
+    ];
+    const open = [];
+    let reached = false;
+
+    for(const p of probes){
+      try{
+        const res = await fetch(GOOGLE_SCRIPT_URL + p.q, { cache: "no-store" });
+        const txt = await res.text();
+        reached = true;
+        let d = null;
+        try{ d = JSON.parse(txt); }catch(e){ continue; }   // رد مو JSON، ما نحكم
+        if(d && d.unauthorized) continue;                  // ✅ رفض — محمي
+        // رجّع شي فعلاً؟ نعد شنو انكشف
+        if(Array.isArray(d)) open.push(`${p.what} (${d.length})`);
+        else if(d && d.costs && Object.keys(d.costs).length) open.push(p.what);
+        else if(Array.isArray(d) === false && d && !("status" in d) && Object.keys(d).length) open.push(p.what);
+      }catch(e){ /* الشبكة — نكملها بالرد النهائي */ }
+    }
+
+    if(!reached){
+      bar.className = "promo-state";
+      bar.textContent = "⚠️ ما وصلنا للسيرفر — تأكد من النت وأعد المحاولة.";
+    }else if(open.length){
+      bar.className = "promo-state bad";
+      bar.innerHTML = "⛔ <b>بياناتك مكشوفة!</b> أي واحد عنده رابط السيرفر يسحب: " +
+        esc(open.join(" · ")) +
+        "<br><small>الحل: Apps Script ← ⚙️ Project Settings ← Script Properties ← " +
+        "أضف <b>ADMIN_KEY</b> بالضبط بهذا الاسم واحفظ.</small>";
+    }else{
+      bar.className = "promo-state ok";
+      bar.innerHTML = "✅ <b>محمي</b> — السيرفر رفض السحب بلا مفتاح. " +
+        "أسماء زبائنك وأرقامهم وعناوينهم وأسعار الشراء كلها مقفولة.";
+    }
+  }
+
   /* ═══════════ نتيجة عرض الباركود ═══════════ */
   async function loadPromoStats(){
     const row = document.getElementById("promoStatsRow");
@@ -1891,7 +1949,7 @@
       if(btn.dataset.view === "reviews") document.getElementById("reviewsDot").classList.remove("show");
       // التقويم يتحمّل أول ما يفتح التبويب مو مع تحميل اللوحة — طلب
       // زيادة ما نحتاجه إذا صاحب المحل ما دخل التقارير أصلاً
-      if(btn.dataset.view === "reports" && !calMonth){ loadCalMonth(); loadPromoStats(); }
+      if(btn.dataset.view === "reports" && !calMonth){ loadCalMonth(); loadPromoStats(); checkSecurity(); }
     });
   });
 
