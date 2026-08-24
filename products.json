@@ -34,11 +34,7 @@
     "image": "images/potato-1785117857046.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 2,
-    "bundle": {
-      "qty": 3,
-      "price": 2500
-    }
+    "order": 2
   },
   {
     "id": "eggplant",
