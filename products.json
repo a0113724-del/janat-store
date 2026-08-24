@@ -2,23 +2,19 @@
   {
     "id": "tomato",
     "name": "طماطة",
-    "price": 850,
+    "price": 900,
     "cat": "veg",
     "emoji": "🍅",
     "image": "images/tomato-1785117823924.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 0,
-    "onSale": false,
-    "bundle": {
-      "qty": 3,
-      "price": 2500
-    }
+    "onSale": false
   },
   {
     "id": "cucumber",
     "name": "خيار",
-    "price": 850,
+    "price": 900,
     "cat": "veg",
     "emoji": "🥒",
     "image": "images/cucumber-1785117845595.jpg",
@@ -26,11 +22,7 @@
     "onSale": false,
     "visible": true,
     "order": 1,
-    "oldPrice": 0,
-    "bundle": {
-      "qty": 3,
-      "price": 2500
-    }
+    "oldPrice": 0
   },
   {
     "id": "potato",
@@ -147,14 +139,14 @@
   {
     "id": "oniony",
     "name": "بصل اصفر",
-    "price": 1000,
+    "price": 850,
     "cat": "veg",
     "emoji": "🧅",
     "image": "images/oniony-1785118290445.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 11,
-    "onSale": true,
+    "onSale": false,
     "bundle": {
       "qty": 3,
       "price": 2000
