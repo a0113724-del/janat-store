@@ -108,7 +108,7 @@ const DEFAULT_SETTINGS = {
   // وياخذ 1,000 خصم — بضاعة ببلاش. الحد الأدنى يخلي الخصم دعاية
   // مو خسارة.
   scanPromoOn: false,
-  scanPromoAmount: 1000,
+  scanPromoAmount: 2000,
   scanPromoMin: 5000
 };
 
@@ -1486,8 +1486,9 @@ function doPost(e) {
       }
 
       // ═══ رسوم التوصيل والمجموع النهائي ═══
-      // خصم الباركود يلغي التوصيل المجاني لأول طلب — العرضين ما ينجمعون
-      const serverFee = computeDeliveryFee(subtotal, isGenuinelyFirstOrder && promoDiscount <= 0);
+      // العرضين ينجمعون: صاحب المحل قرر إن الزبون الجديد ياخذ خصم
+      // الباركود + توصيله الأول مجاني سوا
+      const serverFee = computeDeliveryFee(subtotal, isGenuinelyFirstOrder);
       const total = Math.max(0, subtotal + serverFee - discount - promoDiscount);
 
       // الواجهة تعرف "أول طلب" من checkPhone اللي ينتظر 600ms بعد ما يكتب

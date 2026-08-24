@@ -28,7 +28,7 @@
     promoText: "🚴 التوصيل الأول مجاني لكل زبون جديد!",
     announcement: "",
     scanPromoOn: false,
-    scanPromoAmount: 1000,
+    scanPromoAmount: 2000,
     scanPromoMin: 5000
   };
 
@@ -123,7 +123,7 @@
         <h3>📷 عرض «امسح الباركود»</h3>
         <div class="note">
           الزبون يمسح الباركود فيوصله خصم — مرة وحدة لكل رقم هاتف مهما بدّل جهازه
-          أو مسح بيانات متصفحه. وياخذ الخصم <b>بدل</b> التوصيل المجاني لأول طلب، مو معاه.
+          أو مسح بيانات متصفحه. والزبون الجديد ياخذ الخصم <b>وياه</b> التوصيل المجاني لأول طلب.
         </div>
         <label class="set-check">
           <input type="checkbox" id="setScanPromoOn">
@@ -280,7 +280,7 @@
     document.getElementById("setPromoText").value = settings.promoText || "";
     document.getElementById("setAnnouncement").value = settings.announcement || "";
     document.getElementById("setScanPromoOn").checked = !!settings.scanPromoOn;
-    document.getElementById("setScanPromoAmount").value = settings.scanPromoAmount ?? 1000;
+    document.getElementById("setScanPromoAmount").value = settings.scanPromoAmount ?? 2000;
     document.getElementById("setScanPromoMin").value = settings.scanPromoMin ?? 5000;
 
     document.querySelectorAll(".set-presets button").forEach(b => {

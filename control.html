@@ -568,6 +568,17 @@
     background:var(--gold); color:#3a2b06; border:none; border-radius:9px;
     padding:7px 13px; font-weight:800; font-size:.75rem; font-family:inherit; cursor:pointer;
   }
+  /* شريط حالة العرض — يميّز بين «ما انتشر السيرفر» و«العرض موقّف» */
+  .promo-state{
+    margin:0 12px 12px; padding:12px 14px; border-radius:12px;
+    font-size:.8rem; font-weight:700; line-height:1.7;
+    background:var(--card); border:1.5px solid var(--line); color:#5a5a4c;
+  }
+  .promo-state.ok{ background:rgba(62,122,68,.1); border-color:rgba(62,122,68,.4); color:#1e6b2b; }
+  .promo-state.warn{ background:#FFF4E0; border-color:rgba(201,154,46,.55); color:#7a5a12; }
+  .promo-state.bad{ background:#FBE1DE; border-color:rgba(161,58,46,.45); color:#8a2418; }
+  .promo-state small{ font-weight:600; opacity:.85; }
+
   .link-name{
     background:none; border:none; padding:0; font-family:inherit; font-size:inherit;
     font-weight:800; color:var(--forest); text-decoration:underline dotted;
@@ -704,6 +715,7 @@
 
       <!-- نتيجة عرض الباركود -->
       <div class="section-h">📷 عرض الباركود</div>
+      <div class="promo-state" id="promoState">⏳ نفحص حالة العرض...</div>
       <div class="stats-row" id="promoStatsRow"></div>
       <div class="rank-list" id="promoLog"></div>
       <p class="note-line" id="promoNote"></p>
@@ -1379,9 +1391,46 @@
     const log = document.getElementById("promoLog");
     const note = document.getElementById("promoNote");
     if(!row) return;
+
+    /* ⚠️ أهم سطر بهذا القسم: نسأل السيرفر عن حالة العرض بنفس النداء
+     * اللي يستعمله التطبيق. سبب هذا: لمن العرض ما يشتغل، السببين
+     * يشبهون بعض من برّا — إما السيرفر ما انتشر، أو انتشر والعرض
+     * موقّف بالإعدادات. بدون هذا الفحص صاحب المحل يدور بالعمياني.
+     *
+     * كيف نميّز؟ السيرفر القديم ما يعرف promoCheck، فيطنّشه ويرجّع
+     * قائمة الطلبات. فأي رد ما بيه حقل on معناه: ما انتشر.
+     */
+    try{
+      const st = await fetchJson(adminUrl("?promoCheck=SCAN1000"), "حالة العرض");
+      const known = st && typeof st === "object" && !Array.isArray(st) && "on" in st;
+      const bar = document.getElementById("promoState");
+      if(!known){
+        bar.className = "promo-state bad";
+        bar.innerHTML = "⛔ <b>السيرفر ما ينعرف على العرض</b> — لازم تنشر آخر نسخة من " +
+                        "<b>apps-script.gs</b> (Deploy ← Manage deployments ← New version).";
+      }else if(!st.on){
+        bar.className = "promo-state warn";
+        bar.innerHTML = "⏸️ <b>العرض موقّف</b> — روح لتبويب ⚙️ إعدادات وأشّر «شغّل عرض الباركود» واحفظ. " +
+                        "<br><small>وإذا توّك حفظته، انتظر ٥ دقائق — السيرفر يخزّن الإعدادات ٥ دقائق قبل ما يعيد قراءتها.</small>";
+      }else{
+        bar.className = "promo-state ok";
+        bar.innerHTML = `✅ <b>العرض شغّال</b> — خصم ${money(st.amount)} على طلب من ${money(st.minOrder)} فما فوق.`;
+      }
+    }catch(e){
+      const bar = document.getElementById("promoState");
+      bar.className = "promo-state bad";
+      bar.textContent = "⚠️ ما وصلنا للسيرفر — تأكد من النت ومن رابط النشر.";
+    }
+
     try{
       const d = await fetchJson(adminUrl("?promoStats=1"), "عرض الباركود");
       if(!checkAuth(d)) return;
+      if(!d || typeof d !== "object" || Array.isArray(d) || !("count" in d)){
+        row.innerHTML = ""; log.innerHTML = "";
+        note.className = "note-line warn";
+        note.textContent = "أرقام العرض ما تجي إلا بعد نشر apps-script.gs.";
+        return;
+      }
       const items = (d && d.items) || [];
       const count = Number(d.count) || 0;
       row.innerHTML = [
