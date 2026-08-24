@@ -1834,10 +1834,14 @@
     const promo = document.getElementById("promoBanner");
     const promoTextEl = document.getElementById("promoText");
     if(promo){
-      if(!STORE.firstOrderFreeDelivery || !String(STORE.promoText || "").trim()){
+      // ماخذ خصم الباركود؟ ما نوعده بتوصيل مجاني ما راح ياخذه —
+      // الخصم يلغي العرض، فالشريط الأحمر يصير كذبة قدام عينه
+      if(!STORE.firstOrderFreeDelivery || !String(STORE.promoText || "").trim() ||
+         promoTakesFreeDelivery()){
         promo.style.display = "none";
       }else if(promoTextEl){
         promoTextEl.textContent = STORE.promoText;
+        promo.style.display = "";
       }
     }
     // صف "هذا أول طلب لي" ما له معنى إذا العرض مطفي
@@ -1935,6 +1939,8 @@
       .then(r=> r.json())
       .then(d=>{
         promoState = d || null;
+        // نعيد تطبيق الإعدادات حتى الشريط الأحمر يختفي لو صار إله خصم
+        if(typeof applySettingsToUI === "function") applySettingsToUI();
         if(typeof updateCartUI === "function") updateCartUI();
         if(asked) showPromoBox(d);
       })
@@ -2573,6 +2579,12 @@
   const PROMO_KEY  = "janat-promo";        // { code, at }
   const PROMO_USED_KEY = "janat-promo-used";
   let promoState = null;                   // { on, amount, minOrder, used }
+
+  /* هل هذا الزبون ماسك خصم باركود صالح؟ إذا نعم، التوصيل المجاني لأول
+   * طلب ما إله — فنخفي كل وعد بيه من الواجهة بدل ما يشوفه ويتفاجأ */
+  function promoTakesFreeDelivery(){
+    return !!promoHeld() && !!promoState && !!promoState.on && !promoState.used;
+  }
 
   function promoHeld(){
     try{
@@ -3239,6 +3251,7 @@
   }
   function showFirstOrderPromoIfEligible(){
     if(!STORE.firstOrderFreeDelivery) return;   // العرض مطفي من الإعدادات
+    if(promoTakesFreeDelivery()) return;        // ماخذ خصم الباركود — ما إله
     // Only re-show if this device hasn't already used its free first order
     let hasOrderedLocally = false;
     try{ hasOrderedLocally = localStorage.getItem("janat-has-ordered") === "1"; }catch(e){}
@@ -3251,6 +3264,7 @@
   // الزبون اللي ما موجود بالسستم ياخذ التوصيل مجاناً تلقائياً — بدون ما يضغط أي شي
   function markVerifiedFirstOrder(){
     if(!STORE.firstOrderFreeDelivery) return;
+    if(promoTakesFreeDelivery()){ updateCartUI(); return; }
     let hasOrderedLocally = false;
     try{ hasOrderedLocally = localStorage.getItem("janat-has-ordered") === "1"; }catch(e){}
     if(hasOrderedLocally) return;          // هذا الجهاز استهلك العرض
@@ -3958,7 +3972,9 @@
   if(deferredInstallPrompt) onInstallPromptReady(deferredInstallPrompt);
 
   installBtn.addEventListener("click", async () => {
-    if (!deferredInstallPrompt) return;
+    // عدنا نافذة تثبيت جاهزة من المتصفح؟ نستعملها — ضغطة وحدة وخلص.
+    // ماكو (آيفون، أو أندرويد ما أطلق الحدث بعد)؟ نفتح الشرح المصوّر.
+    if (!deferredInstallPrompt) { openInstallGate(); return; }
     deferredInstallPrompt.prompt();
     await deferredInstallPrompt.userChoice;
     deferredInstallPrompt = null;
@@ -4246,32 +4262,25 @@
     }catch(e){ return false; }
   }
 
+  /* ⚠️ شاشة التثبيت ما تطلع لحالها أبداً.
+   *
+   * قبل، الجاي من الباركود (خصوصاً الآيفون) كانت تنحط بوجهه شاشة كاملة
+   * قبل ما يشوف ولا سعر — يعني أول انطباع عن المحل «جدار». صاحب المحل
+   * قرر: خلّي بس الزر بالأسفل، ومن يضغطه يشوف طريقة التثبيت.
+   *
+   * ?install=1 باقي يفتحها فوراً — رابط مباشر تدزّه بالواتساب لمن أحد
+   * يسألك «شلون أثبّته؟».
+   */
   function maybeShowInstallGate(){
     const gate = document.getElementById("installGate");
     if(!gate || gate.classList.contains("show")) return;
     if(isStandalone()) return;                       // مثبّت أصلاً
 
-    const qs = new URLSearchParams(location.search);
-    // ?install=1 يفتحها دائماً — للتجربة، ولرابط تثبيت مباشر تدزّه بالواتساب
-    const forced = qs.get("install") === "1";
-    if(!forced){
-      // الأندرويد: ما نحبسه بشاشة قبل ما يشوف شي — التثبيت عنده ضغطة
-      // وحدة بأي وقت، فنطلبها بعد أول طلب لمن يصير عنده سبب.
-      // الآيفون: قصة ثانية — التثبيت عنده خطوات خفية بقائمة المشاركة،
-      // ولو ما تعلّمها من البداية ما راح يكتشفها بعمره. فنعلّمه فوراً.
-      const teachIos = isIOS() && !isInAppBrowser();
-      if(!teachIos && !STORE.requireInstall) return;
-      if(isSkipActive()) return;
+    let forced = false;
+    try{ forced = new URLSearchParams(location.search).get("install") === "1"; }catch(e){}
+    if(forced){ openInstallGate(); return; }
 
-      // نخليه يشوف المتجر ثانية أول — الشرح يجي كمرشد مو كجدار
-      if(teachIos && !igScheduled){
-        igScheduled = true;
-        setTimeout(openInstallGate, 1200);
-        return;
-      }
-    }
-
-    openInstallGate();
+    showInstallButton();     // الزر بس — والشرح ينفتح لمن يضغطه هو
   }
 
   let igScheduled = false;
@@ -4284,19 +4293,17 @@
     refreshInstallGatePane();
   }
 
-  // الآيفون ما يطلق حدث تثبيت أبداً، فزر التثبيت العائم كان ما يبين
-  // لمستخدميه نهائياً — يعني بعد ما يسكّر الشاشة ما عنده أي طريقة يرجّعها
-  function showInstallBtnForIOS(){
+  /* الزر العائم — صار الطريق الوحيد لشاشة التثبيت.
+   *
+   * لازم يبين للكل مو للآيفون بس: الأندرويد ما يطلق حدث التثبيت إلا
+   * بشروط (زيارتين، وقت بالصفحة...)، فلو ربطنا ظهور الزر بالحدث چان
+   * صار أكو ناس ما تشوف أي طريقة تثبّت بيها. والمتصفح داخل تطبيق
+   * (فيسبوك/انستا) مستثنى — ما يكدر يثبّت أصلاً.
+   */
+  function showInstallButton(){
     if(!installBtn) return;
-    if(isStandalone() || isInAppBrowser() || !isIOS()) return;
+    if(isStandalone() || isInAppBrowser()) return;
     installBtn.classList.add("show");
-    installBtn.addEventListener("click", ()=>{
-      const gate = document.getElementById("installGate");
-      if(!gate) return;
-      gate.classList.add("show");
-      document.body.style.overflow = "hidden";
-      refreshInstallGatePane();
-    });
   }
 
   (function initInstallGate(){
@@ -4369,7 +4376,7 @@
       gate?.classList.toggle("ios-step1", !!on);
     };
 
-    showInstallBtnForIOS();
+    showInstallButton();
 
     // --- دعوة التثبيت بعد الطلب ---
     document.getElementById("postInstallBtn")?.addEventListener("click", async ()=>{
