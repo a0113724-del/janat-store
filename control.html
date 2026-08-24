@@ -697,6 +697,17 @@
 
     <!-- ---------- REPORTS VIEW ---------- -->
     <div class="view" id="view-reports">
+      <!-- فاحص الأمان — أول شي بالصفحة، مو مدفون تحت القوائم -->
+      <div class="section-h">🔐 فحص الأمان</div>
+      <div class="promo-state" id="secState">⏳ نفحص...</div>
+      <div style="margin:0 12px 8px;">
+        <button class="ghost-btn" id="secRecheck">🔄 أعد الفحص</button>
+      </div>
+      <p class="note-line">
+        يجرّب يسحب بيانات زبائنك <b>بلا أي مفتاح</b> — نفس اللي يكدر يسويه أي غريب
+        عنده رابط السيرفر. الرابط مكتوب داخل صفحة التطبيق، فهو مكشوف بطبيعته.
+      </p>
+
       <div class="stats-row" id="statsRow"></div>
       <div class="section-h">📅 آخر 7 أيام</div>
       <div class="bar-chart" id="weekChart"></div>
@@ -712,14 +723,6 @@
       <div class="section-h">🧊 ما انباع ولا مرة</div>
       <div class="rank-list" id="deadStock"></div>
       <p class="note-line" id="sellNote"></p>
-
-      <!-- فاحص الأمان -->
-      <div class="section-h">🔐 فحص الأمان</div>
-      <div class="promo-state" id="secState">⏳ نفحص...</div>
-      <p class="note-line">
-        يجرّب يسحب بيانات زبائنك <b>بلا أي مفتاح</b> — نفس اللي يكدر يسويه أي غريب
-        عنده رابط السيرفر. الرابط مكتوب داخل صفحة التطبيق، فهو مكشوف بطبيعته.
-      </p>
 
       <!-- نتيجة عرض الباركود -->
       <div class="section-h">📷 عرض الباركود</div>
@@ -1443,6 +1446,12 @@
     }
   }
 
+  document.getElementById("secRecheck").addEventListener("click", ()=>{
+    document.getElementById("secState").className = "promo-state";
+    document.getElementById("secState").textContent = "⏳ نفحص...";
+    checkSecurity();
+  });
+
   /* ═══════════ نتيجة عرض الباركود ═══════════ */
   async function loadPromoStats(){
     const row = document.getElementById("promoStatsRow");
@@ -1949,7 +1958,10 @@
       if(btn.dataset.view === "reviews") document.getElementById("reviewsDot").classList.remove("show");
       // التقويم يتحمّل أول ما يفتح التبويب مو مع تحميل اللوحة — طلب
       // زيادة ما نحتاجه إذا صاحب المحل ما دخل التقارير أصلاً
-      if(btn.dataset.view === "reports" && !calMonth){ loadCalMonth(); loadPromoStats(); checkSecurity(); }
+      if(btn.dataset.view === "reports"){
+        checkSecurity();                      // كل فتحة — الأمان يستاهل
+        if(!calMonth){ loadCalMonth(); loadPromoStats(); }
+      }
     });
   });
 
