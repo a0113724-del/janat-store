@@ -14,6 +14,6 @@
   "promoText": "🚴 التوصيل الأول مجاني لكل زبون جديد!",
   "announcement": "",
   "scanPromoOn": false,
-  "scanPromoAmount": 2000,
+  "scanPromoAmount": 0,
   "scanPromoMin": 10000
 }
