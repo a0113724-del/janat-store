@@ -2031,18 +2031,50 @@
   }
 
   let approxLocationText = "";
-  whenIdle(async function fetchApproxLocation(){
+
+  /* ⚡ مدينة الزبون ما تتغيّر كل ما يفتح التطبيق، فما داعي نسأل خدمة
+   * خارجية (ipapi.co) بكل فتحة — هذا اتصال كامل لسيرفر أجنبي (DNS +
+   * تشفير + طلب) بكل مرة، وياخذ من نت الموبايل الضعيف بلا فايدة.
+   * نخزّنها ١٢ ساعة بالجهاز: أول فتحة تسأل، وباقي اليوم تجي فوراً.
+   * وإذا الخدمة ما ردّت، نكمل عادي — هي معلومة مساعدة مو أساسية. */
+  const GEO_KEY = "janat-geo";
+  const GEO_TTL_MS = 12 * 3600 * 1000;
+
+  function cachedGeo(){
     try{
-      const res = await fetch("https://ipapi.co/json/");
-      if(!res.ok) throw new Error("geo lookup failed");
-      const geo = await res.json();
-      const parts = [geo.city, geo.region, geo.country_name].filter(Boolean);
-      approxLocationText = parts.join("، ") || "غير معروف";
-    }catch(e){
-      approxLocationText = "غير معروف";
+      const raw = localStorage.getItem(GEO_KEY);
+      if(!raw) return null;
+      const o = JSON.parse(raw);
+      if(!o || !o.txt) return null;
+      if(Date.now() - (Number(o.at) || 0) > GEO_TTL_MS) return null;
+      return o.txt;
+    }catch(e){ return null; }
+  }
+
+  (function primeApproxLocation(){
+    const hit = cachedGeo();
+    if(hit){
+      approxLocationText = hit;
+      whenIdle(()=> logAnalyticsEvent("visit"));   // بلا أي اتصال خارجي
+      return;
     }
-    logAnalyticsEvent("visit");
-  });
+    whenIdle(async function fetchApproxLocation(){
+      try{
+        const res = await fetch("https://ipapi.co/json/");
+        if(!res.ok) throw new Error("geo lookup failed");
+        const geo = await res.json();
+        const parts = [geo.city, geo.region, geo.country_name].filter(Boolean);
+        approxLocationText = parts.join("، ") || "غير معروف";
+        // ما نخزّن الفشل — حتى الفتحة الجاية تعيد المحاولة
+        if(approxLocationText && approxLocationText !== "غير معروف"){
+          try{ localStorage.setItem(GEO_KEY, JSON.stringify({ txt: approxLocationText, at: Date.now() })); }catch(e){}
+        }
+      }catch(e){
+        approxLocationText = "غير معروف";
+      }
+      logAnalyticsEvent("visit");
+    });
+  })();
 
   // ---------- ANALYTICS: VISITS & APP INSTALLS ----------
   function getVisitorId(){
@@ -2738,6 +2770,15 @@
       promoVal.textContent = "- " + money(promoAmt);
     }
 
+    /* صف «أول طلب لك — توصيل مجاني» يتبدّل مع السلة:
+     * ماسك الرمز وسلته فوق الحد → الخصم ياخذ مكان التوصيل المجاني فنخفيه.
+     * نزّل سلته تحت الحد → ما عاد إله خصم، فتوصيله المجاني يرجع ويبين.
+     * بدون هذا السطر الصف يبقى على حالته الأولى ويكذب على الزبون. */
+    const foRow = document.getElementById("firstOrderRow");
+    if(foRow && firstOrderVerified && STORE.firstOrderFreeDelivery){
+      foRow.style.display = promoAmt > 0 ? "none" : "flex";
+    }
+
     const deliveryRow = document.getElementById("deliveryRow");
     const deliveryVal = document.getElementById("deliveryVal");
     if(deliveryRow && deliveryVal){
@@ -3320,13 +3361,25 @@
   // الزبون اللي ما موجود بالسستم ياخذ التوصيل مجاناً تلقائياً — بدون ما يضغط أي شي
   function markVerifiedFirstOrder(){
     if(!STORE.firstOrderFreeDelivery) return;
-    if(promoTakesFreeDelivery()){ updateCartUI(); return; }
     let hasOrderedLocally = false;
     try{ hasOrderedLocally = localStorage.getItem("janat-has-ordered") === "1"; }catch(e){}
     if(hasOrderedLocally) return;          // هذا الجهاز استهلك العرض
+
+    /* ⚠️ باگ كان هنا: إذا الزبون ماسك رمز الباركود، كنّا نطلع من الدالة
+     * بلا ما نسجّل إنه زبون جديد. النتيجة: زبون صوّر الباركود وسلته أقل
+     * من الحد الأدنى (١٠٬٠٠٠) ما ياخذ الخصم — وبنفس الوقت يخسر توصيله
+     * المجاني، فيشوف أجرة توصيل ١٬٠٠٠ مع إن السيرفر ما راح يحاسبه عليها.
+     *
+     * الصح: «هذا زبون جديد» حقيقة يأكّدها السيرفر ولازم تنسجّل دائماً.
+     * قرار «منو ياخذ التوصيل المجاني» ينتخذ بمكان واحد بس —
+     * deliveryFeeFor() — وهي تشوف الخصم الفعلي (اللي يحترم الحد الأدنى)
+     * مو مجرد إن الزبون ماسك الرمز. */
     firstOrderVerified = true;
+
+    // صف «أول طلب لك — توصيل مجاني» ما نعرضه إلا إذا فعلاً راح ياخذه.
+    // ماسك الرمز وسلته فوق الحد؟ الخصم ياكل التوصيل المجاني، فما نوعده بيه.
     const row = document.getElementById("firstOrderRow");
-    if(row) row.style.display = "flex";    // يظهر كإشعار بعد التأكيد فقط
+    if(row) row.style.display = promoTakesFreeDelivery() ? "none" : "flex";
     updateCartUI();
   }
   (function initFirstOrderPromo(){

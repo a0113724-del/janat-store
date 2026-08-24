@@ -16,6 +16,6 @@
   "scanPromoOn": true,
   "scanPromoAmount": 2000,
   "scanPromoMin": 10000,
-  "scanPromoMax": 1,
+  "scanPromoMax": 100,
   "scanPromoEnds": "2026-08-28"
 }

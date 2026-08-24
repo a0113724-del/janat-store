@@ -107,6 +107,21 @@ self.addEventListener("fetch", (event) => {
   let sameOrigin = false;
   try { sameOrigin = new URL(req.url).origin === self.location.origin; } catch (e) {}
 
+  /* ═══ الطلبات الخارجية ما نتدخل بيها إطلاقاً ═══
+   *
+   * خطوط جوجل، سيرفر الطلبات (script.google.com)، خدمة الموقع التقريبي —
+   * كلهن نخلي المتصفح يتعامل وياهن مباشرة.
+   *
+   * ⚠️ باگ كان هنا: آخر فرع بالملف ينتهي بـ .catch(() => cached)، و«cached»
+   * تكون undefined إذا الطلب مو مخزّن. يعني أول ما ينقطع النت، أي نداء
+   * خارجي يرجع respondWith(undefined) — والمتصفح يترجمها «Failed to fetch»
+   * بدل ما يرجّع خطأ الشبكة الطبيعي. كان يحوّل انقطاع نت عادي لخطأ صعب.
+   *
+   * وفوق هذا، كل نداء لسيرفر الطلبات كان يمرّ بالورك سيرفس بلا فايدة —
+   * الردود الخارجية أصلاً ما تنخزن (شرط type==="basic" يمنعها). فشيلناه:
+   * أخف وأسلم. */
+  if (!sameOrigin) return;
+
   const isPage =
     req.mode === "navigate" ||
     req.destination === "document" ||

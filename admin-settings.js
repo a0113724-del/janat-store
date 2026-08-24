@@ -144,13 +144,17 @@
           </div>
         </div>
         <div class="set-field">
-          <label>سقف عدد المستفيدين</label>
+          <label>سقف <u>إجمالي</u> عدد الزباين المستفيدين من العرض كله</label>
           <input type="number" id="setScanPromoMax" min="0" step="10">
           <div class="sub">
-            ⚠️ <b>أهم مكبح</b>. الرابط ينمشي بالواتساب، فأي واحد يوصله ياخذ الخصم
-            حتى لو ما شاف البوستر. السقف يحدّد خسارتك برقم تعرفه من الأول.
-            <b>0 = بلا سقف</b>.
+            📌 <b>هذا مو «مرة وحدة لكل زبون»</b> — «مرة وحدة لكل رقم» شغّالة دائماً
+            وما تحتاج إعداد. هذا الرقم معناه: <b>كم زبون بالمجموع</b> ياخذون الخصم
+            قبل ما العرض يوقف لحاله ويصير مقفول للكل.
+            <br>مثال: تحط <b>50</b> → أول ٥٠ زبون ياخذون الخصم، والـ٥١ ما ياخذ شي.
+            <br>⚠️ الرابط ينمشي بالواتساب، فأي واحد يوصله ياخذ الخصم حتى لو ما شاف
+            البوستر — السقف يحدّد خسارتك برقم تعرفه من الأول. <b>0 = بلا سقف</b>.
           </div>
+          <div class="sub" id="scanPromoMaxWarn" style="display:none;"></div>
         </div>
         <div class="set-field">
           <label>آخر يوم بالعرض</label>
@@ -300,6 +304,7 @@
     document.getElementById("setScanPromoMin").value = settings.scanPromoMin ?? 10000;
     document.getElementById("setScanPromoMax").value = settings.scanPromoMax ?? 0;
     document.getElementById("setScanPromoEnds").value = settings.scanPromoEnds || "";
+    warnLowPromoCap();
 
     document.querySelectorAll(".set-presets button").forEach(b => {
       b.classList.toggle("on", Number(b.dataset.fee) === Number(settings.deliveryFee));
@@ -309,6 +314,26 @@
   function num(id) {
     const v = Number(document.getElementById(id).value);
     return Number.isFinite(v) && v >= 0 ? Math.round(v) : 0;
+  }
+
+  /* سقف واطي جداً معناه العرض يموت من أول زبون. هذا الغلط سهل يصير
+   * لأن «سقف عدد المستفيدين» ممكن تنقرأ «كل زبون مرة وحدة» — فنكتبها
+   * صريحة بالشاشة بدل ما ينتظر أيام ويكتشف إن العرض ما اشتغل لأحد. */
+  function warnLowPromoCap() {
+    const el = document.getElementById("scanPromoMaxWarn");
+    if (!el) return;
+    const v = num("setScanPromoMax");
+    const on = document.getElementById("setScanPromoOn").checked;
+    if (on && v > 0 && v <= 3) {
+      el.style.display = "";
+      el.innerHTML = "🚨 <b>انتبه:</b> حطّيت السقف <b>" + v + "</b> — يعني العرض يوقف نهائياً " +
+        "بعد ما ياخذه <b>" + v + " " + (v === 1 ? "زبون واحد" : "زباين") + " بالمجموع</b>، " +
+        "وباقي الناس اللي يمسحون الباركود ما ياخذون شي. " +
+        "إذا قصدك «كل زبون ياخذه مرة وحدة» فهذي شغّالة لحالها — خلّي السقف رقم كبير أو 0.";
+    } else {
+      el.style.display = "none";
+      el.innerHTML = "";
+    }
   }
 
   function readForm() {
@@ -331,6 +356,7 @@
     settings.scanPromoMin = num("setScanPromoMin");
     settings.scanPromoMax = num("setScanPromoMax");
     settings.scanPromoEnds = document.getElementById("setScanPromoEnds").value.trim();
+    warnLowPromoCap();
     document.querySelectorAll(".set-presets button").forEach(b => {
       b.classList.toggle("on", Number(b.dataset.fee) === Number(settings.deliveryFee));
     });
