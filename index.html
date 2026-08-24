@@ -1974,7 +1974,8 @@
       ic.textContent = "🎉"; ttl.textContent = `ربحت خصم ${money(amt)}!`;
       txt.textContent =
         (min ? `الخصم ينطبّق على طلب من ${money(min)} فما فوق. ` : "") +
-        "ينخصم لحاله عند تأكيد الطلب — ما تحتاج تسوي شي.";
+        "ينخصم لحاله عند تأكيد الطلب — ما تحتاج تسوي شي. " +
+        "(بدل التوصيل المجاني لأول طلب، مو معاه.)";
     }
     box.classList.add("show");
   }
@@ -2592,7 +2593,11 @@
 
   function deliveryFeeFor(subtotal){
     if(subtotal <= 0) return 0;
-    // خصم الباركود ما يلغي التوصيل المجاني — الاثنين ينجمعون
+    // العرضين ما ينجمعون: ماخذ خصم الباركود؟ التوصيل ينتحسب عادي
+    if(promoPreviewFor(subtotal) > 0){
+      if(STORE.freeDeliveryOver && subtotal >= STORE.freeDeliveryOver) return 0;
+      return STORE.deliveryFee;
+    }
     if(isFirstOrderFreeDelivery()) return 0;
     if(STORE.freeDeliveryOver && subtotal >= STORE.freeDeliveryOver) return 0;
     return STORE.deliveryFee;
@@ -2990,7 +2995,8 @@
       // الأجرة صفر والمجموع فوق حد الإعفاء؟ يعني مجاني بسبب المجموع.
       // غير هيچ، المجاني سببه إنه أول طلب.
       const freeByTotal = STORE.freeDeliveryOver && sub >= STORE.freeDeliveryOver;
-      if(sub > 0 && fee === 0 && !freeByTotal) s += `\n🎁 هذا أول طلب — التوصيل مجاني\n`;
+      if(sub > 0 && fee === 0 && !freeByTotal && !(Number(t.promoDiscount) > 0))
+        s += `\n🎁 هذا أول طلب — التوصيل مجاني\n`;
       s += `\nمجموع المنتجات: ${money(sub)}`;
       if(disc > 0) s += `\n⭐ خصم النقاط (${used} نقطة): - ${money(disc)}`;
       const promo = Number(t.promoDiscount) || 0;

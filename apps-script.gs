@@ -109,7 +109,7 @@ const DEFAULT_SETTINGS = {
   // مو خسارة.
   scanPromoOn: false,
   scanPromoAmount: 2000,
-  scanPromoMin: 5000
+  scanPromoMin: 10000
 };
 
 // رمز العرض — نفسه بالباركود وبـindex.html
@@ -1486,9 +1486,8 @@ function doPost(e) {
       }
 
       // ═══ رسوم التوصيل والمجموع النهائي ═══
-      // العرضين ينجمعون: صاحب المحل قرر إن الزبون الجديد ياخذ خصم
-      // الباركود + توصيله الأول مجاني سوا
-      const serverFee = computeDeliveryFee(subtotal, isGenuinelyFirstOrder);
+      // خصم الباركود يلغي التوصيل المجاني لأول طلب — واحد بس مو الاثنين
+      const serverFee = computeDeliveryFee(subtotal, isGenuinelyFirstOrder && promoDiscount <= 0);
       const total = Math.max(0, subtotal + serverFee - discount - promoDiscount);
 
       // الواجهة تعرف "أول طلب" من checkPhone اللي ينتظر 600ms بعد ما يكتب

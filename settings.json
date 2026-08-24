@@ -15,5 +15,5 @@
   "announcement": "",
   "scanPromoOn": true,
   "scanPromoAmount": 2000,
-  "scanPromoMin": 5000
+  "scanPromoMin": 10000
 }

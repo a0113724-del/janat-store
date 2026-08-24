@@ -29,7 +29,7 @@
     announcement: "",
     scanPromoOn: false,
     scanPromoAmount: 2000,
-    scanPromoMin: 5000
+    scanPromoMin: 10000
   };
 
   let settings = Object.assign({}, DEFAULTS);
@@ -123,7 +123,7 @@
         <h3>📷 عرض «امسح الباركود»</h3>
         <div class="note">
           الزبون يمسح الباركود فيوصله خصم — مرة وحدة لكل رقم هاتف مهما بدّل جهازه
-          أو مسح بيانات متصفحه. والزبون الجديد ياخذ الخصم <b>وياه</b> التوصيل المجاني لأول طلب.
+          أو مسح بيانات متصفحه. وياخذ الخصم <b>بدل</b> التوصيل المجاني لأول طلب، مو معاه.
         </div>
         <label class="set-check">
           <input type="checkbox" id="setScanPromoOn">
@@ -281,7 +281,7 @@
     document.getElementById("setAnnouncement").value = settings.announcement || "";
     document.getElementById("setScanPromoOn").checked = !!settings.scanPromoOn;
     document.getElementById("setScanPromoAmount").value = settings.scanPromoAmount ?? 2000;
-    document.getElementById("setScanPromoMin").value = settings.scanPromoMin ?? 5000;
+    document.getElementById("setScanPromoMin").value = settings.scanPromoMin ?? 10000;
 
     document.querySelectorAll(".set-presets button").forEach(b => {
       b.classList.toggle("on", Number(b.dataset.fee) === Number(settings.deliveryFee));
