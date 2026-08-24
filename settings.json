@@ -13,7 +13,7 @@
   "requireInstall": false,
   "promoText": "🚴 التوصيل الأول مجاني لكل زبون جديد!",
   "announcement": "",
-  "scanPromoOn": true,
+  "scanPromoOn": false,
   "scanPromoAmount": 2000,
   "scanPromoMin": 10000
 }
