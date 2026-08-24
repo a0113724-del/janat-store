@@ -579,6 +579,21 @@
   .promo-state.bad{ background:#FBE1DE; border-color:rgba(161,58,46,.45); color:#8a2418; }
   .promo-state small{ font-weight:600; opacity:.85; }
 
+  .unit-chips{ display:flex; gap:5px; margin-top:6px; flex-wrap:wrap; }
+  .unit-chips button{
+    border:1.5px solid var(--line); background:#fff; color:#5a5a4c; border-radius:100px;
+    padding:4px 11px; font-size:.72rem; font-weight:800; font-family:inherit; cursor:pointer;
+  }
+  .unit-chips button.on{ background:var(--leaf); border-color:var(--leaf); color:#fff; }
+
+  /* زر النفاد — عريض وواضح، صاحب المحل يضغطه وهو واقف بالمحل */
+  .out-btn{
+    width:100%; margin-top:10px; border-radius:12px; padding:11px;
+    font-family:inherit; font-weight:800; font-size:.82rem; cursor:pointer;
+    background:rgba(62,122,68,.1); border:1.5px solid rgba(62,122,68,.4); color:#1e6b2b;
+  }
+  .out-btn.on{ background:#FBE1DE; border-color:rgba(161,58,46,.5); color:#8a2418; }
+
   .link-name{
     background:none; border:none; padding:0; font-family:inherit; font-size:inherit;
     font-weight:800; color:var(--forest); text-decoration:underline dotted;
@@ -2074,8 +2089,18 @@
           <label class="fld">
             <span class="lbl">الوحدة</span>
             <input type="text" class="f-unit" data-id="${p.id}" value="${p.unit||'كغم'}" placeholder="الوحدة">
+            <!-- الوحدة تقرر شلون ينزاد: «كغم» بنص كيلو، وأي وحدة ثانية
+                 بالواحدة الكاملة — فالرقي والبطيخ ينباعون بالحبة -->
+            <div class="unit-chips" data-unit-for="${p.id}">
+              ${["كغم","حبة","ربطة","صندوق"].map(u=>
+                `<button type="button" data-u="${u}" class="${(p.unit||'كغم')===u?'on':''}">${u}</button>`
+              ).join("")}
+            </div>
           </label>
         </div>
+        <button type="button" class="out-btn ${p.soldOut?'on':''}" data-out="${p.id}">
+          ${p.soldOut ? "🚫 نفدت الكمية — اضغط لإرجاعه" : "✅ متوفّر — اضغط إذا خلص"}
+        </button>
         <!-- سعر الشراء ينحفظ بالشيت مو بـproducts.json — ذاك ملف عام
              ينزل على جهاز كل زبون، وما يصير يشوف بكم تشتري -->
         <div class="row2">
@@ -2132,12 +2157,38 @@
       : `<p class="empty-note">لا توجد منتجات مطابقة</p>`;
   }
 
+  document.getElementById("productList").addEventListener("click",(e)=>{
+    const out = e.target.closest("[data-out]");
+    if(out){
+      const p = findProduct(out.dataset.out); if(!p) return;
+      p.soldOut = !p.soldOut;
+      out.classList.toggle("on", !!p.soldOut);
+      out.textContent = p.soldOut ? "🚫 نفدت الكمية — اضغط لإرجاعه" : "✅ متوفّر — اضغط إذا خلص";
+      markDirty();
+      return;
+    }
+    const u = e.target.closest(".unit-chips button");
+    if(u){
+      const id = u.closest("[data-unit-for]").dataset.unitFor;
+      const p = findProduct(id); if(!p) return;
+      p.unit = u.dataset.u;
+      u.parentElement.querySelectorAll("button").forEach(b=>b.classList.toggle("on", b === u));
+      const f = document.querySelector(`.f-unit[data-id="${id}"]`);
+      if(f) f.value = p.unit;
+      markDirty();
+    }
+  });
+
   document.getElementById("productList").addEventListener("input",(e)=>{
     const id = e.target.dataset.id; if(!id) return;
     const p = findProduct(id); if(!p) return;
     if(e.target.classList.contains("f-name")) p.name = e.target.value;
     if(e.target.classList.contains("f-price")) p.price = Number(e.target.value)||0;
-    if(e.target.classList.contains("f-unit")) p.unit = e.target.value;
+    if(e.target.classList.contains("f-unit")){
+      p.unit = e.target.value;
+      const box = document.querySelector(`[data-unit-for="${p.id}"]`);
+      if(box) box.querySelectorAll("button").forEach(b=>b.classList.toggle("on", b.dataset.u === p.unit));
+    }
     if(e.target.classList.contains("f-desc")) p.description = e.target.value;
     if(e.target.classList.contains("f-oldprice")) p.oldPrice = Number(e.target.value)||0;
     if(e.target.classList.contains("f-cost")){

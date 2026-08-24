@@ -167,7 +167,7 @@ function getProductPrices() {
   const cache = CacheService.getScriptCache();
   const props = PropertiesService.getScriptProperties();
 
-  const cached = cache.get("product-prices-v2");
+  const cached = cache.get("product-prices-v3");
   if (cached) {
     try { return { map: JSON.parse(cached), stale: false, reason: "" }; } catch (e) { }
   }
@@ -191,6 +191,8 @@ function getProductPrices() {
               name: String(p.name || ""),
               unit: String(p.unit || "كغم")
             };
+            // لازم يوصل للسيرفر وإلا ما نگدر ننبّه على طلب منتج نافد
+            if (p.soldOut === true) entry.soldOut = true;
             // عرض حزمة: 3 بـ 2000 — لازم يوصل للسيرفر وإلا حسابه يختلف
             // عن حساب الصفحة وكل طلب ينتفلگ
             if (p.bundle && Number(p.bundle.qty) >= 2 && Number(p.bundle.price) > 0) {
@@ -203,7 +205,7 @@ function getProductPrices() {
           }
         });
         const json = JSON.stringify(map);
-        try { cache.put("product-prices-v2", json, 300); } catch (e) { }
+        try { cache.put("product-prices-v3", json, 300); } catch (e) { }
         // نسخة احتياطية دائمة — تنقذنا لو فشل الجلب مرة جاية
         try { props.setProperty("prices-backup", json); } catch (e) { }
         try { props.deleteProperty("prices-last-error"); } catch (e) { }
@@ -253,6 +255,10 @@ function computeSubtotalFromLines(lines) {
     const qty = Number((l && l.qty) || 0);
     const p = prices[id];
     if (!p) { issues.push("منتج غير معروف: " + id); return; }
+    // نفد وصاحب المحل أشّره — بس الزبون ممكن يكون فاتح صفحة قديمة من
+    // قبل ما يأشّره. ما نرفض الطلب كله (باقي أغراضه صحيحة)، بس ننبّه
+    // صاحب المحل بعلامة حمراء حتى يتصل بيه قبل ما يجهّز
+    if (p.soldOut === true) issues.push("نفد: " + (p.name || id));
     if (!(qty > 0) || qty > 500) { issues.push("كمية غير منطقية لـ " + id + ": " + qty); return; }
     // نقرّب كل سطر لحاله — هيك مجموع السطور المعروضة للزبون يطابق
     // المجموع بالضبط، وما يبقى فرق يخلّي الطلب ينتفلگ
@@ -1420,7 +1426,7 @@ function doPost(e) {
         // جلب ثاني للأسعار مكلف (رحلة شبكة كاملة). ما نسويه إلا لو
         // الفرق راح يطلّع تنبيه فعلاً — يعني الزبون أرسل أقل من حسابنا.
         if (calc.ok && !calc.stale && clientSubtotal > 0 && clientSubtotal < calc.subtotal - 1) {
-          CacheService.getScriptCache().remove("product-prices-v2");
+          CacheService.getScriptCache().remove("product-prices-v3");
           const fresh = computeSubtotalFromLines(data.lines);
           if (fresh.ok) calc = fresh;
         }

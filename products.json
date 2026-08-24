@@ -413,9 +413,10 @@
     "cat": "fruit",
     "emoji": "🍈",
     "image": "images/reky-1786410488279.jpg",
-    "unit": "كغم",
-    "visible": true,
-    "order": 36
+    "unit": "حبة",
+    "visible": false,
+    "order": 36,
+    "soldOut": false
   },
   {
     "id": "watermelon",
@@ -425,10 +426,11 @@
     "emoji": "🍉",
     "image": "images/watermelon-1785118677255.jpg",
     "featured": true,
-    "unit": "كغم",
+    "unit": "حبة",
     "onSale": false,
-    "visible": true,
-    "order": 37
+    "visible": false,
+    "order": 37,
+    "soldOut": false
   },
   {
     "id": "dates",

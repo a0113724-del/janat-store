@@ -589,6 +589,23 @@
     background:var(--pomegranate); color:#fff; font-size:.66rem; font-weight:800;
     padding:3px 8px; border-radius:100px; box-shadow:0 3px 8px rgba(0,0,0,.2);
   }
+  /* ---------- نفدت الكمية ---------- */
+  /* يبقى ظاهر بس باهت — الزبون يعرف إنك تبيعه ويرجع يدوّر عليه */
+  .card.sold-out .img-wrap img,
+  .card.sold-out .img-wrap .ph{ filter:grayscale(1); opacity:.45; }
+  .card.sold-out .price{ opacity:.5; }
+  .card.sold-out .qty-row button{ opacity:.4; }
+  .out-badge{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-8deg);
+    z-index:3; background:var(--pomegranate); color:#fff; font-size:.72rem; font-weight:900;
+    padding:5px 12px; border-radius:8px; white-space:nowrap;
+    box-shadow:0 4px 12px rgba(0,0,0,.35);
+  }
+  .out-line{
+    font-size:.7rem; font-weight:800; color:var(--pomegranate);
+    background:rgba(161,58,46,.09); border-radius:8px; padding:4px 8px; margin:4px 0 2px;
+  }
+
   /* المبلغ المتوفّر — أوقع من النسبة على البضاعة الرخيصة */
   .card .save-line{
     display:inline-block; background:#DFF2E1; color:#1e6b2b;
@@ -2152,6 +2169,9 @@
   // سعر جاهز = رقم صحيح موجب. أي شي غيره معناه الأسعار لسه ما وصلت
   // (زائر أول مرة) أو المنتج انحذف — وقتها ما نخلي الزبون يضيفه للسلة.
   function hasPrice(p){ return !!p && Number.isFinite(Number(p.price)) && Number(p.price) > 0; }
+  // نفدت الكمية — نخليه ظاهر مو مخفي. لو خفيناه، الزبون ما يعرف إنك
+  // تبيعه أصلاً وما يرجع يدوّر عليه.
+  function isSoldOut(p){ return !!p && p.soldOut === true; }
 
   function qtyStep(p){
     if(!hasPrice(p)) return 1;
@@ -2243,7 +2263,8 @@
       }
       Object.entries(data.cart).forEach(([id, q])=>{
         const p = findProduct(id);
-        if(p && p.visible !== false && typeof q === "number" && q > 0) cart[id] = q;
+        // نفد بعد ما حط بسلته؟ ما نرجّعه — أهون من إنه يوصل للحساب ويتفاجأ
+        if(p && p.visible !== false && !isSoldOut(p) && typeof q === "number" && q > 0) cart[id] = q;
       });
       const cr = document.getElementById("customRequestInput");
       if(cr && data.custom) cr.value = data.custom;
@@ -2275,7 +2296,14 @@
       const changed = JSON.stringify(arr) !== JSON.stringify(products);
       products = arr;
       try{ localStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify(arr)); }catch(e){}
-      if(changed){ renderGrids(); updateCartUI(); }
+      // صاحب المحل أشّر «نفدت» والزبون فاتح الصفحة وهو بسلته؟ نشيله
+      // فوراً بدل ما يكمّل ويوصل للحساب وياه
+      let purged = false;
+      Object.keys(cart).forEach(id=>{
+        if(isSoldOut(findProduct(id))){ delete cart[id]; purged = true; }
+      });
+      if(purged) saveCart();
+      if(changed || purged){ renderGrids(); updateCartUI(); }
     }catch(e){
       console.warn("تعذّر تحديث products.json — نكمل بالقائمة المحفوظة.", e);
     }
@@ -2316,22 +2344,25 @@
       saveLine = `<div class="save-line bundle">🎁 ${bundle.qty} ${unit} بـ ${money(bundle.price)}
         <small>(${money(per)} للـ${unit})</small></div>`;
     }
-    const cardClass = isOffer ? "offer-card" : (isFruit ? "fruit-card" : "");
+    const out = isSoldOut(p);
+    const cardClass = (isOffer ? "offer-card " : (isFruit ? "fruit-card " : "")) + (out ? "sold-out" : "");
     const step = qtyStep(p);
     return `
     <div class="card ${cardClass} ${qty>0?'has-qty':''}" data-id="${p.id}">
-      <div class="img-wrap">${ribbon}${discountBadge}${bundleBadge}${imgHtml}</div>
+      <div class="img-wrap">${ribbon}${discountBadge}${bundleBadge}${imgHtml}${
+        out ? '<span class="out-badge">نفدت الكمية</span>' : ""}</div>
       <div class="body">
         <h3>${p.name}</h3>
         <div class="price">${priceHtml}</div>
         ${saveLine}
-        ${ready && step < 1 ? `<div class="step-hint">كل ضغطة + تزيد <b>${qtyWords(step, unit)}</b> = ${money(lineTotal(p, step))}</div>` : ""}
+        ${out ? `<div class="out-line">🚫 خلصت اليوم — ترجع قريباً</div>`
+              : (ready && step < 1 ? `<div class="step-hint">كل ضغطة + تزيد <b>${qtyWords(step, unit)}</b> = ${money(lineTotal(p, step))}</div>` : "")}
         <div class="qty-row">
-          <button class="minus" data-id="${p.id}" ${ready?"":"disabled"}>−</button>
+          <button class="minus" data-id="${p.id}" ${ready && !out?"":"disabled"}>−</button>
           <span class="qty-val">${qtyWords(qty, unit)}<small>${
             qty > 0 ? money(lineTotal(p, qty)) : unit
           }</small></span>
-          <button class="plus" data-id="${p.id}" ${ready?"":"disabled"}>+</button>
+          <button class="plus" data-id="${p.id}" ${ready && !out?"":"disabled"}>+</button>
         </div>
       </div>
     </div>`;
@@ -2371,6 +2402,7 @@
   function changeQty(id, delta){
     const p = findProduct(id);
     if(delta > 0 && !hasPrice(p)) return;   // سعره ما وصل بعد
+    if(delta > 0 && isSoldOut(p)) return;   // نفد — حتى لو ضغط بصفحة قديمة
     const step = qtyStep(p);
     const newQty = Math.max(0, Math.round(((cart[id]||0) + delta*step) * 100) / 100);
     if(newQty===0) delete cart[id]; else cart[id] = newQty;
