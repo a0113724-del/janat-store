@@ -1846,15 +1846,26 @@
     }
   }
 
+  // السيرفر أكّد لنا (عبر checkPhone) إن هذا الرقم إله طلبات سابقة —
+  // تُحدَّث من initFirstOrderPromo وخانة رقم الهاتف بالسلة، وتبقى true
+  // حتى لو انادت applySettingsToUI مرة ثانية بعدها (مثلاً بعد refreshSettings)
+  let phoneConfirmedOrdered = false;
+
   // ---------- تطبيق الإعدادات على الواجهة ----------
   function applySettingsToUI(){
     const promo = document.getElementById("promoBanner");
     const promoTextEl = document.getElementById("promoText");
     if(promo){
+      // ⚠️ هذا الشرط ينعاد فحصه بكل نداء لـ applySettingsToUI — يعني
+      // بعد ما نخفي البانر لزبون طلب من قبل، أي نداء لاحق (refreshSettings
+      // كل ما تتحدّث الإعدادات، أو أي مكان ثاني يستدعيها) ما يرجّعه يبين،
+      // لأن hasOrderedLocally/phoneConfirmedOrdered ينفحصون من جديد بكل مرة.
+      let hasOrderedLocally = false;
+      try{ hasOrderedLocally = localStorage.getItem("janat-has-ordered") === "1"; }catch(e){}
       // ماخذ خصم الباركود؟ ما نوعده بتوصيل مجاني ما راح ياخذه —
       // الخصم يلغي العرض، فالشريط الأحمر يصير كذبة قدام عينه
       if(!STORE.firstOrderFreeDelivery || !String(STORE.promoText || "").trim() ||
-         promoTakesFreeDelivery()){
+         promoTakesFreeDelivery() || hasOrderedLocally || phoneConfirmedOrdered){
         promo.style.display = "none";
       }else if(promoTextEl){
         promoTextEl.textContent = STORE.promoText;
@@ -3288,6 +3299,10 @@
     const chk = document.getElementById("firstOrderCheck");
     if(chk) chk.checked = false;
     firstOrderVerified = false;
+    // كل مرة توصل هنا معناها السيرفر أو الجهاز أكّد "هذا مو أول طلب" —
+    // نثبّتها حتى لو applySettingsToUI انادت مرة ثانية بعدين (مثلاً refreshSettings)
+    // ما ترجّع تعرض البانر من جديد
+    phoneConfirmedOrdered = true;
     updateCartUI();   // أجرة التوصيل ترجع تُحسب لأن العرض انتهى
   }
   function showFirstOrderPromoIfEligible(){
@@ -3317,7 +3332,20 @@
   (function initFirstOrderPromo(){
     let hasOrdered = false;
     try{ hasOrdered = localStorage.getItem("janat-has-ordered") === "1"; }catch(e){}
-    if(hasOrdered) hideFirstOrderPromo();
+    if(hasOrdered){ hideFirstOrderPromo(); return; }
+    // الجهاز نفسه ما يعرف انه طلب من قبل — بس نعرف رقمه من زيارة سابقة؟
+    // نتأكد من السيرفر بالخلفية قبل لا ننتظره يكتب رقمه بخانة الطلب.
+    // هذا يمنع البانر يبين لزبون خلص عرضه من قبل وبس غيّر جهاز أو
+    // متصفح أو مسح بيانات المتصفح — الحساب وقت الطلب كان سليم دائماً،
+    // بس البانر بالأعلى كان يتأخر بالاختفاء لين يوصل خانة الطلب.
+    let savedPhone = "";
+    try{ savedPhone = localStorage.getItem("janat-my-phone") || ""; }catch(e){}
+    if(savedPhone && isValidPhone(savedPhone) && GOOGLE_SCRIPT_URL){
+      fetch(`${GOOGLE_SCRIPT_URL}?checkPhone=${encodeURIComponent(savedPhone)}`, { cache:"no-store" })
+        .then(r=> r.json())
+        .then(data=>{ if(data && data.hasOrdered) hideFirstOrderPromo(); })
+        .catch(()=>{});
+    }
   })();
 
   // Real check against the actual order history in Google Sheets by phone
@@ -3913,7 +3941,10 @@
   }
 
   showCachedReviewStrip();          // فوري، بلا انتظار شبكة
-  whenIdle(refreshReviewStrip);     // التحديث بالخلفية
+  // ⚡ ما نأجلها لـ whenIdle — هذا طلب صغير (جواب مخزّن بالسيرفر ٥ دقائق)
+  // وتأجيله كان يخلي النجوم تتأخر تبين لين ٢-٤ ثواني حتى إذا الجهاز فاضي.
+  // نطلقها فوراً وتشتغل بالتوازي مع باقي الطلبات — أسرع ما يبين الشريط.
+  refreshReviewStrip();
 
   // ---------- تاريخ اليوم بشريط الأسعار ----------
   // أسماء الأشهر العراقية (كانون/شباط/آذار...) مو الميلادية العربية العامة
