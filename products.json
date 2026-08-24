@@ -9,7 +9,8 @@
     "unit": "كغم",
     "visible": true,
     "order": 0,
-    "onSale": false
+    "onSale": false,
+    "soldOut": false
   },
   {
     "id": "cucumber",
@@ -323,7 +324,8 @@
     "image": "images/cherry-1785118574023.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 28
+    "order": 28,
+    "soldOut": true
   },
   {
     "id": "apple_iraq",
@@ -409,26 +411,26 @@
   {
     "id": "reky",
     "name": "ركي",
-    "price": 750,
+    "price": 3000,
     "cat": "fruit",
     "emoji": "🍈",
     "image": "images/reky-1786410488279.jpg",
-    "unit": "حبة",
-    "visible": false,
+    "unit": "حكه ",
+    "visible": true,
     "order": 36,
     "soldOut": false
   },
   {
     "id": "watermelon",
     "name": "بطيخ",
-    "price": 750,
+    "price": 3000,
     "cat": "fruit",
     "emoji": "🍉",
     "image": "images/watermelon-1785118677255.jpg",
     "featured": true,
-    "unit": "حبة",
+    "unit": "حكه",
     "onSale": false,
-    "visible": false,
+    "visible": true,
     "order": 37,
     "soldOut": false
   },
