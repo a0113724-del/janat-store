@@ -114,11 +114,20 @@ const DEFAULT_SETTINGS = {
   // ياخذ الخصم بلا ما يشوف البوستر. ما نگدر نمنعها (كوبون برابط ينتسخ
   // دائماً)، بس نگدر نحدّد خسارتها: سقف لعدد المستفيدين وتاريخ نهاية.
   scanPromoMax: 0,        // 0 = بلا سقف
-  scanPromoEnds: ""       // "YYYY-MM-DD" — فاضي = بلا نهاية
+  scanPromoEnds: "",      // "YYYY-MM-DD" — فاضي = بلا نهاية
+  scanPromoCode: "SCAN1000"  // بدّله حتى تلغي كل الروابط اللي انتشرت
 };
 
-// رمز العرض — نفسه بالباركود وبـindex.html
+/* رمز العرض — الافتراضي بس. الرمز الفعلي يجي من الإعدادات
+ * (scanPromoCode) حتى صاحب المحل يگدر يبدّله ويلغي كل الروابط
+ * اللي انتشرت بالواتساب. شوف promoCodeNow(). */
 const SCAN_PROMO_CODE = "SCAN1000";
+
+/** الرمز الشغّال هسه حسب الإعدادات */
+function promoCodeNow(s) {
+  const cfg = s || getStoreSettings();
+  return String(cfg.scanPromoCode || SCAN_PROMO_CODE).trim().toUpperCase();
+}
 
 /** يقرّب المبلغ لأقرب مضاعف قابل للدفع (250 افتراضياً) */
 function roundMoneyTo(n, step) {
@@ -460,8 +469,19 @@ function promoExpired(s) {
   return today > end;                                       // آخر يوم داخل بالعرض
 }
 
-/** هل هذا الرقم استفاد من هذا العرض من قبل؟ */
-function promoUsedBy(phone, code) {
+/**
+ * هل هذا الرقم استفاد من عرض الباركود من قبل؟
+ *
+ * ⚠️ نقارن بالرقم بس، مو بالرقم + الرمز. سبب مهم: صاحب المحل يگدر
+ * يبدّل رمز العرض حتى يلغي الروابط اللي انتشرت. لو كان القفل على
+ * (رقم + رمز)، كل واحد استفاد بالرمز القديم يرجع ياخذ الخصم مرة ثانية
+ * بالرمز الجديد — وهذا يكسر «مرة وحدة لكل زبون».
+ *
+ * يعني: الزبون ياخذ خصم الباركود مرة وحدة بحياته، مهما تبدّل الرمز.
+ * إذا أراد صاحب المحل حملة جديدة يستفيد بيها الكل من جديد، يفضّي
+ * شيت «العروض» من جوجل شيتس.
+ */
+function promoUsedBy(phone) {
   const p = normalizePhone(phone);
   if (!p) return true;                       // بلا رقم ما نعرف منو، فما نعطي
   const sheet = getPromosSheet();
@@ -469,10 +489,7 @@ function promoUsedBy(phone, code) {
   if (last < 2) return false;
   const rows = sheet.getRange(2, 1, last - 1, PROMOS_NUM_COLS).getValues();
   for (let i = 0; i < rows.length; i++) {
-    if (normalizePhone(rows[i][PCOL_PHONE - 1]) === p &&
-        String(rows[i][PCOL_CODE - 1]).trim().toUpperCase() === String(code).trim().toUpperCase()) {
-      return true;
-    }
+    if (normalizePhone(rows[i][PCOL_PHONE - 1]) === p) return true;
   }
   return false;
 }
@@ -1493,7 +1510,8 @@ function doPost(e) {
        * وإذا انطبّق، التوصيل المجاني لأول طلب ينشال — واحد بس مو الاثنين.
        */
       const promoSettings = getStoreSettings();
-      const wantsPromo = String(data.promo || "").trim().toUpperCase() === SCAN_PROMO_CODE;
+      const activeCode = promoCodeNow(promoSettings);
+      const wantsPromo = String(data.promo || "").trim().toUpperCase() === activeCode;
       let promoDiscount = 0;
       let promoReason = "";
       if (wantsPromo) {
@@ -1505,7 +1523,7 @@ function doPost(e) {
         else if (promoExpired(promoSettings)) promoReason = "العرض انتهى";
         else if (maxUses > 0 && used >= maxUses) promoReason = "خلص العدد (" + used + "/" + maxUses + ")";
         else if (subtotal < minOrder) promoReason = "السلة أقل من " + minOrder;
-        else if (promoUsedBy(phone, SCAN_PROMO_CODE)) promoReason = "الرقم استفاد من قبل";
+        else if (promoUsedBy(phone)) promoReason = "الرقم استفاد من قبل";
         else {
           const want = Math.max(0, Number(promoSettings.scanPromoAmount) || 0);
           promoDiscount = Math.min(want, Math.max(0, subtotal - discount));
@@ -1560,7 +1578,7 @@ function doPost(e) {
       // طلبين بنفس الثانية ياخذون الخصم مرتين
       if (promoDiscount > 0) {
         getPromosSheet().appendRow([
-          new Date(), phone, SCAN_PROMO_CODE, promoDiscount, seqNo, data.visitorId || ""
+          new Date(), phone, activeCode, promoDiscount, seqNo, data.visitorId || ""
         ]);
       }
 
@@ -1887,12 +1905,12 @@ function doGet(e) {
     const phone = normalizePhone(e.parameter.phone);
     const maxU = Number(s.scanPromoMax) || 0;
     const usedCount = promoRedeemedCount();
-    const on = !!s.scanPromoOn && code === SCAN_PROMO_CODE &&
+    const on = !!s.scanPromoOn && code === promoCodeNow(s) &&
                !promoExpired(s) && (maxU === 0 || usedCount < maxU);
     /* ليش نرجّع سبب؟ لأن "موقّف" و"خلص العدد" و"انتهى التاريخ" كلهن
      * يطلعن on:false، ومن لوحة التحكم ما تنميّز — وصاحب المحل يدور بالعمياني. */
     let why = "";
-    if (code !== SCAN_PROMO_CODE) why = "code";
+    if (code !== promoCodeNow(s)) why = "code";
     else if (!s.scanPromoOn) why = "off";
     else if (promoExpired(s)) why = "expired";
     else if (maxU > 0 && usedCount >= maxU) why = "capped";
@@ -1906,7 +1924,7 @@ function doGet(e) {
       amount: on ? (Number(s.scanPromoAmount) || 0) : 0,
       minOrder: Number(s.scanPromoMin) || 0,
       // بلا رقم ما نگدر نجاوب — نخليها "لسه" مو "خلصت"
-      used: on && phone ? promoUsedBy(phone, code) : false,
+      used: on && phone ? promoUsedBy(phone) : false,
       known: !!phone
     });
   }

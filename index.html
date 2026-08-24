@@ -1796,13 +1796,14 @@
     requireNotifications: false,// true = ما يدخل التطبيق إلا بعد ما يفعّل الإشعارات
     requireInstall: false,      // true = شاشة التثبيت تطلع للكل، مو للجاي من الباركود بس
     promoText: "🚴 التوصيل الأول مجاني لكل زبون جديد!",
-    announcement: ""            // إعلان يظهر بأعلى الصفحة (فاضي = مخفي)
+    announcement: "",           // إعلان يظهر بأعلى الصفحة (فاضي = مخفي)
+    scanPromoCode: "SCAN1000"   // رمز عرض الباركود — يتبدّل من الإعدادات لإلغاء الروابط المنتشرة
   };
 
   // ---------- تحميل الإعدادات من settings.json ----------
   const SETTINGS_NUMBERS = ["deliveryFee","freeDeliveryOver","minOrderTotal","openHour","closeHour","quarterKgOverPrice","pointsPerOrder","roundTo"];
   const SETTINGS_BOOLS   = ["firstOrderFreeDelivery","manualClosed","requireNotifications","requireInstall"];
-  const SETTINGS_TEXTS   = ["closedMessage","promoText","announcement"];
+  const SETTINGS_TEXTS   = ["closedMessage","promoText","announcement","scanPromoCode"];
 
   const SETTINGS_CACHE_KEY = "janat-settings-cache";
 
@@ -1839,6 +1840,9 @@
       applySettingsToUI();
       updateStoreStatus();
       updateCartUI();
+      // وصلنا رمز العرض الحالي من السيرفر — نعيد المحاولة، لأن النداء
+      // الأول اشتغل على نسخة مخزّنة ممكن تكون على رمز قديم
+      if(typeof capturePromo === "function") capturePromo();
       // الإعدادات هي اللي تقرر إذا البوابة تشتغل — فننادي بعد ما توصل
       if(typeof maybeShowNotifGate === "function") maybeShowNotifGate();
     }catch(e){
@@ -1944,6 +1948,13 @@
    * من أول لحظة: إما "ربحت" أو "استفدت من قبل". أهون من إنه يفرح
    * ويوصل للسلة ويتفاجأ إن ماكو خصم.
    */
+  /* تنّادى مرتين: وحدة بالإقلاع من الإعدادات المخزّنة، ووحدة بعد ما توصل
+   * settings.json من الشبكة. السبب: لو صاحب المحل بدّل رمز العرض، النسخة
+   * المخزّنة بالجهاز تكون لسه على الرمز القديم — فالزبون اللي يصوّر
+   * الباركود الجديد ينرفض بالنداء الأول. النداء الثاني (بعد وصول
+   * الإعدادات) يمسك الرمز الجديد صح.
+   * البشارة ما تنعرض إلا مرة وحدة مهما انّادت الدالة. */
+  let promoBoxShown = false;
   function capturePromo(){
     let asked = "";
     try{ asked = (new URLSearchParams(location.search).get("promo") || "").trim().toUpperCase(); }
@@ -1951,17 +1962,17 @@
 
     const held = promoHeld();
     if(!asked && !held) return;                     // ماكو شي نسويه
-    if(asked && asked !== PROMO_CODE) return;       // رمز مو مالنا
+    if(asked && asked !== promoCode()) return;      // رمز مو مالنا (أو رمز قديم انلغى)
 
     if(asked && !held){
-      try{ localStorage.setItem(PROMO_KEY, JSON.stringify({ code: PROMO_CODE, at: Date.now() })); }
+      try{ localStorage.setItem(PROMO_KEY, JSON.stringify({ code: promoCode(), at: Date.now() })); }
       catch(e){}
     }
 
     // نسأل السيرفر: العرض شغّال؟ وهذا الرقم استفاد؟
     let phone = "";
     try{ phone = localStorage.getItem("janat-my-phone") || ""; }catch(e){}
-    const url = GOOGLE_SCRIPT_URL + "?promoCheck=" + PROMO_CODE +
+    const url = GOOGLE_SCRIPT_URL + "?promoCheck=" + encodeURIComponent(promoCode()) +
                 (phone ? "&phone=" + encodeURIComponent(phone) : "");
     fetch(url, { cache: "no-store" })
       .then(r=> r.json())
@@ -1970,12 +1981,12 @@
         // نعيد تطبيق الإعدادات حتى الشريط الأحمر يختفي لو صار إله خصم
         if(typeof applySettingsToUI === "function") applySettingsToUI();
         if(typeof updateCartUI === "function") updateCartUI();
-        if(asked) showPromoBox(d);
+        if(asked && !promoBoxShown){ promoBoxShown = true; showPromoBox(d); }
       })
       .catch(()=>{
         // ما وصل رد — ما نفرّحه بشي ما نعرف إذا إله. نخليه يشوف عند السلة
         promoState = null;
-        if(asked) showPromoBox(null);
+        if(asked && !promoBoxShown){ promoBoxShown = true; showPromoBox(null); }
       });
   }
 
@@ -2650,10 +2661,25 @@
    * لو خلّينا الجهاز يقرر، مسح بيانات المتصفح أو نافذة خفية يرجّع
    * الخصم من جديد كل مرة.
    */
-  const PROMO_CODE = "SCAN1000";           // ⚠️ نفسه بـapps-script.gs وبالباركود
+  /* ⚠️ الرمز صار يتبدّل من الإعدادات، مو ثابت بالكود.
+   *
+   * ليش؟ لأن الرمز يمشي مع الرابط. أي واحد يفتح رابط بيه ?promo=<الرمز>
+   * ياخذ الخصم حتى لو ما شاف الباركود بحياته — ولمن ينفتح مرة، ينحفظ
+   * بجهازه ٣٠ يوم. فلو الرابط انتشر بالواتساب أو الفيسبوك، ما ينفع
+   * ترقّعها: لازم تلغي الرمز نفسه.
+   *
+   * تبديل الرمز من ⚙️ إعدادات يلغي فوراً:
+   *   • كل الروابط اللي انتشرت
+   *   • كل الأجهزة اللي ماسكة الرمز القديم (promoHeld تقارن بالرمز الحالي)
+   * وبعدها تطبع باركود جديد بالرمز الجديد. */
   const PROMO_KEY  = "janat-promo";        // { code, at }
   const PROMO_USED_KEY = "janat-promo-used";
   let promoState = null;                   // { on, amount, minOrder, used }
+
+  // الرمز الشغّال هسه — من الإعدادات
+  function promoCode(){
+    return String((STORE && STORE.scanPromoCode) || "").trim().toUpperCase();
+  }
 
   /* هل هذا الزبون ماسك خصم باركود صالح؟ إذا نعم، التوصيل المجاني لأول
    * طلب ما إله — فنخفي كل وعد بيه من الواجهة بدل ما يشوفه ويتفاجأ */
@@ -2669,7 +2695,9 @@
       const raw = localStorage.getItem(PROMO_KEY);
       if(!raw) return null;
       const o = JSON.parse(raw);
-      if(!o || o.code !== PROMO_CODE) return null;
+      // الرمز المحفوظ لازم يطابق الرمز الشغّال هسه. لو صاحب المحل بدّل
+      // الرمز، كل جهاز ماسك القديم يخسره فوراً — وهذا هو المقصود.
+      if(!o || String(o.code||"").toUpperCase() !== promoCode()) return null;
       const age = Date.now() - (Number(o.at) || 0);
       if(age > PROMO_TTL_DAYS * 86400000){
         try{ localStorage.removeItem(PROMO_KEY); }catch(e){}
@@ -3204,7 +3232,7 @@
             firstOrder: isFirstOrder,
             referralPhone: referredByPhone,
             // مجرد طلب — السيرفر هو اللي يقرر إذا يستاهل وبكم
-            promo: promoHeld() ? PROMO_CODE : ""
+            promo: promoHeld() ? promoCode() : ""
         }));
         try{
           const data = await res.json();

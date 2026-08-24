@@ -31,6 +31,7 @@
     scanPromoAmount: 2000,
     scanPromoMin: 10000,
     scanPromoMax: 0,
+    scanPromoCode: "SCAN1000",
     scanPromoEnds: ""
   };
 
@@ -161,6 +162,30 @@
           <input type="date" id="setScanPromoEnds">
           <div class="sub">بعد هذا اليوم يوقف لحاله. اتركه فاضي = بلا نهاية.</div>
         </div>
+        <div class="set-field">
+          <label>🔑 رمز الباركود الحالي</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="text" id="setScanPromoCode" style="flex:1; text-transform:uppercase;">
+            <button type="button" id="rotatePromoCode"
+              style="white-space:nowrap; padding:10px 12px; border-radius:10px; border:0;
+                     background:#8E1B2E; color:#fff; font-weight:700; cursor:pointer;">
+              🔄 رمز جديد
+            </button>
+          </div>
+          <div class="sub">
+            🚨 <b>هذا حلّ مشكلة «الخصم يطلع للكل».</b> الخصم يمشي مع الرابط:
+            أي واحد يفتح رابط بيه <code>?promo=الرمز</code> ياخذ الخصم حتى لو ما
+            صوّر الباركود بحياته — ولمن يفتحه مرة، ينحفظ بجهازه ٣٠ يوم.
+            فإذا انتشر رابطك بالواتساب أو الفيسبوك، الحل الوحيد إنك
+            <b>تبدّل الرمز</b>.
+            <br>لمن تبدّله وتحفظ، فوراً:
+            <br>• كل الروابط القديمة تصير ما تنفع
+            <br>• كل جهاز ماسك الرمز القديم يخسره
+            <br>• الزباين اللي استفادوا من قبل <b>ما يرجعون ياخذون</b> (القفل على الرقم مو على الرمز)
+            <br>⚠️ وبعدها <b>لازم تطبع باركود جديد</b> — القديم يوّدي لرمز ملغى.
+          </div>
+          <div class="sub" id="promoCodeChanged" style="display:none;"></div>
+        </div>
       </div>
 
       <div class="set-card">
@@ -278,6 +303,17 @@
       });
     });
 
+    // زر «رمز جديد» — يولّد رمز عشوائي بلا حروف تلتبس (O/0 و I/1)
+    document.getElementById("rotatePromoCode").addEventListener("click", () => {
+      const al = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";   // بلا O و I
+      let out = "JN";
+      const buf = new Uint32Array(6);
+      (crypto || window.crypto).getRandomValues(buf);
+      for (let i = 0; i < 6; i++) out += al[buf[i] % al.length];
+      document.getElementById("setScanPromoCode").value = out;
+      readForm(); updatePreview();
+    });
+
     document.getElementById("view-settings").addEventListener("input", () => { readForm(); updatePreview(); });
     document.getElementById("view-settings").addEventListener("change", () => { readForm(); updatePreview(); });
     document.getElementById("setSaveBtn").addEventListener("click", save);
@@ -304,7 +340,10 @@
     document.getElementById("setScanPromoMin").value = settings.scanPromoMin ?? 10000;
     document.getElementById("setScanPromoMax").value = settings.scanPromoMax ?? 0;
     document.getElementById("setScanPromoEnds").value = settings.scanPromoEnds || "";
+    document.getElementById("setScanPromoCode").value = settings.scanPromoCode || "SCAN1000";
+    originalPromoCode = String(settings.scanPromoCode || "SCAN1000").toUpperCase();
     warnLowPromoCap();
+    notePromoCodeChange();
 
     document.querySelectorAll(".set-presets button").forEach(b => {
       b.classList.toggle("on", Number(b.dataset.fee) === Number(settings.deliveryFee));
@@ -319,6 +358,33 @@
   /* سقف واطي جداً معناه العرض يموت من أول زبون. هذا الغلط سهل يصير
    * لأن «سقف عدد المستفيدين» ممكن تنقرأ «كل زبون مرة وحدة» — فنكتبها
    * صريحة بالشاشة بدل ما ينتظر أيام ويكتشف إن العرض ما اشتغل لأحد. */
+  /* رمز العرض: نتذكر شنو كان لمن انفتحت الشاشة، حتى نحذّره إنه بدّله
+   * ولازم يطبع باركود جديد — أسهل غلط يصير: يبدّل الرمز وينسى الباركود. */
+  let originalPromoCode = "";
+
+  function notePromoCodeChange() {
+    const el = document.getElementById("promoCodeChanged");
+    if (!el) return;
+    const now = String(document.getElementById("setScanPromoCode").value || "")
+                  .trim().toUpperCase().replace(/\s+/g, "");
+    if (!now) {
+      el.style.display = "";
+      el.innerHTML = "🚨 <b>الرمز فاضي</b> — بلا رمز ماكو عرض باركود أصلاً.";
+      return;
+    }
+    if (originalPromoCode && now !== originalPromoCode) {
+      el.style.display = "";
+      el.innerHTML = "🔄 <b>بدّلت الرمز</b> من <code>" + originalPromoCode +
+        "</code> إلى <code>" + now + "</code>.<br>" +
+        "لمن تحفظ: كل الروابط القديمة تنلغي، وكل جهاز ماسك القديم يخسره. " +
+        "<b>ولازم تطبع باركود جديد</b> يوّدي لـ<br><code>" +
+        "https://a0113724-del.github.io/janat-store/?promo=" + now + "</code>";
+    } else {
+      el.style.display = "none";
+      el.innerHTML = "";
+    }
+  }
+
   function warnLowPromoCap() {
     const el = document.getElementById("scanPromoMaxWarn");
     if (!el) return;
@@ -356,7 +422,12 @@
     settings.scanPromoMin = num("setScanPromoMin");
     settings.scanPromoMax = num("setScanPromoMax");
     settings.scanPromoEnds = document.getElementById("setScanPromoEnds").value.trim();
+    // الرمز دائماً حروف كبيرة وبلا فراغات — لأن المقارنة بالسيرفر وبالتطبيق
+    // تصير بحروف كبيرة، وأي فراغ زايد يكسر الباركود بصمت
+    settings.scanPromoCode =
+      document.getElementById("setScanPromoCode").value.trim().toUpperCase().replace(/\s+/g, "");
     warnLowPromoCap();
+    notePromoCodeChange();
     document.querySelectorAll(".set-presets button").forEach(b => {
       b.classList.toggle("on", Number(b.dataset.fee) === Number(settings.deliveryFee));
     });
