@@ -647,6 +647,22 @@ function notifyCustomer(phone, title, body) {
  *   TELEGRAM_BOT_TOKEN  ← من @BotFather بتلغرام
  *   TELEGRAM_CHAT_ID    ← رقم محادثتك أو قناتك
  */
+/**
+ * شبكة أمان أخيرة لطول الرسالة.
+ *
+ * نقصّ عند آخر سطر كامل قبل الحد — مو بنص السطر. السبب: كل وسم HTML
+ * نكتبه (<b> و <code> و <a>) يفتح ويسكّر بنفس السطر، فالقص عند حد
+ * السطر ما يخلّي وسم مفتوح يكسر parse_mode ويرجّع خطأ من تلغرام.
+ */
+function tgFit(text) {
+  var LIMIT = 4000;                        // هامش تحت 4096 للذيل
+  var s = String(text || "");
+  if (s.length <= LIMIT) return s;
+  var cut = s.lastIndexOf("\n", LIMIT);
+  if (cut < LIMIT / 2) cut = LIMIT;        // سطر واحد طويل — نقصّه مباشرة
+  return s.slice(0, cut) + "\n\n… الرسالة طويلة، شوف باقي التفاصيل بالجدول.";
+}
+
 function sendTelegram(text) {
   const props = PropertiesService.getScriptProperties();
   const token = props.getProperty("TELEGRAM_BOT_TOKEN");
@@ -658,7 +674,7 @@ function sendTelegram(text) {
       contentType: "application/json",
       payload: JSON.stringify({
         chat_id: chatId,
-        text: text,
+        text: tgFit(text),
         parse_mode: "HTML",
         disable_web_page_preview: true
       }),
@@ -679,19 +695,35 @@ function tgEsc(v) {
 
 /** يبني رسالة الطلب بشكل مقروء */
 function telegramOrderText(o) {
-  const items = String(o.items || "")
+  /* ⚠️ تلغرام يرفض أي رسالة أطول من 4096 حرف ويرجّع HTTP 400 — والإشعار
+   * يضيع بصمت: الطلب ينحفظ بالجدول بس صاحب المحل ما يوصله شي. وهذا
+   * يصير فعلاً بطلب كبير أو ملاحظة طويلة (جرّبناه: 5,483 حرف).
+   * فنحدّد طول كل حقل، وبـ sendTelegram أكو شبكة أمان أخيرة. */
+  var MAX_ITEMS = 40;          // أطول قائمة معقولة
+  var MAX_NOTE  = 400;         // ملاحظة الزبون
+  var MAX_TXT   = 120;         // اسم / عنوان
+
+  function cap(v, n) {
+    var s = String(v == null ? "" : v);
+    return s.length > n ? s.slice(0, n - 1) + "…" : s;
+  }
+
+  var itemList = String(o.items || "")
     .replace(/\s*⟨ref:[^⟩]*⟩/, "")
     .split("|").map(function (x) { return x.trim(); })
-    .filter(function (x) { return x; })
-    .map(function (x) { return "• " + tgEsc(x); })
-    .join("\n");
+    .filter(function (x) { return x; });
+  var extra = itemList.length - MAX_ITEMS;
+  if (extra > 0) itemList = itemList.slice(0, MAX_ITEMS);
+  const items = itemList
+    .map(function (x) { return "• " + tgEsc(cap(x, MAX_TXT)); })
+    .join("\n") + (extra > 0 ? "\n• …و" + extra + " صنف غيرها (شوف الجدول)" : "");
 
   const L = [];
   L.push((o.flagged ? "⚠️ <b>طلب جديد فيه تنبيه</b>" : "🛒 <b>طلب جديد</b>") + " #" + tgEsc(o.seqNo));
   L.push("");
-  L.push("👤 " + tgEsc(o.name || "بدون اسم"));
+  L.push("👤 " + tgEsc(cap(o.name || "بدون اسم", MAX_TXT)));
   L.push("📞 <code>" + tgEsc(o.phone) + "</code>");
-  if (o.address) L.push("📍 " + tgEsc(o.address));
+  if (o.address) L.push("📍 " + tgEsc(cap(o.address, 300)));
   if (o.mapsUrl) L.push('🗺️ <a href="' + tgEsc(o.mapsUrl) + '">افتح الموقع على الخرائط</a>');
   if (items) { L.push(""); L.push("🧺 <b>الطلب:</b>"); L.push(items); }
   L.push("");
@@ -700,8 +732,8 @@ function telegramOrderText(o) {
   if (Number(o.promoDiscount) > 0) L.push("📷 خصم الباركود: −" + o.promoDiscount + " د.ع");
   L.push("<b>الإجمالي: " + o.total + " د.ع</b>");
   if (o.firstOrder) { L.push(""); L.push("🎁 أول طلب لهذا الزبون"); }
-  if (o.notes) { L.push(""); L.push("📝 " + tgEsc(o.notes)); }
-  if (o.flagged) { L.push(""); L.push("⚠️ <b>تنبيه:</b> " + tgEsc(o.flags)); }
+  if (o.notes) { L.push(""); L.push("📝 " + tgEsc(cap(o.notes, MAX_NOTE))); }
+  if (o.flagged) { L.push(""); L.push("⚠️ <b>تنبيه:</b> " + tgEsc(cap(o.flags, 300))); }
   return L.join("\n");
 }
 
@@ -1405,6 +1437,24 @@ function doPost(e) {
       } finally {
         lock.releaseLock();
       }
+    }
+
+    /* ───────────── حارس قبل فرع الطلب ─────────────
+     *
+     * فرع «طلب جديد» تحت هو الفرع الافتراضي: أي POST ما ينطبق على أي
+     * action معروف يوصل هنا وينسجّل كطلب شراء. وهذا خطر:
+     *   • أي غلطة إملائية بـ action (submitReviw بدل submitReview)
+     *     تنسجّل طلب وهمي بدل ما تطلع خطأ
+     *   • ورابط الويب-آب عام، فأي POST عشوائي معاه رقم شكله صحيح
+     *     يصير طلب وهمي، ياخذ رقم تسلسلي، ويدق إشعار بالبوت
+     *
+     * ⚠️ ما نگدر نشترط type === "order" — تطبيق الزبون ما يدزّه
+     * إطلاقاً (ولا نسخة من أول يوم)، والنسخ المخزّنة بأجهزة الزباين
+     * راح تنكسر كلها. الطلب الحقيقي ما بيه action ولا type، فنرفض
+     * أي شي يجي معاه واحد منهم وما نعرفه.
+     */
+    if (data.action || (data.type && String(data.type) !== "order")) {
+      return jsonOut({ status: "error", message: "أمر غير معروف" });
     }
 
     // ───────────── تسجيل طلب جديد ─────────────
