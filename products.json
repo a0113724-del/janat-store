@@ -185,7 +185,7 @@
   {
     "id": "bamia",
     "name": "بانيه (بامية)",
-    "price": 3000,
+    "price": 3500,
     "cat": "veg",
     "emoji": "🌿",
     "image": "images/bamia-1785118344047.jpg",
@@ -249,7 +249,8 @@
     "image": "images/figw-1785118481332.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 22
+    "order": 22,
+    "soldOut": true
   },
   {
     "id": "figb",
@@ -260,7 +261,8 @@
     "image": "images/figb-1785118505537.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 23
+    "order": 23,
+    "soldOut": true
   },
   {
     "id": "orange",
@@ -337,7 +339,7 @@
   {
     "id": "peach_tini",
     "name": "خوخ تيني",
-    "price": 2100,
+    "price": 2000,
     "cat": "fruit",
     "emoji": "🍑",
     "image": "images/peach_tini-1785118608639.jpg",
@@ -350,7 +352,7 @@
   {
     "id": "peach_musk",
     "name": "خوخ مسكي",
-    "price": 1400,
+    "price": 1700,
     "cat": "fruit",
     "emoji": "🍑",
     "image": "images/peach_musk-1785118623236.jpg",
@@ -363,7 +365,7 @@
   {
     "id": "peach_sofi",
     "name": "خوخ صوفي",
-    "price": 1500,
+    "price": 1000,
     "cat": "fruit",
     "emoji": "🍑",
     "image": "images/peach_sofi-1786410557127.jpg",
@@ -474,7 +476,7 @@
   {
     "id": "p1786410724425",
     "name": "عنب اسود ",
-    "price": 1250,
+    "price": 1000,
     "cat": "fruit",
     "unit": "كغم",
     "emoji": "🥬",
