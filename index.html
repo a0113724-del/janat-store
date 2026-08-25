@@ -3082,8 +3082,13 @@
       entries.forEach(([id,qty])=>{
         const p = findProduct(id);
         const unit = p.unit || "كغم";
-        msg += `• ${p.name} × ${qty} ${unit} = ${money(p.price*qty)}\n`;
-        itemsSummaryLines.push(`${p.name} × ${qty} ${unit}`);
+        // ⚠️ lineTotal مو p.price*qty — الثانية تتجاهل عرض الحزمة
+        // (٣ بـ٢٬٥٠٠ مثلاً)، فتطلع أسطر ما تجمع على المجموع الفرعي
+        const line = lineTotal(p, qty);
+        msg += `• ${p.name} × ${fmtQty(qty)} ${unit} × ${money(p.price)} = ${money(line)}\n`;
+        // نفس التفاصيل تروح للسيرفر → تلغرام. قبل كانت الكمية بس،
+        // فصاحب المحل يوصله «طماطة × 3 كغم» بلا أي سعر
+        itemsSummaryLines.push(`${p.name} × ${fmtQty(qty)} ${unit} × ${money(p.price)} = ${money(line)}`);
       });
     }
     if(customRequest){

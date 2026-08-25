@@ -687,6 +687,12 @@ function sendTelegram(text) {
   }
 }
 
+/** مبلغ بفواصل آلاف — «12,600 د.ع» أسهل بالقراءة من «12600 د.ع» */
+function money0(n) {
+  var v = Math.round(Number(n) || 0);
+  return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " د.ع";
+}
+
 /** يهرّب النص عشان parse_mode: HTML ما ينكسر باسم فيه < أو & */
 function tgEsc(v) {
   return String(v == null ? "" : v)
@@ -726,11 +732,22 @@ function telegramOrderText(o) {
   if (o.address) L.push("📍 " + tgEsc(cap(o.address, 300)));
   if (o.mapsUrl) L.push('🗺️ <a href="' + tgEsc(o.mapsUrl) + '">افتح الموقع على الخرائط</a>');
   if (items) { L.push(""); L.push("🧺 <b>الطلب:</b>"); L.push(items); }
+  /* ⚠️ لازم كل سطر ينقص من المجموع يبيّن هنا، وإلا الأرقام ما تجمع
+   * قدام صاحب المحل. كان ناقص سطر خصم النقاط: فرعي 12,600 + توصيل
+   * 1,000 والإجمالي مكتوب 10,600 — بلا أي تفسير للـ3,000 الناقصة. */
   L.push("");
-  L.push("المجموع الفرعي: " + o.subtotal + " د.ع");
-  L.push("رسوم التوصيل: " + (Number(o.fee) === 0 ? "مجاني 🎁" : o.fee + " د.ع"));
-  if (Number(o.promoDiscount) > 0) L.push("📷 خصم الباركود: −" + o.promoDiscount + " د.ع");
-  L.push("<b>الإجمالي: " + o.total + " د.ع</b>");
+  L.push("المجموع الفرعي: " + money0(o.subtotal));
+  L.push("رسوم التوصيل: " + (Number(o.fee) === 0 ? "مجاني 🎁" : money0(o.fee)));
+  if (Number(o.discount) > 0) {
+    L.push("⭐ خصم النقاط" +
+      (Number(o.pointsUsed) > 0 ? " (" + o.pointsUsed + " نقطة)" : "") +
+      ": −" + money0(o.discount));
+  }
+  if (Number(o.promoDiscount) > 0) L.push("📷 خصم الباركود: −" + money0(o.promoDiscount));
+  L.push("<b>الإجمالي: " + money0(o.total) + "</b>");
+  if (Number(o.pointsEarned) > 0) {
+    L.push("🎯 يربح " + o.pointsEarned + " نقطة بعد ما تأكّد الاستلام");
+  }
   if (o.firstOrder) { L.push(""); L.push("🎁 أول طلب لهذا الزبون"); }
   if (o.notes) { L.push(""); L.push("📝 " + tgEsc(cap(o.notes, MAX_NOTE))); }
   if (o.flagged) { L.push(""); L.push("⚠️ <b>تنبيه:</b> " + tgEsc(cap(o.flags, 300))); }
@@ -1680,6 +1697,9 @@ function doPost(e) {
         notes: data.notes || "",
         subtotal: subtotal,
         fee: serverFee,
+        discount: discount,           // خصم النقاط — بدونه الأرقام ما تجمع
+        pointsUsed: pointsUsed,
+        pointsEarned: pointsEarned,
         promoDiscount: promoDiscount,
         total: total,
         seqNo: seqNo,
@@ -1701,7 +1721,18 @@ function doPost(e) {
         promoReason: promoReason,
         total: total,
         firstOrder: isGenuinelyFirstOrder,
-        pointsBalance: Math.max(0, balance - pointsUsed + pointsEarned)
+        /* ⚠️ ما نزيد pointsEarned هنا.
+         *
+         * النقاط المكتسبة ما تنضاف لرصيد الزبون إلا لمن صاحب المحل
+         * يأكّد الاستلام (creditOrderPoints). لو رجّعناها بالرصيد هسه،
+         * الزبون يشوف بشارته "٢ نقطة" فوراً بعد الطلب — وبنفس الوقت
+         * checkPoints يكلّه "٠"، فيصير تناقض قدام عينه، ويحسب إنه
+         * يگدر يصرفها وهي أصلاً ما انضافت.
+         *
+         * الرصيد الصحيح هنا = رصيده ناقص اللي حجزه بهذا الطلب.
+         * والمكتسب يوصله برسالة "راح تحصل على X نقطة بعد الاستلام". */
+        pointsBalance: Math.max(0, balance - pointsUsed),
+        pointsPending: pointsEarned      // مكتسبة بس معلّقة لين الاستلام
       });
     } finally {
       lock.releaseLock();
