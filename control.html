@@ -2696,10 +2696,26 @@
       const hasBreakdown =
         o.subtotal !== undefined && o.subtotal !== null && o.subtotal !== "" && Number.isFinite(subtotalNum) &&
         o.deliveryFee !== undefined && o.deliveryFee !== null && o.deliveryFee !== "" && Number.isFinite(deliveryFeeNum);
+      /* ⚠️ جدول الطلبات ما بيه عمود للخصومات إطلاقاً — لا خصم النقاط
+       * ولا خصم الباركود. فكان الكارت يعرض: فرعي 15,775 + توصيل 1,000
+       * والإجمالي 14,775 — 2,000 ناقصة بلا أي تفسير، تماماً متل اللي
+       * كان يصير برسالة تلغرام.
+       *
+       * ما نضيف أعمدة للجدول (يكسر الصفوف القديمة). بدلها نستنتجهم:
+       *   • خصم النقاط = النقاط المصروفة ÷ 10 × 1,000  (محفوظة بعمود 11)
+       *   • خصم الباركود = الباقي بعد ما نطرح كلشي — ما ينحفظ بمكان ثاني
+       * وهذا يضبط حتى الطلبات القديمة اللي انسجّلت من زمان. */
+      const pointsUsedNum = Number(o.pointsUsed) || 0;
+      const pointsCut = Math.round(pointsUsedNum / 10) * 1000;
+      const rest = subtotalNum + deliveryFeeNum - pointsCut - Number(o.total);
+      const promoCut = rest > 0 ? rest : 0;
+
       const totalBlock = hasBreakdown
         ? `<div class="oc-total-breakdown">
             <div class="pb-row"><span>المجموع الفرعي</span><span>${money(subtotalNum)}</span></div>
-            <div class="pb-row"><span>رسوم التوصيل</span><span>${deliveryFeeNum === 0 ? "مجاني" : money(deliveryFeeNum)}</span></div>
+            <div class="pb-row"><span>رسوم التوصيل</span><span>${deliveryFeeNum === 0 ? "مجاني 🎁" : money(deliveryFeeNum)}</span></div>
+            ${pointsCut > 0 ? `<div class="pb-row" style="color:#8E1B2E;"><span>⭐ خصم النقاط (${pointsUsedNum} نقطة)</span><span>−${money(pointsCut)}</span></div>` : ""}
+            ${promoCut > 0 ? `<div class="pb-row" style="color:#8E1B2E;"><span>📷 خصم الباركود</span><span>−${money(promoCut)}</span></div>` : ""}
             <div class="pb-row pb-final"><span>الإجمالي</span><span>${money(o.total)}</span></div>
           </div>`
         : `<div class="oc-total">${money(o.total)}</div>`;
@@ -2712,7 +2728,7 @@
         </div>
         <div class="oc-phone">📞 ${showPhone(o.phone)}</div>
         ${locationLine}
-        <div class="oc-items">${esc(o.items).replace(/\|/g,"\n")}</div>
+        <div class="oc-items">${esc(String(o.items || "").replace(/\s*⟨ref:[^⟩]*⟩/g, "")).replace(/\|/g,"\n")}</div>
         <div class="oc-bottom">${totalBlock}<div class="oc-badges">${badges}</div></div>
         ${btn}
       </div>`;
