@@ -2255,28 +2255,11 @@ function doGet(e) {
     });
   }
 
-  if (e.parameter.orderStatus) {
-    const target = normalizePhone(e.parameter.orderStatus);
-    if (lastRow < 2 || target === "") return jsonOut({ found: false });
-    const rows = ordersSheet.getRange(2, 1, lastRow - 1, ORDERS_NUM_COLS).getValues();
-    let latest = null;
-    rows.forEach(function (row) {
-      if (normalizePhone(row[COL_PHONE - 1]) === target) {
-        if (!latest || new Date(row[0]) > new Date(latest[0])) latest = row;
-      }
-    });
-    if (!latest) return jsonOut({ found: false });
-    return jsonOut({
-      found: true,
-      time: latest[COL_TIME - 1],
-      items: latest[COL_ITEMS - 1],
-      subtotal: latest[COL_SUBTOTAL - 1],
-      total: latest[COL_TOTAL - 1],
-      deliveryFee: latest[COL_DELIVERY_FEE - 1],
-      seqNo: latest[COL_SEQ_NO - 1],
-      status: latest[COL_STATUS - 1] || DEFAULT_STATUS
-    });
-  }
+  /* ⚠️ انشال «orderStatus» — كان يرجّع آخر طلب كامل (المنتجات والمبلغ
+   * ورقم الطلب) لأي واحد يعرف رقم هاتف الزبون، بلا أي مفتاح. ومحد
+   * يستعمله: تتبّع الطلب صار عبر trackOrder المربوط بـUUID محد
+   * يخمّنه — انتبهنا للثغرة وقتها وصلّحناها هناك، بس هذا الفرع القديم
+   * بقى مفتوح. شيلناه قبل النشر. */
 
   if (lastRow < 2) {
     if (e.parameter.checkPhone) return jsonOut({ hasOrdered: false });
