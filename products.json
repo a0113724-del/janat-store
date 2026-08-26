@@ -323,7 +323,7 @@
     "unit": "كغم",
     "visible": true,
     "order": 28,
-    "soldOut": false
+    "soldOut": true
   },
   {
     "id": "apple_iraq",
