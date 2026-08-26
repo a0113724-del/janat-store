@@ -1,12 +1,12 @@
 {
   "deliveryFee": 1000,
   "freeDeliveryOver": 0,
-  "minOrderTotal": 5000,
+  "minOrderTotal": 0,
   "firstOrderFreeDelivery": true,
   "openHour": 8,
-  "closeHour": 18,
+  "closeHour": 22,
   "manualClosed": false,
-  "closedMessage": "مغلق للصيانه",
+  "closedMessage": "",
   "pointsPerOrder": 2,
   "roundTo": 250,
   "requireNotifications": false,
@@ -16,7 +16,7 @@
   "scanPromoOn": true,
   "scanPromoAmount": 2000,
   "scanPromoMin": 10000,
-  "scanPromoMax": 100,
-  "scanPromoEnds": "2026-08-28",
-  "scanPromoCode": "JNR6G23E"
+  "scanPromoMax": 0,
+  "scanPromoCode": "SCAN1000",
+  "scanPromoEnds": ""
 }
