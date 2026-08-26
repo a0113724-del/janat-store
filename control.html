@@ -122,6 +122,59 @@
     padding:9px 18px; border-radius:100px; font-size:.82rem; cursor:pointer; white-space:nowrap;
   }
   .save-bar{ display:flex; justify-content:flex-end; margin-bottom:12px; }
+
+  /* ⚡ وضع الأسعار السريع — صف واحد لكل منتج، أسعار اليوم بشاشة وحدة */
+  .fast-toggle{
+    width:100%; border:1.5px dashed var(--gold); background:#FFFBEF; color:#7a5a12;
+    font-family:inherit; font-weight:800; font-size:.82rem; padding:11px;
+    border-radius:12px; cursor:pointer; margin-bottom:10px; text-align:center;
+  }
+  .fast-toggle.on{ background:var(--gold); color:#3a2b06; border-style:solid; }
+  .fast-note{
+    background:#F6F1E1; border:1px dashed rgba(62,122,68,.3); border-radius:10px;
+    padding:9px 11px; font-size:.73rem; color:#5b5b4e; line-height:1.8; margin-bottom:10px;
+  }
+  .fp-cat{
+    font-size:.76rem; font-weight:900; color:var(--forest);
+    margin:12px 2px 6px; padding-bottom:4px; border-bottom:1.5px solid rgba(62,122,68,.18);
+  }
+  .fp-row{
+    display:flex; align-items:center; gap:9px; padding:7px 9px; border-radius:10px;
+    border:1px solid var(--line); background:var(--card); margin-bottom:5px;
+  }
+  .fp-row.changed{ background:#FFF8E1; border-color:var(--gold); }
+  .fp-row.out{ opacity:.55; }
+  .fp-nm{ flex:1; min-width:0; font-size:.83rem; font-weight:700; color:var(--ink);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .fp-nm small{ display:block; font-weight:500; font-size:.66rem; color:#9a9a90; }
+  /* dir=ltr حتى الرقم ما ينقلب، و inputmode=decimal يفتح لوحة أرقام بالموبايل */
+  .fp-row input.f-price{
+    width:92px; flex:0 0 auto; text-align:center; direction:ltr;
+    border:1.5px solid rgba(62,122,68,.25); border-radius:9px;
+    padding:9px 6px; font-family:inherit; font-size:.9rem; font-weight:800;
+    background:#fff; color:var(--ink);
+  }
+  .fp-row input.f-price:focus{ outline:none; border-color:var(--leaf); background:#F7FFF8; }
+  .fp-was{ flex:0 0 auto; width:58px; text-align:center; font-size:.68rem; color:#9a9a90; direction:ltr; }
+  .fp-was b{ color:#1e6b2b; }
+  .fp-was b.dn{ color:#8E1B2E; }
+  .fp-out{
+    flex:0 0 auto; border:1px solid var(--line); background:#fff; border-radius:8px;
+    padding:6px 8px; font-size:.9rem; cursor:pointer; line-height:1;
+  }
+  .fp-out.on{ background:#FDEDEA; border-color:rgba(161,58,46,.5); }
+  /* الشريط يلزق فوق شريط التنقّل السفلي — بدونه ينخبى وراه.
+   * وهو نفسه زر الحفظ: لمن يخلص التبديل، الزر تحت إيده مباشرة
+   * بدل ما يرجع يسحب للأعلى يدوّر على «حفظ». */
+  .fp-sum{
+    position:sticky; z-index:5;
+    bottom:calc(64px + env(safe-area-inset-bottom));
+    background:var(--forest); color:#E9CD86; border:none; width:100%;
+    border-radius:12px; padding:12px 13px; font-family:inherit;
+    font-size:.79rem; font-weight:800; text-align:center; margin-top:12px;
+    box-shadow:0 6px 18px rgba(21,49,34,.28);
+  }
+  .fp-sum.ready{ background:var(--leaf); color:#fff; cursor:pointer; }
   .save-btn{
     background:var(--forest); color:var(--gold-light); border:none; font-weight:800;
     padding:11px 22px; border-radius:12px; font-size:.86rem; cursor:pointer;
@@ -661,6 +714,11 @@
         <button class="add-btn" id="addProductBtn">+ إضافة منتج</button>
         <button class="ghost-btn" id="undoBtn">↩️ رجّع نسخة سابقة</button>
       </div>
+      <button class="fast-toggle" id="fastPricesBtn">⚡ وضع الأسعار السريع — بدّل أسعار اليوم كلها بشاشة وحدة</button>
+      <div class="fast-note" id="fastNote" style="display:none;">
+        اكتب السعر واضغط <b>Enter</b> ينقلك للمنتج الجاي. الأصفر = بدّلته.
+        ولمن تخلص اضغط <b>💾 حفظ كل التغييرات</b>.
+      </div>
       <div class="save-bar"><button class="save-btn" id="saveAllBtn" disabled>💾 حفظ كل التغييرات</button></div>
       <div class="product-list" id="productList"></div>
     </div>
@@ -971,6 +1029,8 @@
   let dirty = false;
   let catFilter = "all";
   let searchTerm = "";
+  let priceSnapshot = {};      // سعر كل منتج وقت فتح اللوحة
+  let fastPrices = false;      // وضع الأسعار السريع شغّال؟
   let allOrders = [];
   let allCustomers = [];
   let soundEnabled = false;
@@ -1073,6 +1133,11 @@
     const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g,""))));
     products = JSON.parse(decoded);
     products.forEach((p,i)=>{ if(p.order===undefined) p.order=i; if(p.visible===undefined) p.visible=true; });
+
+    /* صورة للأسعار وقت ما انفتحت اللوحة — «وضع الأسعار السريع» يقارن
+     * بيها حتى يبيّن شنو بدّلت اليوم قبل ما تحفظ. */
+    priceSnapshot = {};
+    products.forEach(p=>{ priceSnapshot[p.id] = Number(p.price) || 0; });
 
     // ⚠️ مفتاح قراءة-بس يدخّلك عادي ويعرضلك كل منتجاتك — وما تكتشف
     // إنه ناقص صلاحية إلا لمن تعدّل عشر أسعار وتضغط حفظ ويرفض.
@@ -2179,7 +2244,79 @@
     </div>`;
   }
 
+  /* ⚡ صف الأسعار السريع.
+   *
+   * ⚠️ مقصود إنه يستعمل نفس class="f-price" و data-id مال البطاقة
+   * الكاملة، ونفس data-out لزر «نفدت». يعني مستمعات الأحداث الموجودة
+   * (input / click على #productList) تشتغل عليه لحالها: السعر ينحفظ
+   * بنفس المكان، وتحذير العرض والهامش ينتحدثون، و markDirty تنّادى.
+   * ماكو مسار حفظ ثاني — وهذا اللي يخلي الوضع السريع بلا مخاطرة. */
+  function fastRow(p){
+    const was = Number(priceSnapshot[p.id]) || 0;
+    const now = Number(p.price) || 0;
+    const diff = was && now && now !== was;
+    const arrow = diff ? (now > was ? "▲" : "▼") : "";
+    const cls = diff ? (now > was ? "" : "dn") : "";
+    return `<div class="fp-row ${diff?'changed':''} ${p.soldOut?'out':''}" data-fprow="${p.id}">
+      <button class="fp-out" data-out="${p.id}" title="${p.soldOut?'نافد — اضغط لإرجاعه':'متوفّر — اضغط إذا خلص'}">${p.soldOut?'🚫':'✅'}</button>
+      <span class="fp-nm">${esc(p.name)}<small>${esc(p.unit||'كغم')}</small></span>
+      <span class="fp-was">${diff ? `<b class="${cls}">${arrow} ${fmtIQD(was)}</b>` : (was?fmtIQD(was):'—')}</span>
+      <input type="number" class="f-price" data-id="${p.id}" min="0" step="250"
+             inputmode="decimal" value="${now||''}" placeholder="0">
+    </div>`;
+  }
+
+  function renderFastPrices(){
+    const sorted = [...products].sort((a,b)=>(a.order??999)-(b.order??999));
+    const filtered = sorted.filter(p=>{
+      if(catFilter !== "all" && p.cat !== catFilter) return false;
+      if(searchTerm && !p.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      return true;
+    });
+    if(!filtered.length){
+      document.getElementById("productList").innerHTML = `<p class="empty-note">لا توجد منتجات مطابقة</p>`;
+      return;
+    }
+    // نجمّعهم خضروات ثم فواكه — نفس ترتيب ما تمشي على بضاعتك
+    const groups = [["veg","🥬 الخضروات"], ["fruit","🍉 الفواكه"]];
+    let html = "";
+    groups.forEach(([cat,title])=>{
+      const rows = filtered.filter(p=>p.cat===cat);
+      if(!rows.length) return;
+      html += `<div class="fp-cat">${title} <span style="color:#9a9a90;font-weight:600;">(${rows.length})</span></div>`;
+      html += rows.map(fastRow).join("");
+    });
+    const other = filtered.filter(p=>p.cat!=="veg" && p.cat!=="fruit");
+    if(other.length){
+      html += `<div class="fp-cat">📦 غيرها</div>` + other.map(fastRow).join("");
+    }
+    html += `<button type="button" class="fp-sum" id="fpSum"></button>`;
+    document.getElementById("productList").innerHTML = html;
+    updateFastSummary();
+  }
+
+  /* عدّاد «شكد بدّلت» — يخليه يعرف إنه خلص كلشي قبل ما يحفظ */
+  function updateFastSummary(){
+    const el = document.getElementById("fpSum");
+    if(!el) return;
+    let changed = 0, out = 0;
+    products.forEach(p=>{
+      const was = Number(priceSnapshot[p.id]) || 0;
+      if(was && Number(p.price) && Number(p.price) !== was) changed++;
+      if(p.soldOut) out++;
+    });
+    // الشريط نفسه يصير زر الحفظ لمن يصير أكو شي ينحفظ
+    const dirtyNow = !document.getElementById("saveAllBtn").disabled;
+    el.classList.toggle("ready", dirtyNow);
+    el.innerHTML = changed
+      ? `✏️ بدّلت <b>${changed}</b> سعر` + (out?` · 🚫 <b>${out}</b> نافد`:"") + ` — اضغط هنا للحفظ 💾`
+      : (dirtyNow
+          ? `💾 عندك تعديلات — اضغط هنا للحفظ` + (out?` · 🚫 <b>${out}</b> نافد`:"")
+          : `ماكو تبديل لهسه` + (out?` · 🚫 <b>${out}</b> نافد`:""));
+  }
+
   function renderProductList(){
+    if(fastPrices) return renderFastPrices();
     const sorted = [...products].sort((a,b)=>(a.order??999)-(b.order??999));
     const filtered = sorted.filter(p=>{
       if(catFilter !== "all" && p.cat !== catFilter) return false;
@@ -2191,13 +2328,81 @@
       : `<p class="empty-note">لا توجد منتجات مطابقة</p>`;
   }
 
+  // الضغط على شريط الملخّص = نفس زر الحفظ الأصلي (مو مسار حفظ ثاني)
+  document.getElementById("productList").addEventListener("click",(e)=>{
+    if(e.target.closest("#fpSum")){
+      const sb = document.getElementById("saveAllBtn");
+      if(sb && !sb.disabled) sb.click();
+    }
+  });
+
+  document.getElementById("fastPricesBtn").addEventListener("click", ()=>{
+    fastPrices = !fastPrices;
+    const btn = document.getElementById("fastPricesBtn");
+    btn.classList.toggle("on", fastPrices);
+    btn.textContent = fastPrices
+      ? "⚡ وضع الأسعار السريع شغّال — اضغط للرجوع للتفاصيل الكاملة"
+      : "⚡ وضع الأسعار السريع — بدّل أسعار اليوم كلها بشاشة وحدة";
+    document.getElementById("fastNote").style.display = fastPrices ? "" : "none";
+    // أزرار الترتيب والإضافة ما إلهن معنى بوضع الأسعار
+    document.getElementById("addProductBtn").style.display = fastPrices ? "none" : "";
+    renderProductList();
+  });
+
+  /* Enter ينقلك للسعر الجاي — أهم شي يخلي التبديل سريع فعلاً،
+   * بدل ما تضغط على كل خانة بيدك على شاشة موبايل. */
+  document.getElementById("productList").addEventListener("keydown",(e)=>{
+    if(!fastPrices || e.key !== "Enter") return;
+    if(!e.target.classList.contains("f-price")) return;
+    e.preventDefault();
+    const all = [...document.querySelectorAll("#productList input.f-price")];
+    const i = all.indexOf(e.target);
+    if(i > -1 && i + 1 < all.length){ all[i+1].focus(); all[i+1].select(); }
+    else e.target.blur();
+  });
+
+  /* تحديث فوري للتلوين والعدّاد وأنت تكتب.
+   *
+   * ⚠️ نقرا القيمة من الحقل نفسه (e.target.value) مو من p.price.
+   * السبب: هذا المستمع مسجّل قبل المستمع اللي يكتب p.price، فلو
+   * قرينا من المنتج نطلع بقيمة قديمة بخانة وحدة دائماً. */
+  document.getElementById("productList").addEventListener("input",(e)=>{
+    if(!fastPrices || !e.target.classList.contains("f-price")) return;
+    const id = e.target.dataset.id;
+    const p = findProduct(id); if(!p) return;
+    p.price = Number(e.target.value) || 0;      // نضمن إنها محدّثة قبل العدّاد
+    const row = document.querySelector(`[data-fprow="${id}"]`);
+    const was = Number(priceSnapshot[id]) || 0;
+    const now = Number(e.target.value) || 0;
+    const diff = was && now && now !== was;
+    if(row){
+      row.classList.toggle("changed", !!diff);
+      const w = row.querySelector(".fp-was");
+      if(w){
+        w.innerHTML = diff
+          ? `<b class="${now>was?'':'dn'}">${now>was?'▲':'▼'} ${fmtIQD(was)}</b>`
+          : (was ? fmtIQD(was) : "—");
+      }
+    }
+    updateFastSummary();
+  });
+
   document.getElementById("productList").addEventListener("click",(e)=>{
     const out = e.target.closest("[data-out]");
     if(out){
       const p = findProduct(out.dataset.out); if(!p) return;
       p.soldOut = !p.soldOut;
       out.classList.toggle("on", !!p.soldOut);
-      out.textContent = p.soldOut ? "🚫 نفدت الكمية — اضغط لإرجاعه" : "✅ متوفّر — اضغط إذا خلص";
+      // نفس الزر بشكلين: بوضع الأسعار السريع مجرد أيقونة (المساحة ضيقة)
+      if(fastPrices){
+        out.textContent = p.soldOut ? "🚫" : "✅";
+        out.title = p.soldOut ? "نافد — اضغط لإرجاعه" : "متوفّر — اضغط إذا خلص";
+        const row = document.querySelector(`[data-fprow="${p.id}"]`);
+        if(row) row.classList.toggle("out", !!p.soldOut);
+        updateFastSummary();
+      }else{
+        out.textContent = p.soldOut ? "🚫 نفدت الكمية — اضغط لإرجاعه" : "✅ متوفّر — اضغط إذا خلص";
+      }
       markDirty();
       return;
     }
