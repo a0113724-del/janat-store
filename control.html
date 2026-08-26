@@ -804,6 +804,14 @@
       <div class="rank-list" id="promoLog"></div>
       <p class="note-line" id="promoNote"></p>
 
+      <!-- منو دعا صديق وربح — مكافأة الإحالة -->
+      <div class="section-h">🤝 منو دعا صديق وربح</div>
+      <div class="stats-row" id="refStatsRow"></div>
+      <div class="rank-list" id="refLog"></div>
+      <div class="section-h" style="font-size:.78rem; opacity:.85;">⏳ دعوات ما اكتملت بعد</div>
+      <div class="rank-list" id="refPending"></div>
+      <p class="note-line" id="refNote"></p>
+
       <!-- صافي الربح -->
       <div class="section-h">💰 صافي الربح</div>
       <div id="profitBox"></div>
@@ -1688,6 +1696,96 @@
     if(d.startsWith("0")) d = d.slice(1);
     return `https://wa.me/964${d}?text=${encodeURIComponent(text)}`;
   }
+  /* ═══════════ منو دعا صديق وربح ═══════════
+   *
+   * الشرط بالسيرفر (creditOrderPoints): الداعي ياخذ ١٠ نقاط = ١٬٠٠٠ دينار
+   * لمن الصديق المدعو **يستلم** طلبه فعلاً، وبشرط الطلب ≥ ١٠٬٠٠٠.
+   * فنحسبها بنفس الشرطين بالضبط:
+   *   • عمود «referredBy» بالطلب مملوء (يعني هذا الطلب من صديق مدعو)
+   *   • pointsProcessed = "نعم" (تأكيد الاستلام صار → المكافأة انصرفت)
+   *   • الإجمالي ≥ ١٠٬٠٠٠
+   * وأي دعوة تنقص شرط منهم نعرضها بقسم «ما اكتملت» — هذول زبائن
+   * تكدر تتابعهم بدل ما تضيع.
+   */
+  const REF_BONUS_POINTS = 10;      // نفس REFERRAL_BONUS_POINTS بـ apps-script
+  const REF_MIN_TOTAL    = 10000;   // نفس REFERRAL_MIN_ORDER_TOTAL
+  const REF_BONUS_IQD    = (REF_BONUS_POINTS / 10) * 1000;
+
+  function custName(phone){
+    const c = allCustomers.find(x=> normalizePhone(x.phone) === normalizePhone(phone));
+    return (c && c.name) || "";
+  }
+
+  function renderReferrals(){
+    const row  = document.getElementById("refStatsRow");
+    const log  = document.getElementById("refLog");
+    const pend = document.getElementById("refPending");
+    const note = document.getElementById("refNote");
+    if(!row || !log) return;
+
+    const invited = allOrders.filter(o => String(o.referredBy || "").trim());
+    const earned = [], waiting = [];
+    invited.forEach(o=>{
+      const done = String(o.pointsProcessed || "").trim() === "نعم";
+      const big  = Number(o.total) >= REF_MIN_TOTAL;
+      (done && big ? earned : waiting).push(o);
+    });
+
+    // نجمّعهم حسب الداعي — الواحد ممكن يدعو أكثر من صديق
+    const byRef = {};
+    earned.forEach(o=>{
+      const k = normalizePhone(o.referredBy);
+      if(!byRef[k]) byRef[k] = { phone:k, times:0, friends:[] };
+      byRef[k].times++;
+      byRef[k].friends.push({ name:o.name, phone:o.phone, total:Number(o.total)||0, at:o.time, seqNo:o.seqNo });
+    });
+    const winners = Object.values(byRef).sort((a,b)=> b.times - a.times);
+    const totalPaid = earned.length * REF_BONUS_IQD;
+
+    row.innerHTML = [
+      { lbl:"عدد اللي ربحوا",  val: arNum(winners.length) },
+      { lbl:"مرات الربح",      val: arNum(earned.length) },
+      { lbl:"كلّفتك",          val: money(totalPaid) }
+    ].map(s=>`<div class="stat-card"><div class="lbl">${s.lbl}</div><div class="val">${s.val}</div></div>`).join("");
+
+    log.innerHTML = winners.length
+      ? winners.slice(0,40).map((w,i)=>{
+          const nm = custName(w.phone) || showPhone(w.phone);
+          const who = w.friends.map(f=> (f.name || showPhone(f.phone))).join("، ");
+          return `<div class="rank-row">
+            <span class="num">${i+1}</span>
+            <span class="nm">${esc(nm)}
+              <small>${esc(showPhone(w.phone))} · جاب ${arNum(w.times)} ${w.times===1?"صديق":"أصدقاء"}: ${esc(who)}</small></span>
+            <span class="qt">${money(w.times * REF_BONUS_IQD)}</span>
+          </div>`;
+        }).join("")
+      : `<div class="rank-row"><span class="nm">لسه ما ربح أحد من الدعوات</span></div>`;
+
+    if(pend){
+      pend.innerHTML = waiting.length
+        ? waiting.slice(0,20).map(o=>{
+            const why = String(o.pointsProcessed||"").trim() !== "نعم"
+              ? "ما تأكّد الاستلام بعد"
+              : `الطلب ${money(o.total)} — أقل من ${money(REF_MIN_TOTAL)}`;
+            const inviter = custName(o.referredBy) || showPhone(o.referredBy);
+            return `<div class="rank-row">
+              <span class="num" style="background:var(--gold);color:#3a2b06">⏳</span>
+              <span class="nm">${esc(o.name || showPhone(o.phone))}
+                <small>دعاه ${esc(inviter)} · ${esc(why)}</small></span>
+              <span class="qt" style="color:#9a9a90">—</span>
+            </div>`;
+          }).join("")
+        : `<div class="rank-row"><span class="nm">ماكو دعوات معلّقة</span></div>`;
+    }
+
+    if(note){
+      note.className = "note-line";
+      note.innerHTML = `الداعي ياخذ <b>${money(REF_BONUS_IQD)}</b> (${REF_BONUS_POINTS} نقاط) لمن صديقه ` +
+        `<b>يستلم</b> طلبه وقيمته <b>${money(REF_MIN_TOTAL)}</b> فما فوق. ` +
+        `الدعوات المعلّقة تحت تصير ربح تلقائياً لمن تضغط «تأكيد الاستلام» لطلب الصديق.`;
+    }
+  }
+
   function renderDormant(){
     const box = document.getElementById("dormList");
     if(!box) return;
@@ -3370,6 +3468,7 @@
         allCustomers = custData;
         renderCustomersTable(allCustomers, document.getElementById("customerSearch").value);
         renderDormant();
+        renderReferrals();   // يحتاج أسماء الزبائن، فينّادى بعد ما توصل
       }
       if(revData && !revData._err && checkAuth(revData)) renderReviews(revData);
 
