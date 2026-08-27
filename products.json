@@ -481,5 +481,38 @@
     "order": 41,
     "onSale": true,
     "oldPrice": 1500
+  },
+  {
+    "id": "p1787825620930",
+    "name": "بروكلي",
+    "price": 4000,
+    "cat": "veg",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": "images/p1787825620930-1787825632814.jpg",
+    "visible": true,
+    "order": 42
+  },
+  {
+    "id": "p1787825621730",
+    "name": "منكه",
+    "price": 2500,
+    "cat": "veg",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": "images/p1787825621730-1787825645061.jpg",
+    "visible": true,
+    "order": 43
+  },
+  {
+    "id": "p1787825622482",
+    "name": "عنجاص",
+    "price": 1500,
+    "cat": "veg",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": "images/p1787825622482-1787825657140.jpg",
+    "visible": true,
+    "order": 44
   }
 ]
