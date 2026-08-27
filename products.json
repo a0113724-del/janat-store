@@ -497,7 +497,7 @@
     "id": "p1787825621730",
     "name": "منكه",
     "price": 2500,
-    "cat": "veg",
+    "cat": "fruit",
     "unit": "كغم",
     "emoji": "🥬",
     "image": "images/p1787825621730-1787825645061.jpg",
@@ -508,11 +508,22 @@
     "id": "p1787825622482",
     "name": "عنجاص",
     "price": 1500,
-    "cat": "veg",
+    "cat": "fruit",
     "unit": "كغم",
     "emoji": "🥬",
     "image": "images/p1787825622482-1787825657140.jpg",
     "visible": true,
     "order": 44
+  },
+  {
+    "id": "p1787826364316",
+    "name": "كيوي",
+    "price": 2500,
+    "cat": "veg",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": "images/p1787826364316-1787826679206.jpg",
+    "visible": true,
+    "order": 45
   }
 ]
