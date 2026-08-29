@@ -17,6 +17,6 @@
   "scanPromoAmount": 2000,
   "scanPromoMin": 10000,
   "scanPromoMax": 0,
-  "scanPromoCode": "SCAN1000",
+  "scanPromoCode": "",
   "scanPromoEnds": ""
 }
