@@ -344,7 +344,7 @@
   {
     "id": "peach_musk",
     "name": "خوخ مسكي",
-    "price": 1700,
+    "price": 1900,
     "cat": "fruit",
     "emoji": "🍑",
     "image": "images/peach_musk-1785118623236.jpg",
@@ -385,7 +385,8 @@
     "image": "images/apricot-1785118658898.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 34
+    "order": 34,
+    "soldOut": true
   },
   {
     "id": "pear",
@@ -479,28 +480,6 @@
     "oldPrice": 1500
   },
   {
-    "id": "p1787825620930",
-    "name": "بروكلي",
-    "price": 4000,
-    "cat": "veg",
-    "unit": "كغم",
-    "emoji": "🥬",
-    "image": "images/p1787825620930-1787825632814.jpg",
-    "visible": true,
-    "order": 42
-  },
-  {
-    "id": "p1787825621730",
-    "name": "منكه",
-    "price": 2500,
-    "cat": "fruit",
-    "unit": "كغم",
-    "emoji": "🥬",
-    "image": "images/p1787825621730-1787825645061.jpg",
-    "visible": true,
-    "order": 43
-  },
-  {
     "id": "p1787825622482",
     "name": "عنجاص",
     "price": 1500,
@@ -510,16 +489,5 @@
     "image": "images/p1787825622482-1787825657140.jpg",
     "visible": true,
     "order": 44
-  },
-  {
-    "id": "p1787826364316",
-    "name": "كيوي",
-    "price": 2500,
-    "cat": "fruit",
-    "unit": "كغم",
-    "emoji": "🥬",
-    "image": "images/p1787826364316-1787826679206.jpg",
-    "visible": true,
-    "order": 45
   }
 ]
