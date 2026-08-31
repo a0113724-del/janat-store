@@ -2,7 +2,7 @@
   "deliveryFee": 1000,
   "freeDeliveryOver": 0,
   "minOrderTotal": 0,
-  "firstOrderFreeDelivery": true,
+  "firstOrderFreeDelivery": false,
   "openHour": 8,
   "closeHour": 21,
   "manualClosed": false,
@@ -17,6 +17,6 @@
   "scanPromoAmount": 2000,
   "scanPromoMin": 10000,
   "scanPromoMax": 0,
-  "scanPromoCode": "",
+  "scanPromoCode": "SCAN1000",
   "scanPromoEnds": ""
 }
