@@ -39,18 +39,14 @@
   {
     "id": "eggplant",
     "name": "باذنجان",
-    "price": 750,
+    "price": 850,
     "cat": "veg",
     "emoji": "🍆",
     "image": "images/eggplant-1785117873353.jpg",
     "unit": "كغم",
     "visible": true,
     "order": 3,
-    "onSale": false,
-    "bundle": {
-      "qty": 3,
-      "price": 2000
-    }
+    "onSale": false
   },
   {
     "id": "zucchini",
