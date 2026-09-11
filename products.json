@@ -2,7 +2,7 @@
   {
     "id": "tomato",
     "name": "طماطة",
-    "price": 850,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🍅",
     "image": "images/tomato-1785117823924.jpg",
@@ -15,7 +15,7 @@
   {
     "id": "cucumber",
     "name": "خيار",
-    "price": 900,
+    "price": 750,
     "cat": "veg",
     "emoji": "🥒",
     "image": "images/cucumber-1785117845595.jpg",
@@ -23,7 +23,11 @@
     "onSale": false,
     "visible": true,
     "order": 1,
-    "oldPrice": 0
+    "oldPrice": 750,
+    "bundle": {
+      "qty": 3,
+      "price": 2000
+    }
   },
   {
     "id": "potato",
@@ -39,7 +43,7 @@
   {
     "id": "eggplant",
     "name": "باذنجان",
-    "price": 850,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🍆",
     "image": "images/eggplant-1785117873353.jpg",
