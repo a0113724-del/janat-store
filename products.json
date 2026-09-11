@@ -121,22 +121,18 @@
   {
     "id": "onionw",
     "name": "بصل ابيض",
-    "price": 850,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🧅",
     "image": "images/onionw-1785118269464.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 10,
-    "bundle": {
-      "qty": 3,
-      "price": 2000
-    }
+    "order": 10
   },
   {
     "id": "oniony",
     "name": "بصل اصفر",
-    "price": 850,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🧅",
     "image": "images/oniony-1785118290445.jpg",
