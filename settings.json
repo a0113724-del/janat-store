@@ -12,7 +12,7 @@
   "requireNotifications": false,
   "requireInstall": false,
   "promoText": "🚴 التوصيل الأول مجاني لكل زبون جديد!",
-  "announcement": "",
+  "announcement": "⚠️ عطل مؤقت بإتمام الطلب — أرسل طلبك عبر واتساب وراح نسجله يدوياً. نعتذر ونشتغل على الحل 🙏",
   "scanPromoOn": false,
   "scanPromoAmount": 2000,
   "scanPromoMin": 10000,
