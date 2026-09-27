@@ -12,7 +12,7 @@
   "requireNotifications": false,
   "requireInstall": false,
   "promoText": "🚴 التوصيل الأول مجاني لكل زبون جديد!",
-  "announcement": "🚚 توصيل الطلبات يبدأ من الساعة 9:30 صباحاً",
+  "announcement": "",
   "scanPromoOn": false,
   "scanPromoAmount": 2000,
   "scanPromoMin": 10000,
