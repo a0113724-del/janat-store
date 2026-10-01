@@ -432,7 +432,7 @@
   {
     "id": "dates",
     "name": "تمر",
-    "price": 1500,
+    "price": 2500,
     "cat": "fruit",
     "emoji": "🌴",
     "image": "images/dates-1786410481883.jpg",
@@ -443,7 +443,7 @@
   {
     "id": "p1786409740968",
     "name": "رمان مصري ",
-    "price": 1000,
+    "price": 1500,
     "cat": "fruit",
     "unit": "كغم",
     "emoji": "🥬",
@@ -473,7 +473,7 @@
   {
     "id": "p1786410724425",
     "name": "عنب اسود ",
-    "price": 1000,
+    "price": 1500,
     "cat": "fruit",
     "unit": "كغم",
     "emoji": "🥬",
