@@ -450,7 +450,7 @@
     "image": "images/p1786409740968-1786409982391.jpg",
     "visible": true,
     "order": 39,
-    "onSale": true,
+    "onSale": false,
     "oldPrice": 1500
   },
   {
@@ -464,11 +464,7 @@
     "visible": true,
     "order": 40,
     "onSale": true,
-    "oldPrice": 5000,
-    "bundle": {
-      "qty": 2,
-      "price": 5000
-    }
+    "oldPrice": 5000
   },
   {
     "id": "p1786410724425",
