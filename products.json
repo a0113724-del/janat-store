@@ -344,7 +344,7 @@
   {
     "id": "peach_musk",
     "name": "خوخ مسكي",
-    "price": 1250,
+    "price": 1500,
     "cat": "fruit",
     "emoji": "🍑",
     "image": "images/peach_musk-1785118623236.jpg",
@@ -368,7 +368,7 @@
   {
     "id": "lemon",
     "name": "ليمون",
-    "price": 1250,
+    "price": 1500,
     "cat": "fruit",
     "emoji": "🍋",
     "image": "images/lemon-1785118635914.jpg",
