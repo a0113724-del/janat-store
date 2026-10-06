@@ -15,7 +15,7 @@
   {
     "id": "cucumber",
     "name": "خيار",
-    "price": 750,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🥒",
     "image": "images/cucumber-1785117845595.jpg",
@@ -23,11 +23,7 @@
     "onSale": false,
     "visible": true,
     "order": 1,
-    "oldPrice": 750,
-    "bundle": {
-      "qty": 3,
-      "price": 2000
-    }
+    "oldPrice": 750
   },
   {
     "id": "potato",
