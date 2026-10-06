@@ -485,5 +485,16 @@
     "image": "images/p1787825622482-1787825657140.jpg",
     "visible": true,
     "order": 44
+  },
+  {
+    "id": "p1791293948147",
+    "name": "تفاح اخضر ",
+    "price": 3000,
+    "cat": "fruit",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": "images/p1791293948147-1791293958930.jpg",
+    "visible": true,
+    "order": 45
   }
 ]
