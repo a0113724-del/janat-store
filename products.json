@@ -166,7 +166,7 @@
   {
     "id": "lobia",
     "name": "لوبيه",
-    "price": 2500,
+    "price": 2000,
     "cat": "veg",
     "emoji": "🫘",
     "image": "images/lobia-1785118364694.jpg",
@@ -240,7 +240,7 @@
     "emoji": "⚪",
     "image": "images/figw-1785118481332.jpg",
     "unit": "كغم",
-    "visible": true,
+    "visible": false,
     "order": 22,
     "soldOut": true
   },
@@ -252,7 +252,7 @@
     "emoji": "⚫",
     "image": "images/figb-1785118505537.jpg",
     "unit": "كغم",
-    "visible": true,
+    "visible": false,
     "order": 23,
     "soldOut": true
   },
@@ -289,7 +289,7 @@
     "unit": "كغم",
     "visible": true,
     "order": 26,
-    "onSale": true,
+    "onSale": false,
     "oldPrice": 2000
   },
   {
@@ -300,9 +300,9 @@
     "emoji": "🟡",
     "image": "images/kojay-1786410719479.jpg",
     "unit": "كغم",
-    "visible": true,
+    "visible": false,
     "order": 27,
-    "onSale": true,
+    "onSale": false,
     "oldPrice": 2000
   },
   {
@@ -313,7 +313,7 @@
     "emoji": "🍒",
     "image": "images/cherry-1785118574023.jpg",
     "unit": "كغم",
-    "visible": true,
+    "visible": false,
     "order": 28,
     "soldOut": true
   },
@@ -338,7 +338,7 @@
     "unit": "كغم",
     "visible": true,
     "order": 30,
-    "onSale": true,
+    "onSale": false,
     "oldPrice": 2500
   },
   {
@@ -351,7 +351,7 @@
     "unit": "كغم",
     "visible": true,
     "order": 31,
-    "onSale": true,
+    "onSale": false,
     "oldPrice": 2000
   },
   {
@@ -459,7 +459,7 @@
     "image": "images/p1786409743164-1786409989766.jpg",
     "visible": true,
     "order": 40,
-    "onSale": true,
+    "onSale": false,
     "oldPrice": 5000
   },
   {
@@ -472,7 +472,7 @@
     "image": "images/p1786410724425-1786410742792.jpg",
     "visible": true,
     "order": 41,
-    "onSale": true,
+    "onSale": false,
     "oldPrice": 1500
   },
   {
