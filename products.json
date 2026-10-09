@@ -221,7 +221,7 @@
   {
     "id": "banana",
     "name": "موز",
-    "price": 2000,
+    "price": 2500,
     "cat": "fruit",
     "emoji": "🍌",
     "image": "images/banana-1785118460886.jpg",
@@ -259,7 +259,7 @@
   {
     "id": "orange",
     "name": "برتقال",
-    "price": 1900,
+    "price": 2400,
     "cat": "fruit",
     "emoji": "🍊",
     "image": "images/orange-1785118528910.jpg",
@@ -391,7 +391,7 @@
   {
     "id": "pear",
     "name": "عرموط",
-    "price": 2000,
+    "price": 2500,
     "cat": "fruit",
     "emoji": "🍐",
     "image": "images/pear-1785118666242.jpg",
