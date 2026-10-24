@@ -28,7 +28,7 @@
   {
     "id": "potato",
     "name": "بطاطا",
-    "price": 1000,
+    "price": 1500,
     "cat": "veg",
     "emoji": "🥔",
     "image": "images/potato-1785117857046.jpg",
@@ -39,7 +39,7 @@
   {
     "id": "eggplant",
     "name": "باذنجان",
-    "price": 1000,
+    "price": 750,
     "cat": "veg",
     "emoji": "🍆",
     "image": "images/eggplant-1785117873353.jpg",
