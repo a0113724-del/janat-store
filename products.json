@@ -55,7 +55,7 @@
   {
     "id": "zucchini",
     "name": "شجر (كوسة)",
-    "price": 1000,
+    "price": 1250,
     "cat": "veg",
     "emoji": "🥒",
     "image": "images/zucchini-1785117895651.jpg",
@@ -177,7 +177,7 @@
   {
     "id": "bamia",
     "name": "بانيه (بامية)",
-    "price": 3500,
+    "price": 5000,
     "cat": "veg",
     "emoji": "🌿",
     "image": "images/bamia-1785118344047.jpg",
@@ -259,7 +259,7 @@
   {
     "id": "orange",
     "name": "برتقال",
-    "price": 1500,
+    "price": 2000,
     "cat": "fruit",
     "emoji": "🍊",
     "image": "images/orange-1785118528910.jpg",
@@ -344,7 +344,7 @@
   {
     "id": "peach_musk",
     "name": "خوخ مسكي",
-    "price": 1500,
+    "price": 2000,
     "cat": "fruit",
     "emoji": "🍑",
     "image": "images/peach_musk-1785118623236.jpg",
