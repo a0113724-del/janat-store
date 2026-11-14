@@ -33,7 +33,7 @@
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#153122">
+<meta name="theme-color" content="#FBF9F4">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -53,12 +53,12 @@
      يشوف شاشة بيضاء ثواني طويلة. الحين النص يبين فوراً بخط الجهاز،
      وخط تجوّل يتبدّل مكانه لمن يوصل. -->
 <link rel="preload" as="style"
-      href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&family=Tajawal:wght@400;500;700;900&display=swap">
+      href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800;900&display=swap">
 <link rel="stylesheet" media="print" onload="this.media='all'; this.onload=null;"
-      href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&family=Tajawal:wght@400;500;700;900&display=swap">
+      href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800;900&display=swap">
 <noscript>
   <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&family=Tajawal:wght@400;500;700;900&display=swap">
+        href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800;900&display=swap">
 </noscript>
 <style>
   :root{
@@ -95,7 +95,7 @@
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
   body{
-    font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif;
+    font-family:'Rubik', 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif;
     background:var(--paper);
     color:var(--ink);
     line-height:1.55;
@@ -197,12 +197,12 @@
     border-radius:16px; padding:20px; text-align:center;
   }
   .custom-request-box .crb-icon{ font-size:2.2rem; margin-bottom:8px; }
-  .custom-request-box h3{ font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-size:1rem; color:var(--forest); margin-bottom:6px; }
+  .custom-request-box h3{ font-family:'Rubik', 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-size:1rem; color:var(--forest); margin-bottom:6px; }
   html.dark .custom-request-box h3{ color:var(--gold-light); }
   .custom-request-box p{ font-size:.8rem; color:#8a8a7c; margin-bottom:14px; }
   .custom-request-box textarea{
     width:100%; border:1.5px solid var(--card-border); border-radius:12px;
-    padding:12px; font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-size:.88rem;
+    padding:12px; font-family:'Rubik', 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-size:.88rem;
     background:var(--paper); color:var(--ink); resize:vertical;
   }
   .custom-request-box textarea:focus{ outline:none; border-color:var(--leaf); }
@@ -212,7 +212,7 @@
     border-radius:20px; padding:26px 22px; text-align:center;
   }
   .referral-box .rb-icon{ font-size:2.4rem; margin-bottom:8px; }
-  .referral-box h3{ font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-weight:900; font-size:1.05rem; color:var(--forest); margin-bottom:6px; }
+  .referral-box h3{ font-family:'Rubik', 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-weight:900; font-size:1.05rem; color:var(--forest); margin-bottom:6px; }
   .referral-box p{ font-size:.82rem; color:#3c2f12; margin-bottom:16px; line-height:1.6; }
   .referral-box p b{ color:var(--pomegranate); }
   .referral-btn{
@@ -258,7 +258,7 @@
     animation: tutorialPop .4s ease;
   }
   @keyframes tutorialPop{ 0%{transform:scale(.5); opacity:0;} 100%{transform:scale(1); opacity:1;} }
-  .tutorial-title{ font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-weight:900; font-size:1.15rem; color:var(--forest); margin-bottom:10px; }
+  .tutorial-title{ font-family:'Rubik', 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-weight:900; font-size:1.15rem; color:var(--forest); margin-bottom:10px; }
   html.dark .tutorial-title{ color:var(--gold-light); }
   .tutorial-text{ font-size:.92rem; color:var(--ink); line-height:1.8; max-width:300px; }
   .tutorial-text b{ color:var(--pomegranate); }
@@ -281,7 +281,7 @@
   .search-wrap{ flex:1; position:relative; }
   .search-wrap input{
     width:100%; border:1.5px solid var(--card-border); border-radius:100px;
-    padding:10px 40px 10px 14px; font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-size:.86rem;
+    padding:10px 40px 10px 14px; font-family:'Rubik', 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-size:.86rem;
     background:var(--card-bg); color:var(--ink);
   }
   .search-wrap input:focus{ outline:none; border-color:var(--leaf); }
@@ -578,7 +578,7 @@
   .card .img-wrap img{ width:100%; height:100%; object-fit:cover; }
   .card .img-wrap .placeholder-emoji{ font-size:2.6rem; opacity:.85; }
   .card .body{ padding:10px 10px 12px; text-align:center; }
-  .card h3{ font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-weight:700; font-size:.92rem; margin-bottom:4px; color:var(--ink); }
+  .card h3{ font-family:'Rubik', 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-weight:700; font-size:.92rem; margin-bottom:4px; color:var(--ink); }
   .card .price{ color:var(--pomegranate); font-weight:900; font-size:.86rem; margin-bottom:10px; }
   .card .price small{ font-weight:500; font-size:.68rem; color:#8a8a7c; }
   .card .price .old{
@@ -1164,7 +1164,7 @@
   .field label{ display:block; font-size:.78rem; font-weight:700; margin-bottom:5px; color:var(--ink); }
   .field input, .field textarea{
     width:100%; border:1.5px solid rgba(62,122,68,.3); border-radius:10px;
-    padding:10px 12px; font-family:'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-size:.88rem;
+    padding:10px 12px; font-family:'Rubik', 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', 'Geeza Pro', 'Droid Arabic Naskh', Tahoma, sans-serif; font-size:.88rem;
     background:#fff; color:var(--ink);
   }
   .field input:focus, .field textarea:focus{ outline:none; border-color:var(--leaf); }
@@ -1260,6 +1260,191 @@
     .promo-banner::before{ animation:none; }
   }
 
+
+  /* =====================================================================
+     ثيم «ألوان السوق» — شكل جديد فوق نفس الهيكل، بلا ما نغيّر أي وظيفة.
+     كل شي هنا تجاوز (override) للقواعد اللي فوق. لو تريد ترجع للشكل
+     القديم: احذف هذا المقطع كله + رجّع روابط الخطوط.
+     ===================================================================== */
+  :root{
+    --ink:#16130F;
+    --forest:#16130F;
+    --forest-2:#2A251E;
+    --leaf:#1B6B3C;
+    --leaf-light:#4E9A6B;
+    --gold:#F4C430;
+    --gold-light:#FBE08A;
+    --cream:#F3EFE6;
+    --paper:#FBF9F4;
+    --card-border:rgba(22,19,15,.12);
+    --pomegranate:#C8321F;
+    --line:rgba(22,19,15,.16);
+    --bar-h:64px;
+  }
+  html.dark{
+    --ink:#F4F0E6;
+    --forest:#F4F0E6;
+    --forest-2:#2A251E;
+    --paper:#14120E;
+    --cream:#1B1813;
+    --card-bg:#211D17;
+    --card-border:rgba(244,240,230,.14);
+    --line:rgba(244,240,230,.18);
+  }
+  h1,h2,h3,.display{ font-family:'Rubik', 'Tajawal', 'Segoe UI', 'Noto Sans Arabic', Tahoma, sans-serif; font-weight:900; }
+  body{ padding-bottom:calc(var(--bar-h) + 34px); }
+
+  /* ----- الرأس: فاتح، عنوان جريء بمحاذاة البداية ----- */
+  .site-header{
+    background:var(--paper); color:var(--ink);
+    text-align:start; padding:22px 18px 14px;
+  }
+  .logo-badge{ display:none; }
+  .site-header h1{
+    background:none; -webkit-background-clip:border-box; background-clip:border-box;
+    color:var(--ink); text-shadow:none;
+    font-size:clamp(2rem,9vw,2.9rem); line-height:1.15; margin-bottom:6px;
+  }
+  .site-header .tag{
+    color:var(--ink); opacity:.72; text-shadow:none; margin:0 0 10px; max-width:none;
+  }
+  .features{ margin:4px 0 0; }
+  .features .chip, .fb-chip{
+    background:transparent !important; border:2px solid var(--ink) !important;
+    color:var(--ink) !important; box-shadow:none !important;
+    font-size:.76rem; padding:7px 14px; border-radius:100px;
+  }
+
+  /* ----- الأشرطة ----- */
+  .announcement-bar{ background:#16130F; color:#fff; border-bottom:none; }
+  .promo-banner{ background:var(--pomegranate); }
+  .promo-banner .tag-new{ background:var(--gold); color:#2B2100; }
+  .referral-banner{ background:var(--gold); color:#2B2100; }
+  .referral-banner small{ color:#4A3A00; }
+  .store-status{ color:var(--leaf); }
+  .howto-toggle{ border-radius:100px; }
+
+  /* ----- شريط الأقسام ----- */
+  .catnav{ background:var(--paper); border-bottom:none; padding:12px 16px; }
+  html.dark .catnav{ background:var(--paper); }
+  .catnav button{
+    border:2px solid var(--ink); color:var(--ink); background:transparent;
+    min-height:44px; padding:8px 20px; font-weight:800;
+  }
+  .catnav button.active{ background:var(--ink); color:var(--paper); }
+  .catnav .points-badge{
+    background:transparent; border:2px solid var(--ink); color:var(--ink);
+    min-height:44px; padding:8px 14px;
+  }
+
+  /* ----- البحث والأزرار الدائرية ----- */
+  .search-wrap input{
+    border:2px solid var(--ink); background:transparent; min-height:44px;
+    font-size:.95rem; padding-block:10px;
+  }
+  .search-wrap input:focus{ border-color:var(--pomegranate); }
+  .theme-toggle{ width:44px; height:44px; border:2px solid var(--ink); background:transparent; }
+  .rate-toggle{ background:transparent; border-color:var(--ink); color:#B7791F; }
+
+  .today-bar .inner{
+    background:transparent; border:2px dashed var(--line); color:var(--ink);
+  }
+  html.dark .today-bar .inner{ color:var(--ink); }
+
+  /* ----- عناوين الأقسام ----- */
+  .section-head{ text-align:start; margin-bottom:14px; }
+  .section-head .kicker{ display:none; }
+  .section-head .rule{ display:none; }
+  .section-head h2,
+  .fruit-section .section-head h2,
+  .offer-section .section-head h2{ font-size:2rem; line-height:1.15; color:var(--ink); }
+  .offer-section .section-head h2{ color:var(--pomegranate); }
+  .mini-arch{ display:none; }
+  .fruit-section, .offer-section,
+  html.dark .fruit-section, html.dark .offer-section{
+    background:none; border-radius:0; padding-top:20px; margin-top:0;
+  }
+  .fruit-banner, .countdown-banner{
+    background:var(--ink); color:var(--paper); box-shadow:none;
+    margin:0 0 16px; max-width:none; justify-content:flex-start;
+    width:fit-content;
+  }
+
+  /* ----- بطاقة المنتج: كل منتج بلونه ----- */
+  .grid{ gap:12px; }
+  .card,
+  html.dark .card{
+    --t-bg:#1B6B3C; --t-fg:#FFFFFF; --t-sub:#D5F0DF; --t-btn:#FFFFFF; --t-btnfg:#1B6B3C;
+    background:var(--t-bg); color:var(--t-fg);
+    border:none; border-radius:26px;
+  }
+  .card[data-tone="red"]{    --t-bg:#C8321F; --t-fg:#FFFFFF; --t-sub:#FFE1DB; --t-btn:#FFFFFF; --t-btnfg:#C8321F; }
+  .card[data-tone="green"]{  --t-bg:#1B6B3C; --t-fg:#FFFFFF; --t-sub:#D5F0DF; --t-btn:#FFFFFF; --t-btnfg:#1B6B3C; }
+  .card[data-tone="yellow"]{ --t-bg:#F4C430; --t-fg:#2B2100; --t-sub:#4A3A00; --t-btn:#16130F; --t-btnfg:#FFFFFF; }
+  .card[data-tone="orange"]{ --t-bg:#F28C1B; --t-fg:#2A1500; --t-sub:#4A2600; --t-btn:#16130F; --t-btnfg:#FFFFFF; }
+  .card[data-tone="purple"]{ --t-bg:#5B2A6E; --t-fg:#FFFFFF; --t-sub:#EBD9F2; --t-btn:#FFFFFF; --t-btnfg:#5B2A6E; }
+  .card[data-tone="brown"]{  --t-bg:#7A4E22; --t-fg:#FFFFFF; --t-sub:#F3E2CF; --t-btn:#FFFFFF; --t-btnfg:#7A4E22; }
+  .card:hover{ box-shadow:none; }
+  .card.offer-card::before, .card.fruit-card::before{ display:none; }
+  .card .img-wrap,
+  html.dark .card .img-wrap{
+    width:auto; margin:8px 8px 0; border-radius:20px; aspect-ratio:4/3;
+    background:rgba(255,255,255,.22);
+  }
+  .card .body{ padding:10px 12px 12px; text-align:start; }
+  .card h3{ font-size:1.08rem; font-weight:800; color:var(--t-fg); margin-bottom:2px; }
+  .card .price{
+    color:var(--t-fg); font-size:1.5rem; line-height:1.15; font-weight:900;
+    font-variant-numeric:tabular-nums; margin-bottom:8px;
+  }
+  .card .price small{ color:var(--t-sub); font-size:.74rem; font-weight:600; }
+  .card .price .old{ color:var(--t-sub); font-size:.82rem; display:block; margin:0; }
+  .card .price span[style]{ color:var(--t-sub) !important; font-size:.8rem; }
+  .card .save-line,
+  html.dark .card .save-line,
+  .card .save-line.bundle,
+  html.dark .card .save-line.bundle{
+    background:rgba(255,255,255,.9); color:#16130F; margin:-2px 0 8px;
+  }
+  .card .step-hint{ color:var(--t-sub) !important; background:transparent !important; }
+  .card .step-hint b{ color:inherit !important; }
+  .howto-toggle{ background:var(--ink) !important; color:var(--paper) !important; box-shadow:none !important; }
+  .card .out-line{ background:rgba(255,255,255,.9); color:#C8321F; }
+  .card .qty-row{ background:rgba(0,0,0,.14); border-radius:16px; padding:4px; }
+  .card .qty-row button,
+  .card.fruit-card .qty-row button{
+    width:40px; height:40px; border-radius:12px; border:none;
+    background:var(--t-btn); color:var(--t-btnfg); font-size:1.3rem; font-weight:800;
+  }
+  .card .qty-row .qty-val{ color:var(--t-fg); font-size:.84rem; }
+  .card .qty-row .qty-val small,
+  .card:not(.has-qty) .qty-row .qty-val small{ color:var(--t-sub); font-weight:600; }
+  .card.has-qty,
+  .card.fruit-card.has-qty{ outline:3px solid var(--ink); outline-offset:2px; }
+  .discount-badge, .ribbon, .bundle-badge{ box-shadow:none; font-size:.7rem; padding:4px 10px; }
+  .discount-badge, .ribbon{ background:#16130F; color:#fff; }
+
+  .custom-request-box{ border:2px dashed var(--ink); border-radius:26px; text-align:start; }
+
+  /* ----- شريط السلة: حبّة عايمة ----- */
+  .cart-bar{
+    left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom));
+    border-radius:32px; background:#16130F; color:#fff;
+    padding:8px 8px 8px 16px; height:var(--bar-h);
+    box-shadow:0 10px 30px rgba(22,19,15,.35);
+  }
+  html.dark .cart-bar{ background:#2A251E; }
+  .cart-bar .count-badge{ background:var(--gold); color:#2B2100; }
+  .cart-bar .totals .l1{ color:#D9D3C7; opacity:1; }
+  .cart-bar .go-btn{
+    background:var(--pomegranate); color:#fff; border-radius:26px;
+    min-height:48px; padding:11px 22px;
+  }
+  .cart-bar .go-btn:disabled{ background:#4A453D; color:#BDB6A9; }
+  .whatsapp-float{ bottom:calc(var(--bar-h) + 30px); }
+
+  footer{ background:#16130F; color:#fff; border-radius:32px 32px 0 0; }
+  footer p{ color:#D9D3C7; opacity:1; }
 </style>
 <script>
   /* ⚡ مكتبة Firebase كانت تتحمّل بكل فتحة للتطبيق — أكثر من 200 كيلو
@@ -2402,7 +2587,7 @@
     const cardClass = (isOffer ? "offer-card " : (isFruit ? "fruit-card " : "")) + (out ? "sold-out" : "");
     const step = qtyStep(p);
     return `
-    <div class="card ${cardClass} ${qty>0?'has-qty':''}" data-id="${p.id}">
+    <div class="card ${cardClass} ${qty>0?'has-qty':''}" data-id="${p.id}" data-tone="${toneOf(p)}">
       <div class="img-wrap">${ribbon}${discountBadge}${bundleBadge}${imgHtml}${
         out ? '<span class="out-badge">نفدت الكمية</span>' : ""}</div>
       <div class="body">
@@ -2420,6 +2605,26 @@
         </div>
       </div>
     </div>`;
+  }
+
+  // ثيم «ألوان السوق»: كل منتج ياخذ لون بطاقته من الإيموجي مالته،
+  // ولو ما معروف ياخذ لون ثابت من رقمه (id) حتى ما يتغيّر بين الفتحات.
+  const TONE_BY_EMOJI = {
+    "🍅":"red","🍎":"red","🍓":"red","🍒":"red","🍉":"red","🌶️":"red","🌶":"red",
+    "🥒":"green","🥬":"green","🥦":"green","🫑":"green","🌿":"green","🥝":"green","🍏":"green","🍐":"green","🥑":"green","🫛":"green",
+    "🍌":"yellow","🍋":"yellow","🌽":"yellow","🍍":"yellow","🍈":"yellow",
+    "🍊":"orange","🥕":"orange","🍑":"orange","🥭":"orange","🎃":"orange",
+    "🍆":"purple","🍇":"purple","🫐":"purple",
+    "🔴":"red","🟡":"yellow","🟠":"orange","⚫":"purple","⚪":"green","🫘":"green","🌴":"brown",
+    "🥔":"brown","🧅":"brown","🧄":"brown","🫚":"brown","🌰":"brown","🥥":"brown","🍄":"brown"
+  };
+  const TONE_CYCLE = ["green","red","yellow","orange","purple","brown"];
+  function toneOf(p){
+    const t = TONE_BY_EMOJI[p.emoji];
+    if(t) return t;
+    let h = 0; const id = String(p.id || p.name || "");
+    for(let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+    return TONE_CYCLE[h % TONE_CYCLE.length];
   }
 
   let searchTerm = "";
