@@ -457,5 +457,49 @@
     "visible": true,
     "group": "تفاح عراقي",
     "order": 27
+  },
+  {
+    "id": "p1794638678348",
+    "name": "رارنج",
+    "price": 1000,
+    "cat": "veg",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": "images/p1794638678348-1794638707431.jpg",
+    "visible": true,
+    "order": 39
+  },
+  {
+    "id": "p1794638679296",
+    "name": "سندي عراقي ",
+    "price": 1500,
+    "cat": "veg",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": "images/p1794638679296-1794638730126.jpg",
+    "visible": true,
+    "order": 40
+  },
+  {
+    "id": "p1794638680428",
+    "name": "منكه",
+    "price": 3000,
+    "cat": "veg",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": "images/p1794638680428-1794638747654.jpg",
+    "visible": true,
+    "order": 41
+  },
+  {
+    "id": "p1794638681321",
+    "name": "كاكي عراقي",
+    "price": 2000,
+    "cat": "veg",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": "images/p1794638681321-1794638768778.jpg",
+    "visible": true,
+    "order": 42
   }
 ]
