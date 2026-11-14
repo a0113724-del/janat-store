@@ -8,7 +8,7 @@
    4) ملفات البيانات (products/settings): نت أولاً، حتى الأسعار تبقى محدثة
    ========================================================== */
 
-const CACHE_NAME = "janat-store-cache-v37";
+const CACHE_NAME = "janat-store-cache-v38";
 const CORE_ASSETS = [
   "./index.html",
   "./products.json",

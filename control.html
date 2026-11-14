@@ -204,6 +204,15 @@
   .fields .fld{ display:flex; flex-direction:column; gap:3px; flex:1; min-width:64px; }
   .fields .fld .lbl{ font-size:.62rem; color:#888; font-weight:700; }
   .fields .fld input{ width:100%; }
+  .variants-box{ border:1.5px dashed #b9c9b6; border-radius:12px; padding:10px; margin:8px 0; background:#fafcf8; }
+  .variants-box .vb-title{ font-size:.76rem; font-weight:800; color:#2d5a34; margin-bottom:8px; line-height:1.6; }
+  .variants-box .vb-head, .variants-box .vb-row{ display:grid; grid-template-columns:1.4fr 1fr 34px; gap:6px; align-items:center; }
+  .variants-box .vb-head{ font-size:.68rem; color:#777; margin-bottom:4px; }
+  .variants-box .vb-row{ margin-bottom:6px; }
+  .variants-box .vb-row input{ width:100%; min-width:0; padding:9px 8px; border:1px solid #cfd8cc; border-radius:9px; font-family:inherit; font-size:.9rem; }
+  .variants-box .vb-tag{ font-size:.62rem; color:#2d5a34; font-weight:800; text-align:center; }
+  .variants-box .add-variant{ width:100%; padding:10px; border:none; border-radius:10px; background:#2d5a34; color:#fff; font-family:inherit; font-weight:800; font-size:.86rem; cursor:pointer; }
+  .variants-box .vb-note{ font-size:.66rem; color:#777; margin-top:7px; line-height:1.6; }
   .sale-warn, .bundle-warn{ font-size:.7rem; line-height:1.6; color:var(--pomegranate); }
   .sale-warn:empty, .bundle-warn:empty{ display:none; }
   .sale-warn .ok, .bundle-warn .ok{ color:var(--leaf); }
@@ -2331,12 +2340,7 @@
             <span class="bx">دينار</span>
           </span>
         </div>
-        <div class="toggle-row group-row">
-          <label style="display:flex; flex-direction:column; gap:3px; flex:1;">
-            <span style="font-size:.72rem; color:#666;">مجموعة النوعيات (اختياري) — اكتب نفس الاسم لكل النوعيات حتى ينجمعن ببطاقة وحدة</span>
-            <input type="text" class="f-group" data-id="${p.id}" value="${(p.group||"").replace(/"/g,'&quot;')}" placeholder="مثال: برتقال">
-          </label>
-        </div>
+        ${variantsBox(p)}
         <div class="bundle-warn" data-bwarn="${p.id}">${bundleWarning(p)}</div>
         <div class="sale-warn" data-warn="${p.id}">${saleWarning(p)}</div>
       </div>
@@ -2419,7 +2423,50 @@
           : `ماكو تبديل لهسه` + (out?` · 🚫 <b>${out}</b> نافد`:""));
   }
 
+  /* ═════════════ النوعيات ═════════════
+   * كل نوعية منتج عادي كامل (سعره، صورته، نفاده). اللي يجمعهن ببطاقة وحدة
+   * عند الزبون هو حقل group المشترك + نفس القسم. هذا الصندوق يخلّي صاحب
+   * المحل يضيف نوعية ويكتب اسمها وسعرها من مكان واحد بلا ما يفهم الحقل. */
+  function escV(v){ return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
+  function groupOfP(p){ return (p && typeof p.group === "string") ? p.group.trim() : ""; }
+  function groupMembersAdmin(p){
+    const g = groupOfP(p);
+    if(!g) return [];
+    return products.filter(x => x.cat === p.cat && groupOfP(x) === g)
+                   .sort((a,b)=>(a.order??999)-(b.order??999));
+  }
+  function variantLabelAdmin(p){
+    const g = groupOfP(p), n = String(p.name || "").trim();
+    if(!g) return "";
+    return n.split(g).join(" ").replace(/\s+/g, " ").trim();
+  }
+  // تصليح إدخال شائع: انكتب اسم النوعية كامل بخانة المجموعة
+  // (الاسم «برتقال» والمجموعة «برتقال مصري») ← الاسم «برتقال مصري» والمجموعة «برتقال»
+  function normalizeGroups(){
+    products.forEach(p=>{
+      const g = groupOfP(p), n = String(p.name || "").trim();
+      if(g && n && g !== n && g.indexOf(n + " ") === 0){ p.name = g; p.group = n; }
+    });
+  }
+  function variantsBox(p){
+    const members = groupMembersAdmin(p);
+    const rows = members.map(m => `
+      <div class="vb-row">
+        <input type="text" class="v-label" data-id="${m.id}" value="${escV(variantLabelAdmin(m))}" placeholder="اسم النوعية (مثل: محلي)">
+        <input type="number" class="v-price" data-id="${m.id}" value="${m.price||''}" placeholder="السعر" step="250" min="0">
+        <span class="vb-tag">${m.id === p.id ? "هذا" : ""}</span>
+      </div>`).join("");
+    return `
+      <div class="variants-box">
+        <div class="vb-title">🧩 النوعيات — إذا المنتج إله أكثر من نوع، كل نوع باسمه وسعره</div>
+        ${members.length ? `<div class="vb-head"><span>اسم النوعية</span><span>السعر</span><span></span></div>${rows}` : ""}
+        <button type="button" class="add-variant" data-id="${p.id}">➕ أضف نوعية</button>
+        ${members.length ? `<div class="vb-note">كل نوعية تطلع جوه كمنتج لوحده حتى تحطلها صورة أو تعلّمها «نفدت». عند الزبون يطلعن ببطاقة وحدة.</div>` : ""}
+      </div>`;
+  }
+
   function renderProductList(){
+    normalizeGroups();
     if(fastPrices) return renderFastPrices();
     const sorted = [...products].sort((a,b)=>(a.order??999)-(b.order??999));
     const filtered = sorted.filter(p=>{
@@ -2526,10 +2573,15 @@
     const id = e.target.dataset.id; if(!id) return;
     const p = findProduct(id); if(!p) return;
     if(e.target.classList.contains("f-name")) p.name = e.target.value;
-    if(e.target.classList.contains("f-group")){
-      const g = e.target.value.trim();
-      if(g) p.group = g; else delete p.group;
+    if(e.target.classList.contains("v-label")){
+      const g = groupOfP(p);
+      p.name = (g + " " + e.target.value.trim()).trim();
     }
+    if(e.target.classList.contains("v-price")) p.price = Number(e.target.value)||0;
+    // نفس المنتج ينعرض بأكثر من خانة (بطاقته + صندوق النوعيات) — نخليهن متطابقات
+    document.querySelectorAll(`.f-name[data-id="${id}"]`).forEach(el=>{ if(el !== e.target) el.value = p.name || ""; });
+    document.querySelectorAll(`.f-price[data-id="${id}"], .v-price[data-id="${id}"]`).forEach(el=>{ if(el !== e.target) el.value = p.price || ""; });
+    document.querySelectorAll(`.v-label[data-id="${id}"]`).forEach(el=>{ if(el !== e.target) el.value = variantLabelAdmin(p); });
     if(e.target.classList.contains("f-price")) p.price = Number(e.target.value)||0;
     if(e.target.classList.contains("f-unit")){
       p.unit = e.target.value;
@@ -2603,6 +2655,23 @@
   document.getElementById("productList").addEventListener("click",(e)=>{
     const id = e.target.dataset.id; if(!id) return;
     const p = findProduct(id);
+    if(e.target.classList.contains("add-variant") && p){
+      const g = groupOfP(p) || String(p.name || "").trim();
+      if(!g) return;
+      if(!groupOfP(p)) p.group = g;          // أول مرة: المنتج نفسه يصير أول نوعية
+      const sorted = [...products].sort((a,b)=>(a.order??999)-(b.order??999));
+      const members = groupMembersAdmin(p);
+      const after = members[members.length - 1] || p;
+      const nv = { id: "p" + Date.now(), name: g, price: 0, cat: p.cat, unit: p.unit || "كغم",
+                   emoji: p.emoji || "🥬", image: p.image || null, visible: true, group: g };
+      sorted.splice(sorted.indexOf(after) + 1, 0, nv);
+      sorted.forEach((x, i) => { x.order = i; });   // ترتيب نظيف، والنوعية الجديدة جنب أخواتها
+      products.push(nv);
+      markDirty(); renderProductList();
+      const inp = document.querySelector(`.v-label[data-id="${nv.id}"]`);
+      if(inp){ inp.scrollIntoView({ block: "center" }); inp.focus(); }
+      return;
+    }
     if(e.target.classList.contains("del")){
       if(confirm(`حذف "${p.name}" نهائياً؟`)){
         products = products.filter(x=>x.id!==id);
