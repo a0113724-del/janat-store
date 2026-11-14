@@ -257,44 +257,6 @@
     "order": 25
   },
   {
-    "id": "kojar",
-    "name": "كوجه حمراء",
-    "price": 1250,
-    "cat": "fruit",
-    "emoji": "🔴",
-    "image": "images/kojar-1786410953669.jpg",
-    "unit": "كغم",
-    "visible": true,
-    "order": 26,
-    "onSale": false,
-    "oldPrice": 2000
-  },
-  {
-    "id": "kojay",
-    "name": "كوجه صفراء",
-    "price": 1000,
-    "cat": "fruit",
-    "emoji": "🟡",
-    "image": "images/kojay-1786410719479.jpg",
-    "unit": "كغم",
-    "visible": false,
-    "order": 27,
-    "onSale": false,
-    "oldPrice": 2000
-  },
-  {
-    "id": "cherry",
-    "name": "كرز",
-    "price": 2500,
-    "cat": "fruit",
-    "emoji": "🍒",
-    "image": "images/cherry-1785118574023.jpg",
-    "unit": "كغم",
-    "visible": false,
-    "order": 28,
-    "soldOut": true
-  },
-  {
     "id": "apple_iraq",
     "name": "تفاح عراقي",
     "price": 1000,
@@ -304,43 +266,6 @@
     "unit": "كغم",
     "visible": true,
     "order": 29
-  },
-  {
-    "id": "peach_tini",
-    "name": "خوخ تيني",
-    "price": 1700,
-    "cat": "fruit",
-    "emoji": "🍑",
-    "image": "images/peach_tini-1785118608639.jpg",
-    "unit": "كغم",
-    "visible": true,
-    "order": 30,
-    "onSale": false,
-    "oldPrice": 2500
-  },
-  {
-    "id": "peach_musk",
-    "name": "خوخ مسكي",
-    "price": 2000,
-    "cat": "fruit",
-    "emoji": "🍑",
-    "image": "images/peach_musk-1785118623236.jpg",
-    "unit": "كغم",
-    "visible": true,
-    "order": 31,
-    "onSale": false,
-    "oldPrice": 2000
-  },
-  {
-    "id": "peach_sofi",
-    "name": "خوخ صوفي",
-    "price": 1000,
-    "cat": "fruit",
-    "emoji": "🍑",
-    "image": "images/peach_sofi-1786410557127.jpg",
-    "unit": "كغم",
-    "visible": true,
-    "order": 32
   },
   {
     "id": "lemon",
