@@ -47,11 +47,7 @@
     "unit": "كغم",
     "visible": true,
     "order": 4,
-    "onSale": false,
-    "bundle": {
-      "qty": 3,
-      "price": 2000
-    }
+    "onSale": false
   },
   {
     "id": "zucchini",
