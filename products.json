@@ -194,7 +194,7 @@
     "image": "images/carrot-1785118402302.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 17
+    "order": 16
   },
   {
     "id": "garlic",
@@ -205,7 +205,7 @@
     "image": "images/garlic-1785118426765.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 18
+    "order": 17
   },
   {
     "id": "ginger",
@@ -216,7 +216,7 @@
     "image": "images/ginger-1785118440283.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 19
+    "order": 18
   },
   {
     "id": "banana",
@@ -230,19 +230,19 @@
     "onSale": false,
     "oldPrice": 1500,
     "visible": true,
-    "order": 21
+    "order": 19
   },
   {
     "id": "orange",
-    "name": "برتقال",
+    "name": "برتقال مصري",
     "price": 2500,
     "cat": "fruit",
     "emoji": "🍊",
     "image": "images/orange-1785118528910.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 24,
-    "group": "برتقال مصري"
+    "order": 20,
+    "group": "برتقال"
   },
   {
     "id": "grape",
@@ -254,7 +254,7 @@
     "featured": true,
     "unit": "كغم",
     "visible": true,
-    "order": 25
+    "order": 24
   },
   {
     "id": "apple_iraq",
@@ -265,7 +265,7 @@
     "image": "images/apple_iraq-1785118591938.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 29
+    "order": 25
   },
   {
     "id": "lemon",
@@ -276,7 +276,7 @@
     "image": "images/lemon-1785118635914.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 33
+    "order": 26
   },
   {
     "id": "apricot",
@@ -287,7 +287,7 @@
     "image": "images/apricot-1785118658898.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 34,
+    "order": 27,
     "soldOut": true
   },
   {
@@ -299,7 +299,7 @@
     "image": "images/pear-1785118666242.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 35
+    "order": 28
   },
   {
     "id": "reky",
@@ -310,7 +310,7 @@
     "image": "images/reky-1786410488279.jpg",
     "unit": "حكه ",
     "visible": true,
-    "order": 36,
+    "order": 29,
     "soldOut": false
   },
   {
@@ -324,7 +324,7 @@
     "unit": "حكه",
     "onSale": false,
     "visible": true,
-    "order": 37,
+    "order": 30,
     "soldOut": false
   },
   {
@@ -336,7 +336,7 @@
     "image": "images/dates-1786410481883.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 38
+    "order": 31
   },
   {
     "id": "p1786409740968",
@@ -347,7 +347,7 @@
     "emoji": "🥬",
     "image": "images/p1786409740968-1786409982391.jpg",
     "visible": true,
-    "order": 39,
+    "order": 32,
     "onSale": false,
     "oldPrice": 1500
   },
@@ -360,7 +360,7 @@
     "emoji": "🥬",
     "image": "images/p1786409743164-1786409989766.jpg",
     "visible": true,
-    "order": 40,
+    "order": 33,
     "onSale": false,
     "oldPrice": 5000
   },
@@ -373,7 +373,7 @@
     "emoji": "🥬",
     "image": "images/p1786410724425-1786410742792.jpg",
     "visible": true,
-    "order": 41,
+    "order": 34,
     "onSale": false,
     "oldPrice": 1500
   },
@@ -386,7 +386,7 @@
     "emoji": "🥬",
     "image": "images/p1787825622482-1787825657140.jpg",
     "visible": true,
-    "order": 44
+    "order": 35
   },
   {
     "id": "p1791293948147",
@@ -397,6 +397,42 @@
     "emoji": "🥬",
     "image": "images/p1791293948147-1791293958930.jpg",
     "visible": true,
-    "order": 45
+    "order": 36
+  },
+  {
+    "id": "p1794637258617",
+    "name": "برتقال مرتقال تركي",
+    "price": 2000,
+    "cat": "fruit",
+    "unit": "كغم",
+    "emoji": "🍊",
+    "image": "images/orange-1785118528910.jpg",
+    "visible": true,
+    "group": "برتقال",
+    "order": 21
+  },
+  {
+    "id": "p1794637275648",
+    "name": "برتقال برتقال ايراني",
+    "price": 1000,
+    "cat": "fruit",
+    "unit": "كغم",
+    "emoji": "🍊",
+    "image": "images/orange-1785118528910.jpg",
+    "visible": true,
+    "group": "برتقال",
+    "order": 22
+  },
+  {
+    "id": "p1794637290667",
+    "name": "برتقال",
+    "price": 0,
+    "cat": "fruit",
+    "unit": "كغم",
+    "emoji": "🍊",
+    "image": "images/orange-1785118528910.jpg",
+    "visible": true,
+    "group": "برتقال",
+    "order": 23
   }
 ]
