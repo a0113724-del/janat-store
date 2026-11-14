@@ -36,7 +36,7 @@
 <meta name="theme-color" content="#FBF9F4">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="جنة الفواكه">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png" type="image/png">
@@ -1495,6 +1495,66 @@
   html.dark .gps-btn{ background:transparent; color:var(--gold); border-color:var(--gold); }
   html.dark .store-status{ color:#7FD49B; }
   html.dark .card.has-qty, html.dark .card.fruit-card.has-qty{ outline-color:#F4F0E6; }
+
+  /* =====================================================================
+     إحساس «تطبيق حقيقي»
+     ===================================================================== */
+  :root{ --tab-h:58px; }
+  html{ -webkit-tap-highlight-color:transparent; }
+  button, a, .card, .catnav, .tabbar, .cart-bar, .chip{ -webkit-user-select:none; user-select:none; touch-action:manipulation; }
+  button:active{ transform:scale(.97); }
+  .qty-row button:active{ transform:scale(.9); }
+  body{ padding-bottom:calc(var(--tab-h) + var(--bar-h) + 40px + env(safe-area-inset-bottom, 0px)); }
+
+  /* ----- شريط التنقل السفلي ----- */
+  .tabbar{
+    position:fixed; left:0; right:0; bottom:0; z-index:49;
+    height:calc(var(--tab-h) + env(safe-area-inset-bottom, 0px));
+    padding-bottom:env(safe-area-inset-bottom, 0px);
+    display:flex; background:var(--paper);
+    border-top:1px solid var(--line);
+  }
+  .tabbar button{
+    flex:1; border:none; background:none; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    color:var(--ink); opacity:.55; font-size:.7rem; font-weight:700;
+  }
+  .tabbar button .ic{ width:23px; height:23px; }
+  .tabbar button.active{ opacity:1; color:var(--pomegranate); font-weight:800; }
+  html.dark .tabbar button.active{ color:var(--gold); }
+
+  /* السلة تگعد فوق شريط التنقل، وتختفي لمن تكون فارغة حتى ما تاخذ مكان */
+  .cart-bar{ bottom:calc(var(--tab-h) + 10px + env(safe-area-inset-bottom, 0px)); padding-bottom:8px; }
+  .cart-bar:has(#openCheckout:disabled){ display:none; }
+  .whatsapp-float{ bottom:calc(var(--tab-h) + 14px + env(safe-area-inset-bottom, 0px)); }
+  body:has(.cart-bar #openCheckout:not(:disabled)) .whatsapp-float{
+    bottom:calc(var(--tab-h) + var(--bar-h) + 22px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ----- شاشة الفتح + وضع التطبيق المثبّت ----- */
+  .app-splash{ display:none; }
+  @keyframes splashOut{ to{ opacity:0; visibility:hidden; } }
+  @media (display-mode: standalone){
+    .app-splash{
+      position:fixed; inset:0; z-index:1000; pointer-events:none;
+      display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; align-content:center;
+      background:#F4C430; color:#16130F;
+      animation:splashOut .35s ease .65s forwards;
+    }
+    .app-splash span{ flex:0 0 100%; text-align:center; font-weight:900; font-size:5rem; line-height:1.2; }
+    .app-splash i{ width:16px; height:16px; border-radius:50%; background:#C8321F; }
+    .app-splash i:nth-of-type(2){ background:#1B6B3C; }
+    .app-splash i:nth-of-type(3){ background:#F28C1B; }
+    /* الزبون اللي ثبّت التطبيق ما يحتاج دعوة تثبيت ولا شرح تثبيت */
+    .install-guide, .install-btn, .install-btn.show{ display:none !important; }
+    .site-header{ padding-top:calc(16px + env(safe-area-inset-top, 0px)); }
+  }
+  @media (display-mode: standalone) and (prefers-reduced-motion: reduce){
+    .app-splash{ animation-duration:.01s; animation-delay:.3s; }
+  }
+
+  .cart-bar .totals .l1{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  @media (max-width:380px){ .cart-bar .go-btn{ padding:11px 16px; font-size:.82rem; } }
 </style>
 <script>
   /* ⚡ مكتبة Firebase كانت تتحمّل بكل فتحة للتطبيق — أكثر من 200 كيلو
@@ -1554,6 +1614,7 @@
   <!-- أيقونات مرسومة (ثيم ألوان السوق) — بدل الإيموجي، حتى الشكل يطلع نفسه على كل الموبايلات -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></symbol>
       <symbol id="i-truck" viewBox="0 0 24 24"><path d="M2 7h11v9H2z"/><path d="M13 10h4l4 3.500V16h-8"/><circle cx="6.500" cy="18" r="1.800"/><circle cx="17" cy="18" r="1.800"/></symbol>
       <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.500M12 19.500V22M2 12h2.500M19.500 12H22M4.900 4.900l1.800 1.800M17.300 17.300l1.800 1.800M4.900 19.100l1.800-1.800M17.300 6.700l1.800-1.800"/></symbol>
       <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.500A8 8 0 0 1 9.500 4a8 8 0 1 0 10.500 10.500z"/></symbol>
@@ -1778,6 +1839,17 @@
 
   <!-- ================= WHATSAPP FLOATING CONTACT BUTTON ================= -->
   <button class="whatsapp-float" id="waFloatBtn" title="تواصل معنا عبر واتساب" aria-label="تواصل معنا عبر واتساب"><svg class="ic" aria-hidden="true"><use href="#i-chat"></use></svg></button>
+
+  <!-- ================= شاشة الفتح (تطلع بس لمن التطبيق مثبّت) ================= -->
+  <div class="app-splash" aria-hidden="true"><span>جنة</span><i></i><i></i><i></i></div>
+
+  <!-- ================= شريط التنقل السفلي (مثل التطبيقات) ================= -->
+  <nav class="tabbar" id="tabbar" aria-label="التنقل الرئيسي">
+    <button type="button" class="active" data-tab="home"><svg class="ic" aria-hidden="true"><use href="#i-home"></use></svg><span>الرئيسية</span></button>
+    <button type="button" data-tab="offers"><svg class="ic" aria-hidden="true"><use href="#i-flame"></use></svg><span>العروض</span></button>
+    <button type="button" data-tab="track"><svg class="ic" aria-hidden="true"><use href="#i-route"></use></svg><span>وين طلبي</span></button>
+    <button type="button" data-tab="points"><svg class="ic" aria-hidden="true"><use href="#i-star"></use></svg><span>نقاطي</span></button>
+  </nav>
 
   <!-- ================= FIXED CART BAR ================= -->
   <div class="cart-bar">
@@ -3818,6 +3890,28 @@
     searchTerm = e.target.value.trim();
     renderGrids();
   });
+
+  // ---------- شريط التنقل السفلي ----------
+  // كل زر يشغّل شي موجود أصلاً بالصفحة — ماكو منطق جديد هنا.
+  (function tabbar(){
+    const bar = document.getElementById("tabbar");
+    if(!bar) return;
+    const setActive = (name)=> bar.querySelectorAll("button").forEach(b=> b.classList.toggle("active", b.dataset.tab === name));
+    bar.addEventListener("click", (e)=>{
+      const btn = e.target.closest("button[data-tab]");
+      if(!btn) return;
+      const t = btn.dataset.tab;
+      if(t === "home"){ window.scrollTo({ top:0, behavior:"smooth" }); }
+      else if(t === "offers"){ document.querySelector('.catnav button[data-target="offers"]')?.click(); }
+      else if(t === "track"){ document.getElementById("openTrackBtn")?.click(); }
+      else if(t === "points"){ document.getElementById("pointsBadge")?.click(); }
+    });
+    const offers = document.getElementById("offers");
+    if(offers && "IntersectionObserver" in window){
+      new IntersectionObserver((en)=> setActive(en[0].isIntersecting ? "offers" : "home"),
+        { rootMargin:"-45% 0px -45% 0px" }).observe(offers);
+    }
+  })();
 
   // ---------- تحية حسب الوقت ----------
   (function greet(){

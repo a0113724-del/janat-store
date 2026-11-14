@@ -8,20 +8,95 @@
   "start_url": "./index.html?src=app",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "fullscreen",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "background_color": "#FBF9F4",
   "theme_color": "#FBF9F4",
-  "categories": ["shopping", "food"],
+  "categories": [
+    "shopping",
+    "food"
+  ],
   "prefer_related_applications": false,
   "icons": [
-    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "./icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    { "name": "العروض", "short_name": "العروض", "url": "./index.html#offers", "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }] },
-    { "name": "الفواكه", "short_name": "الفواكه", "url": "./index.html#fruit", "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }] },
-    { "name": "الخضروات", "short_name": "الخضروات", "url": "./index.html#veg", "icons": [{ "src": "./icon-192.png", "sizes": "192x192" }] }
+    {
+      "name": "العروض",
+      "short_name": "العروض",
+      "url": "./index.html#offers",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "الفواكه",
+      "short_name": "الفواكه",
+      "url": "./index.html#fruit",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "الخضروات",
+      "short_name": "الخضروات",
+      "url": "./index.html#veg",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./screens/app-1.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "الصفحة الرئيسية"
+    },
+    {
+      "src": "./screens/app-2.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "المنتجات والسلة"
+    },
+    {
+      "src": "./screens/app-3.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "إتمام الطلب"
+    }
   ]
 }
