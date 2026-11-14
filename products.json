@@ -259,14 +259,15 @@
   },
   {
     "id": "apple_iraq",
-    "name": "تفاح عراقي",
+    "name": "تفاح عراقي احمر",
     "price": 1000,
     "cat": "fruit",
     "emoji": "🍎",
     "image": "images/apple_iraq-1785118591938.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 26
+    "order": 26,
+    "group": "تفاح عراقي"
   },
   {
     "id": "lemon",
@@ -277,7 +278,7 @@
     "image": "images/lemon-1785118635914.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 27,
+    "order": 28,
     "group": "ليمون"
   },
   {
@@ -289,7 +290,7 @@
     "image": "images/pear-1785118666242.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 30
+    "order": 31
   },
   {
     "id": "reky",
@@ -300,7 +301,7 @@
     "image": "images/reky-1786410488279.jpg",
     "unit": "حكه ",
     "visible": true,
-    "order": 31,
+    "order": 32,
     "soldOut": false
   },
   {
@@ -314,7 +315,7 @@
     "unit": "حكه",
     "onSale": false,
     "visible": true,
-    "order": 32,
+    "order": 33,
     "soldOut": false
   },
   {
@@ -326,7 +327,7 @@
     "image": "images/dates-1786410481883.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 33
+    "order": 34
   },
   {
     "id": "p1786409740968",
@@ -337,7 +338,7 @@
     "emoji": "🥬",
     "image": "images/p1786409740968-1786409982391.jpg",
     "visible": true,
-    "order": 34,
+    "order": 35,
     "onSale": false,
     "oldPrice": 1500,
     "group": "رمان مصري"
@@ -351,7 +352,7 @@
     "emoji": "🥬",
     "image": "images/p1791293948147-1791293958930.jpg",
     "visible": true,
-    "order": 40
+    "order": 38
   },
   {
     "id": "p1794637258617",
@@ -411,7 +412,7 @@
     "image": "images/lemon-1785118635914.jpg",
     "visible": true,
     "group": "ليمون",
-    "order": 28
+    "order": 29
   },
   {
     "id": "p1794637908062",
@@ -423,7 +424,7 @@
     "image": "images/lemon-1785118635914.jpg",
     "visible": true,
     "group": "ليمون",
-    "order": 29
+    "order": 30
   },
   {
     "id": "p1794637950525",
@@ -435,7 +436,7 @@
     "image": "images/p1786409740968-1786409982391.jpg",
     "visible": true,
     "group": "رمان مصري",
-    "order": 35
+    "order": 36
   },
   {
     "id": "p1794637966371",
@@ -447,6 +448,18 @@
     "image": "images/p1786409740968-1786409982391.jpg",
     "visible": true,
     "group": "رمان مصري",
-    "order": 36
+    "order": 37
+  },
+  {
+    "id": "p1794638079611",
+    "name": "تفاح عراقي اصفر",
+    "price": 1000,
+    "cat": "fruit",
+    "unit": "كغم",
+    "emoji": "🍎",
+    "image": "images/apple_iraq-1785118591938.jpg",
+    "visible": true,
+    "group": "تفاح عراقي",
+    "order": 27
   }
 ]
