@@ -375,18 +375,6 @@
     "order": 23
   },
   {
-    "id": "p1794637290667",
-    "name": "برتقال",
-    "price": 0,
-    "cat": "fruit",
-    "unit": "كغم",
-    "emoji": "🍊",
-    "image": "images/orange-1785118528910.jpg",
-    "visible": true,
-    "group": "برتقال",
-    "order": 24
-  },
-  {
     "id": "p1794637794616",
     "name": "طماطة عراقيه",
     "price": 1000,
