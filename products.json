@@ -501,5 +501,16 @@
     "image": "images/p1794638681321-1794638768778.jpg",
     "visible": true,
     "order": 42
+  },
+  {
+    "id": "p1794638806195",
+    "name": "لالنكي تركي",
+    "price": 1000,
+    "cat": "veg",
+    "unit": "كغم",
+    "emoji": "🥬",
+    "image": "images/p1794638806195-1794638860731.jpg",
+    "visible": true,
+    "order": 43
   }
 ]
