@@ -1556,20 +1556,42 @@
   .cart-bar .totals .l1{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   @media (max-width:380px){ .cart-bar .go-btn{ padding:11px 16px; font-size:.82rem; } }
 
-  /* ----- أزرار النوعيات داخل البطاقة ----- */
-  .vchips{ display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 8px; }
-  .vchip{
-    position:relative; min-height:36px; padding:6px 12px; border-radius:100px; cursor:pointer;
-    border:1.5px solid var(--t-fg); background:transparent; color:var(--t-fg);
-    font-size:.8rem; font-weight:700; line-height:1.2;
+  /* ----- بطاقة النوعيات: عريضة وبيها قائمة أسعار ----- */
+  .card.vcard{ grid-column:1 / -1; padding:12px 14px 6px; contain-intrinsic-size:auto 380px; }
+  .vc-head{ display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .vc-img{
+    width:88px; height:88px; flex:0 0 auto; border-radius:22px; overflow:hidden;
+    background:rgba(255,255,255,.22); display:flex; align-items:center; justify-content:center;
   }
-  .vchip.on{ background:var(--t-btn); border-color:var(--t-btn); color:var(--t-btnfg); font-weight:800; }
-  .vchip.out{ text-decoration:line-through; opacity:.75; }
-  .vchip.has::after{
-    content:""; position:absolute; top:-3px; inset-inline-end:-3px;
-    width:11px; height:11px; border-radius:50%; background:var(--gold); border:2px solid var(--t-bg);
+  .vc-img img{ width:100%; height:100%; object-fit:cover; }
+  .vc-img .placeholder-emoji{ font-size:2.4rem; }
+  .card.vcard h3{ font-size:1.6rem; font-weight:900; line-height:1.2; margin:0; }
+  .vc-sub{ font-size:.84rem; font-weight:700; color:var(--t-sub); }
+  .vc-row{
+    display:flex; align-items:center; gap:10px; padding:10px 6px;
+    border-top:1.5px solid rgba(0,0,0,.2); border-radius:0;
   }
-  .card[data-tone="yellow"] .vchip.has::after{ background:var(--pomegranate); }
+  .vc-row.has-qty{ background:rgba(255,255,255,.2); border-radius:16px; border-top-color:transparent; }
+  .vc-row.has-qty + .vc-row{ border-top-color:transparent; }
+  .vc-thumb{ width:44px; height:44px; border-radius:12px; object-fit:cover; flex:0 0 auto; }
+  .vc-info{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:1px; }
+  .vc-name{ font-size:1.08rem; font-weight:800; color:var(--t-fg); }
+  .card .vc-row .price{ font-size:1.25rem; margin:0; white-space:nowrap; }
+  .card .vc-row .price small{ display:block; }
+  .grid{ grid-auto-flow:dense; }
+  .card .vc-row .price .old{ display:inline; margin-inline-end:6px; }
+  .vc-wait{ font-size:.8rem; font-weight:600; color:var(--t-sub); }
+  .vc-deal, .vc-out{
+    font-size:.68rem; font-weight:800; padding:2px 9px; border-radius:100px;
+    background:rgba(255,255,255,.9); color:#16130F;
+  }
+  .vc-out{ color:#C8321F; }
+  .vc-row.sold-out .vc-name, .vc-row.sold-out .price{ opacity:.55; }
+  .vc-row.sold-out .qty-row button{ opacity:.4; }
+  .vc-row .qty-row{ flex:0 0 auto; width:150px; }
+  .vc-row.bump{ animation:cardBump .32s ease; }
+  @media (prefers-reduced-motion: reduce){ .vc-row.bump{ animation:none; } }
+  @media (max-width:350px){ .vc-row .qty-row{ width:132px; } .vc-img{ width:72px; height:72px; } }
 </style>
 <script>
   /* ⚡ مكتبة Firebase كانت تتحمّل بكل فتحة للتطبيق — أكثر من 200 كيلو
@@ -2833,7 +2855,6 @@
    */
   function escAttr(v){ return String(v).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
   function groupOf(p){ return (p && typeof p.group === "string") ? p.group.trim() : ""; }
-  const variantPick = {};                       // "القسم|المجموعة" ← رقم النوعية المختارة
   function groupMembers(cat, g){
     return products
       .filter(p => p.visible !== false && p.cat === cat && groupOf(p) === g)
@@ -2845,18 +2866,57 @@
     const short = n.split(g).join(" ").replace(/\s+/g, " ").trim();
     return short || n;
   }
+  // بطاقة عريضة وحدة للمجموعة: صورة واسم فوق، وجوّاها سطر لكل نوعية
+  // باسمها وسعرها وأزرار الكمية — الزبون يشوف كل الأسعار مرة وحدة.
+  function variantRow(m, g, headImage){
+    const qty = cart[m.id] || 0;
+    const unit = m.unit || "كغم";
+    const ready = hasPrice(m);
+    const out = isSoldOut(m);
+    let priceHtml = ready
+      ? `${money(m.price)} <small>/ ${unit}</small>`
+      : `<span class="vc-wait">جاري تحديث السعر…</span>`;
+    if(ready && m.onSale && m.oldPrice && m.oldPrice > m.price){
+      priceHtml = `<span class="old">${money(m.oldPrice)}</span>` + priceHtml;
+    }
+    const bundle = ready ? bundleOf(m) : null;
+    const extra = out ? `<span class="vc-out">نفدت اليوم</span>`
+                : (bundle ? `<span class="vc-deal">${bundle.qty} ${unit} بـ ${money(bundle.price)}</span>` : "");
+    // صورة صغيرة للنوعية بس إذا إلها صورة غير صورة المجموعة
+    const thumb = (m.image && m.image !== headImage)
+      ? `<img class="vc-thumb" src="${m.image}" alt="" width="88" height="88" loading="lazy" decoding="async">` : "";
+    return `
+      <div class="vc-row ${out ? "sold-out" : ""} ${qty > 0 ? "has-qty" : ""}" data-id="${m.id}">
+        ${thumb}
+        <div class="vc-info">
+          <span class="vc-name">${variantLabel(m, g)}</span>
+          <span class="price">${priceHtml}</span>
+          ${extra}
+        </div>
+        <div class="qty-row">
+          <button class="minus" data-id="${m.id}" aria-label="نقّص ${escAttr(m.name)}" ${ready && !out ? "" : "disabled"}>−</button>
+          <span class="qty-val">${qtyWords(qty, unit)}<small>${qty > 0 ? money(lineTotal(m, qty)) : unit}</small></span>
+          <button class="plus" data-id="${m.id}" aria-label="زيّد ${escAttr(m.name)}" ${ready && !out ? "" : "disabled"}>+</button>
+        </div>
+      </div>`;
+  }
   function groupCard(cat, g, members){
     const key = cat + "|" + g;
-    let sel = members.find(m => m.id === variantPick[key]);
-    if(!sel) sel = members.find(m => (cart[m.id] || 0) > 0)
-                || members.find(m => !isSoldOut(m) && hasPrice(m))
-                || members[0];
-    variantPick[key] = sel.id;
-    const chips = `<div class="vchips" role="group" aria-label="نوعيات ${escAttr(g)}">` + members.map(m =>
-      `<button type="button" class="vchip${m.id === sel.id ? " on" : ""}${isSoldOut(m) ? " out" : ""}${(cart[m.id]||0) > 0 ? " has" : ""}"
-         data-vpick="${escAttr(m.id)}" aria-pressed="${m.id === sel.id}">${variantLabel(m, g)}</button>`
-    ).join("") + `</div>`;
-    return productCard(sel, { title: g, chipsHtml: chips, groupKey: key });
+    const head = members.find(m => m.image) || members[0];
+    const imgHtml = head.image
+      ? `<img src="${head.image}" alt="${escAttr(g)}" width="200" height="200" loading="lazy" decoding="async">`
+      : `<span class="placeholder-emoji">${head.emoji || "🥬"}</span>`;
+    return `
+    <div class="card vcard" data-tone="${toneOf(head)}" data-group="${escAttr(key)}">
+      <div class="vc-head">
+        <div class="vc-img">${imgHtml}</div>
+        <div class="vc-title">
+          <h3>${g}</h3>
+          <span class="vc-sub">${members.length} نوعيات · اختار اللي يعجبك</span>
+        </div>
+      </div>
+      <div class="vc-rows">${members.map(m => variantRow(m, g, head.image)).join("")}</div>
+    </div>`;
   }
   function buildCards(list, cat){
     const counts = {};
@@ -2896,27 +2956,6 @@
     document.getElementById("offersEmpty").style.display = offers.length ? "none" : "block";
   }
 
-  // اختيار نوعية: نبدّل البطاقة نفسها بالنوعية المختارة
-  document.body.addEventListener("click", (e)=>{
-    const chip = e.target.closest(".grid .vchip");
-    if(!chip) return;
-    const card = chip.closest(".card");
-    const key = card && card.dataset.group;
-    if(!key) return;
-    const cut = key.indexOf("|");
-    const cat = key.slice(0, cut), g = key.slice(cut + 1);
-    const members = groupMembers(cat, g);
-    if(!members.some(m => m.id === chip.dataset.vpick)) return;
-    variantPick[key] = chip.dataset.vpick;
-    card.outerHTML = groupCard(cat, g, members);
-  });
-  // علامة صغيرة على زر النوعية اللي منها شي بالسلة
-  function refreshVariantMarks(){
-    document.querySelectorAll(".grid .vchip").forEach(ch=>{
-      ch.classList.toggle("has", (cart[ch.dataset.vpick] || 0) > 0);
-    });
-  }
-
   function findProduct(id){ return products.find(p=>p.id===id); }
 
   document.body.addEventListener("click",(e)=>{
@@ -2946,7 +2985,8 @@
     // ⚠️ المنتج اللي عليه عرض ينرسم مرتين: بقسمه وبقسم العروض. قبل، كنا
     // نحدّث الكارت الأول بس — فالزبون يضغط + بقسم العروض والرقم ما يتحرك،
     // فيضغط بعد وبعد والسلة تمتلي بصمت. الحين نحدّث كل كروت المنتج.
-    document.querySelectorAll(".card").forEach(card=>{
+    // ".vc-row" = سطر نوعية داخل بطاقة المجموعة — يتحدّث مثل البطاقة العادية
+    document.querySelectorAll(".card, .vc-row").forEach(card=>{
       if(card.dataset.id !== id) return;
       const qv = card.querySelector(".qty-val");
       // الكمية بالكلام وتحتها سعرها — الزبون يشوف بالضبط شنو ياخذ وبكم
@@ -2955,7 +2995,6 @@
       if(delta > 0) replayAnim(card, "bump");
     });
     if(delta > 0) replayAnim(barCount, "pop");
-    refreshVariantMarks();
     updateCartUI();
     saveCart();
   }
