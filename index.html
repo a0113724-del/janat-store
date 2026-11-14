@@ -1593,9 +1593,15 @@
       // الإذن أول — قبل أي await ثقيل، حتى ما تضيع لمسة الزبون
       const permission = await Notification.requestPermission();
       if(permission !== "granted") return false;
+      // ⚠️ نستعمل نفس الـ service worker مال التطبيق (service-worker.js).
+      // قبل، كنا نسجّل ملف ثاني (firebase-messaging-sw.js) على نفس النطاق.
+      // المتصفح يسمح بملف واحد بس لكل نطاق، فكل ما يفتح الزبون التطبيق
+      // يرجع service-worker.js ياخذ المكان — وهو ما كان بيه استقبال
+      // إشعارات، فالإشعار يوصل للجهاز وما ينعرض. الحين الاستقبال صار
+      // داخل service-worker.js نفسه وماكو تضارب.
       const [{ messaging, getToken }, registration] = await Promise.all([
         loadFirebase(),
-        navigator.serviceWorker.register("firebase-messaging-sw.js")
+        navigator.serviceWorker.register("service-worker.js").then(()=> navigator.serviceWorker.ready)
       ]);
       const tk = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxs_MKe9t1O6ghLWA5G44OrB69A23m1RayxrfZ0HpblHHG2NRxRRkpljbHWTfYPWAHp/exec";
@@ -1603,9 +1609,26 @@
         method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ action: "registerCustomerDeviceToken", phone, token: tk })
       }).catch(()=>{});
+      try{ localStorage.setItem("janat-push-synced", String(Date.now())); }catch(e){}
       return true;
     }catch(err){ return false; /* أي فشل صامت، ما يأثر على تجربة الزبون */ }
   };
+
+  // الزبون اللي وافق على الإشعارات قبل: نجدّد رمز جهازه بصمت مرة كل أسبوع
+  // (ومرة فورية بعد هذا الإصلاح). الرموز تتبدّل ويه الوقت، وبدون التجديد
+  // السيرفر يظل يرسل لرمز ميت. ما يطلع أي سؤال للزبون — الإذن موجود أصلاً.
+  window.addEventListener("load", function(){
+    setTimeout(function(){
+      try{
+        if(!("Notification" in window) || Notification.permission !== "granted") return;
+        const phone = localStorage.getItem("janat-my-phone");
+        if(!phone) return;
+        const last = Number(localStorage.getItem("janat-push-synced")) || 0;
+        if(Date.now() - last < 7 * 24 * 3600 * 1000) return;
+        window.silentlyEnableCustomerNotifications(phone);
+      }catch(e){}
+    }, 6000);
+  });
 </script>
 </head>
 <body>
@@ -5017,5 +5040,6 @@
     refreshSettings();
   })();
 </script>
+<!-- شريط التنقل صار جزء من الصفحة نفسها. هذا السطر يمنع النسخ القديمة من service-worker تحشر bottom-nav.js القديم. -->
 </body>
 </html>

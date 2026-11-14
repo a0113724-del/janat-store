@@ -8,13 +8,12 @@
    4) ملفات البيانات (products/settings): نت أولاً، حتى الأسعار تبقى محدثة
    ========================================================== */
 
-const CACHE_NAME = "janat-store-cache-v35";
+const CACHE_NAME = "janat-store-cache-v36";
 const CORE_ASSETS = [
   "./index.html",
   "./products.json",
   "./settings.json",
   "./manifest.json",
-  "./bottom-nav.js",
   "./icon-192.png",
   "./icon-512.png"
 ];
@@ -80,6 +79,10 @@ function isCustomerPage(url) {
 
 /* ---- يضيف سطر السكربت داخل صفحة الزبون قبل </body> ---- */
 async function injectBottomNav(res, req) {
+  // ⚠️ توقّف الحشر: شريط التنقل صار مكتوب داخل index.html نفسها (الشكل
+  // الجديد). لو ظل الحشر شغّال يطلع شريطين فوق بعض — الجديد والقديم.
+  return res;
+  /* eslint-disable no-unreachable */
   try {
     if (!isCustomerPage(req.url)) return res;
 
@@ -233,4 +236,45 @@ self.addEventListener("fetch", (event) => {
         .catch(() => cached);
     })
   );
+});
+
+
+/* ═════════════ إشعارات الزبائن (Web Push عن طريق FCM) ═════════════
+ *
+ * الاستقبال هنا، بنفس ملف التطبيق. قبل كان بملف ثاني
+ * (firebase-messaging-sw.js) مسجّل على نفس النطاق — والمتصفح يخلي ملف
+ * واحد بس يشتغل لكل نطاق، فهذا الملف كان يطرد ذاك بكل فتحة للتطبيق
+ * والإشعار يوصل وما ينعرض.
+ *
+ * السيرفر يرسل { notification: { title, body } } — FCM يسلّمها هنا كـ JSON.
+ */
+self.addEventListener("push", (event) => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch (e) { d = {}; }
+  const n = d.notification || {};
+  const extra = d.data || {};
+  const title = n.title || extra.title || "جنة الفواكه والخضار";
+  const options = {
+    body: n.body || extra.body || "",
+    icon: "icon-192.png",
+    badge: "icon-192.png",
+    dir: "rtl",
+    lang: "ar",
+    vibrate: [200, 100, 200],
+    data: { url: (d.fcmOptions && d.fcmOptions.link) || extra.url || self.registration.scope }
+  };
+  // لازم ينعرض إشعار دائماً — المتصفح يلغي الاشتراك لو وصل push وما انعرض شي
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || self.registration.scope;
+  event.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const c of wins) {
+      if (c.url.startsWith(self.registration.scope) && "focus" in c) return c.focus();
+    }
+    return self.clients.openWindow(url);
+  })());
 });
