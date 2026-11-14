@@ -2331,6 +2331,12 @@
             <span class="bx">دينار</span>
           </span>
         </div>
+        <div class="toggle-row group-row">
+          <label style="display:flex; flex-direction:column; gap:3px; flex:1;">
+            <span style="font-size:.72rem; color:#666;">مجموعة النوعيات (اختياري) — اكتب نفس الاسم لكل النوعيات حتى ينجمعن ببطاقة وحدة</span>
+            <input type="text" class="f-group" data-id="${p.id}" value="${(p.group||"").replace(/"/g,'&quot;')}" placeholder="مثال: برتقال">
+          </label>
+        </div>
         <div class="bundle-warn" data-bwarn="${p.id}">${bundleWarning(p)}</div>
         <div class="sale-warn" data-warn="${p.id}">${saleWarning(p)}</div>
       </div>
@@ -2520,6 +2526,10 @@
     const id = e.target.dataset.id; if(!id) return;
     const p = findProduct(id); if(!p) return;
     if(e.target.classList.contains("f-name")) p.name = e.target.value;
+    if(e.target.classList.contains("f-group")){
+      const g = e.target.value.trim();
+      if(g) p.group = g; else delete p.group;
+    }
     if(e.target.classList.contains("f-price")) p.price = Number(e.target.value)||0;
     if(e.target.classList.contains("f-unit")){
       p.unit = e.target.value;

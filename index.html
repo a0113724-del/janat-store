@@ -1555,6 +1555,21 @@
 
   .cart-bar .totals .l1{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   @media (max-width:380px){ .cart-bar .go-btn{ padding:11px 16px; font-size:.82rem; } }
+
+  /* ----- أزرار النوعيات داخل البطاقة ----- */
+  .vchips{ display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 8px; }
+  .vchip{
+    position:relative; min-height:36px; padding:6px 12px; border-radius:100px; cursor:pointer;
+    border:1.5px solid var(--t-fg); background:transparent; color:var(--t-fg);
+    font-size:.8rem; font-weight:700; line-height:1.2;
+  }
+  .vchip.on{ background:var(--t-btn); border-color:var(--t-btn); color:var(--t-btnfg); font-weight:800; }
+  .vchip.out{ text-decoration:line-through; opacity:.75; }
+  .vchip.has::after{
+    content:""; position:absolute; top:-3px; inset-inline-end:-3px;
+    width:11px; height:11px; border-radius:50%; background:var(--gold); border:2px solid var(--t-bg);
+  }
+  .card[data-tone="yellow"] .vchip.has::after{ background:var(--pomegranate); }
 </style>
 <script>
   /* ⚡ مكتبة Firebase كانت تتحمّل بكل فتحة للتطبيق — أكثر من 200 كيلو
@@ -2720,7 +2735,10 @@
   }
 
   // ---------- RENDER PRODUCT GRIDS ----------
-  function productCard(p){
+  function productCard(p, opts){
+    // opts يجي بس من بطاقة النوعيات (groupCard). ⚠️ لا تمرّر productCard مباشرة لـ map —
+    // map تعطي الرقم كثاني معامل وينقرأ غلط كـ opts.
+    const o = (opts && typeof opts === "object") ? opts : {};
     const qty = cart[p.id] || 0;
     // lazy = الصور اللي تحت الشاشة ما تنزّل إلا لمن يوصلها الزبون.
     // width/height ثابتة تمنع القفزة اللي تصير لمن تحمّل الصورة.
@@ -2758,11 +2776,12 @@
     const cardClass = (isOffer ? "offer-card " : (isFruit ? "fruit-card " : "")) + (out ? "sold-out" : "");
     const step = qtyStep(p);
     return `
-    <div class="card ${cardClass} ${qty>0?'has-qty':''}" data-id="${p.id}" data-tone="${toneOf(p)}">
+    <div class="card ${cardClass} ${qty>0?'has-qty':''}" data-id="${p.id}" data-tone="${toneOf(p)}"${o.groupKey ? ` data-group="${escAttr(o.groupKey)}"` : ""}>
       <div class="img-wrap">${ribbon}${discountBadge}${bundleBadge}${imgHtml}${
         out ? '<span class="out-badge">نفدت الكمية</span>' : ""}</div>
       <div class="body">
-        <h3>${p.name}</h3>
+        <h3>${o.title || p.name}</h3>
+        ${o.chipsHtml || ""}
         <div class="price">${priceHtml}</div>
         ${saveLine}
         ${out ? `<div class="out-line">🚫 خلصت اليوم — ترجع قريباً</div>`
@@ -2805,19 +2824,97 @@
     return p.name.toLowerCase().includes(searchTerm.toLowerCase());
   }
 
+  /* ═════════════ نوعيات المنتج ═════════════
+   *
+   * كل نوعية تبقى منتج عادي كامل (رقمه، سعره، صورته، نفاده) — فالسلة
+   * والطلب والسيرفر وتلغرام ما يتغيّر بيهم شي. الجديد بس بالعرض: المنتجات
+   * اللي إلها نفس «المجموعة» (حقل group من لوحة التحكم) وبنفس القسم تنجمع
+   * ببطاقة وحدة بيها أزرار للنوعيات.
+   */
+  function escAttr(v){ return String(v).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
+  function groupOf(p){ return (p && typeof p.group === "string") ? p.group.trim() : ""; }
+  const variantPick = {};                       // "القسم|المجموعة" ← رقم النوعية المختارة
+  function groupMembers(cat, g){
+    return products
+      .filter(p => p.visible !== false && p.cat === cat && groupOf(p) === g)
+      .sort((a,b)=>(a.order ?? 999) - (b.order ?? 999));
+  }
+  // اسم الزر = اسم المنتج بلا اسم المجموعة: «برتقال محلي» ← «محلي»
+  function variantLabel(p, g){
+    const n = String(p.name || "").trim();
+    const short = n.split(g).join(" ").replace(/\s+/g, " ").trim();
+    return short || n;
+  }
+  function groupCard(cat, g, members){
+    const key = cat + "|" + g;
+    let sel = members.find(m => m.id === variantPick[key]);
+    if(!sel) sel = members.find(m => (cart[m.id] || 0) > 0)
+                || members.find(m => !isSoldOut(m) && hasPrice(m))
+                || members[0];
+    variantPick[key] = sel.id;
+    const chips = `<div class="vchips" role="group" aria-label="نوعيات ${escAttr(g)}">` + members.map(m =>
+      `<button type="button" class="vchip${m.id === sel.id ? " on" : ""}${isSoldOut(m) ? " out" : ""}${(cart[m.id]||0) > 0 ? " has" : ""}"
+         data-vpick="${escAttr(m.id)}" aria-pressed="${m.id === sel.id}">${variantLabel(m, g)}</button>`
+    ).join("") + `</div>`;
+    return productCard(sel, { title: g, chipsHtml: chips, groupKey: key });
+  }
+  function buildCards(list, cat){
+    const counts = {};
+    list.forEach(p => { const g = groupOf(p); if(g) counts[g] = (counts[g] || 0) + 1; });
+    const seen = {};
+    const out = [];
+    list.forEach(p => {
+      const g = groupOf(p);
+      // نوعية وحدة بس ظاهرة = بطاقة عادية باسمها الكامل
+      if(!g || groupMembers(cat, g).length < 2){ out.push(productCard(p)); return; }
+      if(seen[g]) return;
+      seen[g] = true;
+      out.push(groupCard(cat, g, groupMembers(cat, g)));
+    });
+    return out.join("");
+  }
+  // البحث: «برتقال» يطلّع بطاقة النوعيات حتى لو اسم النوعية ما بيه الكلمة
+  function matchesSearchOrGroup(p){
+    if(matchesSearch(p)) return true;
+    const g = groupOf(p);
+    return !!(g && searchTerm && g.toLowerCase().includes(searchTerm.toLowerCase()));
+  }
+
   function renderGrids(){
     const visible = products.filter(p => p.visible !== false);
     const sorted = [...visible].sort((a,b)=>(a.order ?? 999) - (b.order ?? 999));
-    const veg = sorted.filter(p=>p.cat==="veg" && matchesSearch(p));
-    const fruit = sorted.filter(p=>p.cat==="fruit" && matchesSearch(p));
+    const veg = sorted.filter(p=>p.cat==="veg" && matchesSearchOrGroup(p));
+    const fruit = sorted.filter(p=>p.cat==="fruit" && matchesSearchOrGroup(p));
     const offers = sorted.filter(p=>p.onSale && matchesSearch(p));
 
     document.getElementById("veg-grid").innerHTML =
-      veg.map(productCard).join("") || `<p class="note">لا توجد نتائج</p>`;
+      buildCards(veg, "veg") || `<p class="note">لا توجد نتائج</p>`;
     document.getElementById("fruit-grid").innerHTML =
-      fruit.map(productCard).join("") || `<p class="note">لا توجد نتائج</p>`;
-    document.getElementById("offers-grid").innerHTML = offers.map(productCard).join("");
+      buildCards(fruit, "fruit") || `<p class="note">لا توجد نتائج</p>`;
+    // قسم العروض: كل منتج لوحده باسمه الكامل — العرض على نوعية محددة
+    document.getElementById("offers-grid").innerHTML = offers.map(p => productCard(p)).join("");
     document.getElementById("offersEmpty").style.display = offers.length ? "none" : "block";
+  }
+
+  // اختيار نوعية: نبدّل البطاقة نفسها بالنوعية المختارة
+  document.body.addEventListener("click", (e)=>{
+    const chip = e.target.closest(".grid .vchip");
+    if(!chip) return;
+    const card = chip.closest(".card");
+    const key = card && card.dataset.group;
+    if(!key) return;
+    const cut = key.indexOf("|");
+    const cat = key.slice(0, cut), g = key.slice(cut + 1);
+    const members = groupMembers(cat, g);
+    if(!members.some(m => m.id === chip.dataset.vpick)) return;
+    variantPick[key] = chip.dataset.vpick;
+    card.outerHTML = groupCard(cat, g, members);
+  });
+  // علامة صغيرة على زر النوعية اللي منها شي بالسلة
+  function refreshVariantMarks(){
+    document.querySelectorAll(".grid .vchip").forEach(ch=>{
+      ch.classList.toggle("has", (cart[ch.dataset.vpick] || 0) > 0);
+    });
   }
 
   function findProduct(id){ return products.find(p=>p.id===id); }
@@ -2858,6 +2955,7 @@
       if(delta > 0) replayAnim(card, "bump");
     });
     if(delta > 0) replayAnim(barCount, "pop");
+    refreshVariantMarks();
     updateCartUI();
     saveCart();
   }
