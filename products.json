@@ -233,30 +233,6 @@
     "order": 21
   },
   {
-    "id": "figw",
-    "name": "تين ابيض",
-    "price": 2000,
-    "cat": "fruit",
-    "emoji": "⚪",
-    "image": "images/figw-1785118481332.jpg",
-    "unit": "كغم",
-    "visible": false,
-    "order": 22,
-    "soldOut": true
-  },
-  {
-    "id": "figb",
-    "name": "تين اسود",
-    "price": 2000,
-    "cat": "fruit",
-    "emoji": "⚫",
-    "image": "images/figb-1785118505537.jpg",
-    "unit": "كغم",
-    "visible": false,
-    "order": 23,
-    "soldOut": true
-  },
-  {
     "id": "orange",
     "name": "برتقال",
     "price": 2500,
@@ -265,7 +241,8 @@
     "image": "images/orange-1785118528910.jpg",
     "unit": "كغم",
     "visible": true,
-    "order": 24
+    "order": 24,
+    "group": "برتقال مصري"
   },
   {
     "id": "grape",
