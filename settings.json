@@ -5,7 +5,7 @@
   "firstOrderFreeDelivery": false,
   "openHour": 8,
   "closeHour": 21,
-  "manualClosed": true,
+  "manualClosed": false,
   "closedMessage": "«التطبيق مغلق للصيانة، نعود قريباً.»",
   "pointsPerOrder": 2,
   "roundTo": 250,
