@@ -2,7 +2,7 @@
   {
     "id": "tomato",
     "name": "طماطة",
-    "price": 1000,
+    "price": 1500,
     "cat": "veg",
     "emoji": "🍅",
     "image": "images/tomato-1785117823924.jpg",
@@ -15,7 +15,7 @@
   {
     "id": "cucumber",
     "name": "خيار",
-    "price": 1000,
+    "price": 1250,
     "cat": "veg",
     "emoji": "🥒",
     "image": "images/cucumber-1785117845595.jpg",
@@ -39,7 +39,7 @@
   {
     "id": "eggplant",
     "name": "باذنجان",
-    "price": 750,
+    "price": 1500,
     "cat": "veg",
     "emoji": "🍆",
     "image": "images/eggplant-1785117873353.jpg",
@@ -121,7 +121,7 @@
   {
     "id": "onionw",
     "name": "بصل ابيض",
-    "price": 1000,
+    "price": 1500,
     "cat": "veg",
     "emoji": "🧅",
     "image": "images/onionw-1785118269464.jpg",
@@ -132,7 +132,7 @@
   {
     "id": "oniony",
     "name": "بصل اصفر",
-    "price": 1000,
+    "price": 1500,
     "cat": "veg",
     "emoji": "🧅",
     "image": "images/oniony-1785118290445.jpg",
@@ -188,7 +188,7 @@
   {
     "id": "carrot",
     "name": "جزر",
-    "price": 1500,
+    "price": 1000,
     "cat": "veg",
     "emoji": "🥕",
     "image": "images/carrot-1785118402302.jpg",
@@ -221,7 +221,7 @@
   {
     "id": "banana",
     "name": "موز",
-    "price": 2000,
+    "price": 2500,
     "cat": "fruit",
     "emoji": "🍌",
     "image": "images/banana-1785118460886.jpg",
@@ -259,7 +259,7 @@
   {
     "id": "orange",
     "name": "برتقال",
-    "price": 2000,
+    "price": 2500,
     "cat": "fruit",
     "emoji": "🍊",
     "image": "images/orange-1785118528910.jpg",
@@ -270,7 +270,7 @@
   {
     "id": "grape",
     "name": "عنب",
-    "price": 1000,
+    "price": 1500,
     "cat": "fruit",
     "emoji": "🍇",
     "image": "images/grape-1786410713411.jpg",
@@ -320,7 +320,7 @@
   {
     "id": "apple_iraq",
     "name": "تفاح عراقي",
-    "price": 1250,
+    "price": 1000,
     "cat": "fruit",
     "emoji": "🍎",
     "image": "images/apple_iraq-1785118591938.jpg",
@@ -439,7 +439,7 @@
   {
     "id": "p1786409740968",
     "name": "رمان مصري ",
-    "price": 1500,
+    "price": 1000,
     "cat": "fruit",
     "unit": "كغم",
     "emoji": "🥬",
