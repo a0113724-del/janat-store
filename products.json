@@ -255,7 +255,7 @@
   },
   {
     "id": "apple_iraq",
-    "name": "تفاح عراقي احمر",
+    "name": "تفاح تركي",
     "price": 1000,
     "cat": "fruit",
     "emoji": "🍎",
@@ -445,18 +445,6 @@
     "visible": true,
     "group": "رمان مصري",
     "order": 37
-  },
-  {
-    "id": "p1794638079611",
-    "name": "تفاح عراقي اصفر",
-    "price": 1000,
-    "cat": "fruit",
-    "unit": "كغم",
-    "emoji": "🍎",
-    "image": "images/apple_iraq-1785118591938.jpg",
-    "visible": true,
-    "group": "تفاح عراقي",
-    "order": 27
   },
   {
     "id": "p1794638678348",
