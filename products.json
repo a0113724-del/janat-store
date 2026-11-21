@@ -1,19 +1,5 @@
 [
   {
-    "id": "tomato",
-    "name": "طماطة طماطه كرزيه",
-    "price": 1500,
-    "cat": "veg",
-    "emoji": "🍅",
-    "image": "images/tomato-1785117823924.jpg",
-    "unit": "كغم",
-    "visible": true,
-    "order": 0,
-    "onSale": false,
-    "soldOut": false,
-    "group": "طماطة"
-  },
-  {
     "id": "cucumber",
     "name": "خيار",
     "price": 1250,
@@ -52,7 +38,7 @@
   {
     "id": "zucchini",
     "name": "شجر (كوسة)",
-    "price": 1250,
+    "price": 1500,
     "cat": "veg",
     "emoji": "🥒",
     "image": "images/zucchini-1785117895651.jpg",
@@ -367,7 +353,7 @@
   {
     "id": "p1794637794616",
     "name": "طماطة عراقيه",
-    "price": 1000,
+    "price": 1250,
     "cat": "veg",
     "unit": "كغم",
     "emoji": "🍅",
